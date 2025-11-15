@@ -1,0 +1,1299 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema de resenas - Firebase</title>
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+    <style>
+        :root {
+            --primary-color: #ff7d29;
+            --secondary-color: #ecf0f1;
+            --accent-color: #e74c3c;
+            --light-color: #ecf0f1;
+            --dark-color: #f7d10;
+            --success-color: #2ecc71;
+            --warning-color: #f39c12;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background-color: #f5f7fa;
+            color: #33;
+            line-height: 1.6;
+        }
+        
+        header {
+            background: var(--primary-color);
+            color: white;
+            padding: 1rem 1.5rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .auth-section {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .user-avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background-color: var(--secondary-color);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+        }
+        
+        .btn {
+            background-color: var(--secondary-color);
+            color: black;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            font-weight: 600;
+            transition: background-color 0.3s;
+        }
+        
+        .btn:hover {
+             background-color: #ff7d19;
+            border: 2px solid var(--secondary-color);
+            color: white;
+        }
+        
+        .btn-outline {
+            background-color: var(--secondary-color);
+            border: 2 solid var(--secondary-color);
+            color: black;
+        }
+        
+        .btn-outline:hover {
+            background-color: #ff7d19;
+            border: 2px solid var(--secondary-color);
+            color: white;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+        
+        .materias-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        
+        .materia-card {
+            background: white;
+            border-radius: 8px;
+            padding: 1.5rem;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            cursor: pointer;
+        }
+        
+        .materia-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.15);
+        }
+        
+        .materia-card h3 {
+            color: black;
+            margin-bottom: 0.5rem;
+            border-bottom: 2px solid var(--light-color);
+            padding-bottom: 0.5rem;
+        }
+        
+        .rating {
+            color: var(--warning-color);
+            font-size: 1.2rem;
+            margin: 0.5rem 0;
+        }
+        
+        .review-count {
+            color: var(--dark-color);
+            font-size: 0.9rem;
+        }
+        
+        .review-form-container {
+            background: white;
+            border-radius: 8px;
+            padding: 2rem;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            margin-bottom: 2rem;
+            display: none;
+        }
+        
+        .review-form-container.active {
+            display: block;
+        }
+        
+        .auth-required {
+            text-align: center;
+            padding: 2rem;
+            background-color: #fff8e1;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+        }
+        
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            color: var(--dark-color);
+        }
+        
+        select, textarea, input[type="text"], input[type="email"], input[type="password"] {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 1rem;
+        }
+        
+        textarea {
+            min-height: 120px;
+            resize: vertical;
+        }
+        
+        .rating-input {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+        }
+        
+        .star {
+            font-size: 1.5rem;
+            color: #ddd;
+            cursor: pointer;
+            transition: color 0.2s;
+        }
+        
+        .star.active {
+            color: var(--warning-color);
+        }
+        
+        .aspect-rating {
+            margin-bottom: 1rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .aspect-rating:last-child {
+            border-bottom: none;
+        }
+        
+        .btn-block {
+            display: block;
+            width: 100%;
+        }
+        
+        .resenas-container {
+            margin-top: 2rem;
+        }
+        
+        .review-card {
+            background: white;
+            border-radius: 8px;
+            padding: 1.5rem;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            margin-bottom: 1.5rem;
+        }
+        
+        .review-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+        
+        .review-user {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .review-catedra {
+            font-weight: 600;
+            color: var(--primary-color);
+        }
+        
+        .review-date {
+            color: #777;
+            font-size: 0.9rem;
+        }
+        
+        .review-content {
+            margin-bottom: 1rem;
+        }
+        
+        .review-aspects {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+        
+        .review-aspect {
+            display: flex;
+            justify-content: space-between;
+        }
+        
+        .aspect-name {
+            font-weight: 500;
+        }
+        
+        .aspect-value {
+            color: var(--warning-color);
+            font-weight: 600;
+        }
+        
+        .no-resenas {
+            text-align: center;
+            padding: 2rem;
+            color: #777;
+        }
+        
+        .filter-container {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+            flex-wrap: wrap;
+        }
+        
+        .filter-select {
+            flex: 1;
+            min-width: 200px;
+        }
+        
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .modal.active {
+            display: flex;
+        }
+        
+        .modal-content {
+            background: white;
+            padding: 2rem;
+            border-radius: 8px;
+            width: 90%;
+            max-width: 400px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        }
+        
+        .modal h2 {
+            margin-bottom: 1.5rem;
+            color: var(--primary-color);
+        }
+        
+        .modal-actions {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1.5rem;
+        }
+        
+        .modal-actions .btn {
+            flex: 1;
+        }
+        
+        .error-message {
+            color: var(--accent-color);
+            font-size: 0.9rem;
+            margin-top: 0.5rem;
+        }
+
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 15px 20px;
+            border-radius: 5px;
+            color: white;
+            z-index: 10000;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.2);
+            max-width: 400px;
+            animation: slideIn 0.3s ease;
+        }
+        
+        .notification.success {
+            background-color: var(--success-color);
+        }
+        
+        .notification.error {
+            background-color: var(--accent-color);
+        }
+        
+        @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        
+        @media (max-width: 768px) {
+            .materias-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .filter-container {
+                flex-direction: column;
+            }
+            
+            .review-aspects {
+                grid-template-columns: 1fr;
+            }
+            
+            header {
+                flex-direction: column;
+                gap: 1rem;
+                text-align: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="header-title">
+            <h1>Sistema de reseña de materias</h1>
+            <p>Comparte tu experiencia y ayuda a otros estudiantes</p>
+        </div>
+        <div class="auth-section">
+            <div id="userInfo" class="user-info" style="display: none;">
+                <div class="user-avatar" id="userAvatar">U</div>
+                <span id="userName">Usuario</span>
+                <button id="logoutBtn" class="btn btn-outline">Cerrar Sesión</button>
+            </div>
+            <div id="authButtons">
+                <button id="loginBtn" class="btn">Iniciar Sesión</button>
+                <button id="registerBtn" class="btn btn-outline">Registrarse</button>
+            </div>
+        </div>
+    </header>
+    
+    <div class="container">
+        <h2>Materias disponibles</h2>
+        <div class="materias-grid" id="materiasGrid">
+            <!-- Las materias se cargarán aquí dinámicamente -->
+        </div>
+        
+        <div class="review-form-container" id="reviewForm">
+            <h2 id="formTitle">Dejar Reseña</h2>
+            
+            <div id="authRequiredMessage" class="auth-required" style="display: none;">
+                <h3>Inicia sesión para dejar una reseña</h3>
+                <p>Debes tener una cuenta y estar logueado para compartir tu experiencia.</p>
+                <button id="loginFromReviewBtn" class="btn">Iniciar Sesión</button>
+            </div>
+            
+            <form id="reviewFormElement" style="display: none;">
+                <div class="form-group">
+                    <label for="catedra">Cátedra:</label>
+                    <select id="catedra" required>
+                        <option value="">Selecciona una cátedra</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="practico">Práctico:</label>
+                    <select id="practico" required>
+                        <option value="">Selecciona un práctico</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label>Calificación General:</label>
+                    <div class="rating-input" id="generalRating">
+                        <span class="star" data-value="1">★</span>
+                        <span class="star" data-value="2">★</span>
+                        <span class="star" data-value="3">★</span>
+                        <span class="star" data-value="4">★</span>
+                        <span class="star" data-value="5">★</span>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="reviewText">Reseña:</label>
+                    <textarea id="reviewText" placeholder="Comparte tu experiencia con esta materia..." required></textarea>
+                </div>
+                
+                <div class="form-group">
+                    <h3>Calificación por Aspectos</h3>
+                    
+                    <div class="aspect-rating">
+                        <label>Claridad de Explicación:</label>
+                        <div class="rating-input" id="claridadRating">
+                            <span class="star" data-value="1">★</span>
+                            <span class="star" data-value="2">★</span>
+                            <span class="star" data-value="3">★</span>
+                            <span class="star" data-value="4">★</span>
+                            <span class="star" data-value="5">★</span>
+                        </div>
+                    </div>
+                    
+                    <div class="aspect-rating">
+                        <label>Dificultad:</label>
+                        <div class="rating-input" id="dificultadRating">
+                            <span class="star" data-value="1">★</span>
+                            <span class="star" data-value="2">★</span>
+                            <span class="star" data-value="3">★</span>
+                            <span class="star" data-value="4">★</span>
+                            <span class="star" data-value="5">★</span>
+                        </div>
+                    </div>
+                    
+                    <div class="aspect-rating">
+                        <label>Interés del Contenido:</label>
+                        <div class="rating-input" id="interesRating">
+                            <span class="star" data-value="1">★</span>
+                            <span class="star" data-value="2">★</span>
+                            <span class="star" data-value="3">★</span>
+                            <span class="star" data-value="4">★</span>
+                            <span class="star" data-value="5">★</span>
+                        </div>
+                    </div>
+                    
+                    <div class="aspect-rating">
+                        <label>Evaluación Justa:</label>
+                        <div class="rating-input" id="evaluacionRating">
+                            <span class="star" data-value="1">★</span>
+                            <span class="star" data-value="2">★</span>
+                            <span class="star" data-value="3">★</span>
+                            <span class="star" data-value="4">★</span>
+                            <span class="star" data-value="5">★</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <button type="submit" class="btn btn-block">Enviar Reseña</button>
+            </form>
+        </div>
+        
+        <div class="resenas-container">
+            <h2>Reseñas de la Materia</h2>
+            
+            <div class="filter-container">
+                <div class="form-group filter-select">
+                    <label for="filterCatedra">Filtrar por Cátedra:</label>
+                    <select id="filterCatedra">
+                        <option value="">Todas las cátedras</option>
+                    </select>
+                </div>
+                
+                <div class="form-group filter-select">
+                    <label for="filterPractico">Filtrar por Práctico:</label>
+                    <select id="filterPractico">
+                        <option value="">Todos los prácticos</option>
+                    </select>
+                </div>
+                
+                <div class="form-group filter-select">
+                    <label for="filterRating">Filtrar por Calificación:</label>
+                    <select id="filterRating">
+                        <option value="">Todas las calificaciones</option>
+                        <option value="5">5 estrellas</option>
+                        <option value="4">4 estrellas o más</option>
+                        <option value="3">3 estrellas o más</option>
+                        <option value="2">2 estrellas o más</option>
+                        <option value="1">1 estrella o más</option>
+                    </select>
+                </div>
+            </div>
+            
+            <div id="resenasList">
+                <!-- Las reseñas se cargarán aquí dinámicamente -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de Login -->
+    <div class="modal" id="loginModal">
+        <div class="modal-content">
+            <h2>Iniciar Sesión</h2>
+            <form id="loginForm">
+                <div class="form-group">
+                    <label for="loginEmail">Email:</label>
+                    <input type="email" id="loginEmail" required>
+                </div>
+                <div class="form-group">
+                    <label for="loginPassword">Contraseña:</label>
+                    <input type="password" id="loginPassword" required>
+                </div>
+                <div id="loginError" class="error-message"></div>
+                <div class="modal-actions">
+                    <button type="button" id="cancelLogin" class="btn btn-outline">Cancelar</button>
+                    <button type="submit" class="btn">Iniciar Sesión</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal de Registro -->
+    <div class="modal" id="registerModal">
+        <div class="modal-content">
+            <h2>Registrarse</h2>
+            <form id="registerForm">
+                <div class="form-group">
+                    <label for="registerName">Nombre:</label>
+                    <input type="text" id="registerName" required>
+                </div>
+                <div class="form-group">
+                    <label for="registerEmail">Email:</label>
+                    <input type="email" id="registerEmail" required>
+                </div>
+                <div class="form-group">
+                    <label for="registerPassword">Contraseña:</label>
+                    <input type="password" id="registerPassword" required minlength="6">
+                </div>
+                <div id="registerError" class="error-message"></div>
+                <div class="modal-actions">
+                    <button type="button" id="cancelRegister" class="btn btn-outline">Cancelar</button>
+                    <button type="submit" class="btn">Registrarse</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // Configuración de Firebase
+        const firebaseConfig = {
+            apiKey: "AIzaSyBnpshX3I7ZY3EUoraDZPdb2W6B6HZOYR0",
+            authDomain: "social-sociales.firebaseapp.com",
+            projectId: "social-sociales",
+            storageBucket: "social-sociales.firebasestorage.app",
+            messagingSenderId: "18764420760",
+            appId: "1:18764420760:web:92e33662d4e0b050cfa2ed",
+            measurementId: "G-8BZFCJBMY6"
+        };
+
+        // Inicializar Firebase
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        const db = firebase.firestore();
+
+        // Estado de la aplicación
+        let appState = {
+            materias: [],
+            resenas: [],
+            materiaSeleccionada: null,
+            user: null
+        };
+
+        // Datos de ejemplo para las materias
+        const materiasData = [
+            "Sociología General",
+            "Filosofía",
+            "Economía 2",
+            "Historia Social Moderna y Contemporánea",
+            "Historia Social Latinoamericana",
+            "Historia Social Argentina",
+            "Análisis de la sociedad Argentina",
+            "Epistemología de las Ciencias Sociales",
+            "Historia del Conocimiento Sociológico 1",
+            "Historia del Conocimiento Sociológico 2",
+            "Sociología Sistemática",
+            "Sociología Política",
+            "Psicología Social",
+            "Metodología 1",
+            "Metodología 2",
+            "Metodología 3"
+        ];
+
+        // Inicializar la aplicación
+        function init() {
+            configurarFirebaseAuth();
+            cargarMaterias();
+            configurarSistemaEstrellas();
+            configurarFormulario();
+            configurarFiltros();
+            configurarModales();
+        }
+
+        // Configurar autenticación de Firebase
+        function configurarFirebaseAuth() {
+            auth.onAuthStateChanged((user) => {
+                if (user) {
+                    appState.user = user;
+                    mostrarInfoUsuario(user);
+                    actualizarUIUsuarioLogueado();
+                    console.log("✅ Usuario autenticado:", user.email);
+                } else {
+                    appState.user = null;
+                    ocultarInfoUsuario();
+                    actualizarUIUsuarioNoLogueado();
+                    console.log("🔒 Usuario no autenticado");
+                }
+            });
+        }
+
+        // Mostrar información del usuario
+        function mostrarInfoUsuario(user) {
+            const userInfo = document.getElementById('userInfo');
+            const userAvatar = document.getElementById('userAvatar');
+            const userName = document.getElementById('userName');
+            const authButtons = document.getElementById('authButtons');
+            
+            const firstLetter = user.email.charAt(0).toUpperCase();
+            userAvatar.textContent = firstLetter;
+            userName.textContent = user.email;
+            
+            userInfo.style.display = 'flex';
+            authButtons.style.display = 'none';
+        }
+
+        function ocultarInfoUsuario() {
+            document.getElementById('userInfo').style.display = 'none';
+            document.getElementById('authButtons').style.display = 'flex';
+        }
+
+        // Actualizar UI según estado de autenticación
+        function actualizarUIUsuarioLogueado() {
+            const authRequiredMessage = document.getElementById('authRequiredMessage');
+            const reviewForm = document.getElementById('reviewFormElement');
+            
+            if (authRequiredMessage && reviewForm) {
+                authRequiredMessage.style.display = 'none';
+                reviewForm.style.display = 'block';
+            }
+        }
+
+        function actualizarUIUsuarioNoLogueado() {
+            const authRequiredMessage = document.getElementById('authRequiredMessage');
+            const reviewForm = document.getElementById('reviewFormElement');
+            
+            if (authRequiredMessage && reviewForm) {
+                authRequiredMessage.style.display = 'block';
+                reviewForm.style.display = 'none';
+            }
+        }
+
+        // Cargar materias desde Firestore (o datos de ejemplo)
+        async function cargarMaterias() {
+            try {
+                // Intentar cargar desde Firestore
+                const materiasSnapshot = await db.collection('materias').get();
+                
+                if (!materiasSnapshot.empty) {
+                    // Cargar desde Firestore
+                    appState.materias = materiasSnapshot.docs.map(doc => ({
+                        id: doc.id,
+                        ...doc.data()
+                    }));
+                    console.log("✅ Materias cargadas desde Firestore:", appState.materias.length);
+                } else {
+                    // Usar datos de ejemplo y guardar en Firestore
+                    appState.materias = await inicializarDatosEjemplo();
+                    console.log("✅ Materias inicializadas con datos de ejemplo");
+                }
+                
+                cargarMateriasEnUI();
+            } catch (error) {
+                console.error('Error cargando materias:', error);
+                // En caso de error, usar datos de ejemplo
+                appState.materias = await generarDatosEjemplo();
+                cargarMateriasEnUI();
+            }
+        }
+
+        // Inicializar datos de ejemplo en Firestore
+        async function inicializarDatosEjemplo() {
+            const materias = [];
+            
+            for (const nombre of materiasData) {
+                const materiaData = {
+                    nombre: nombre,
+                    promedio: 0,
+                    numresenas: 0,
+                    catedras: generarCatedrasYMaterias(),
+                    fechaCreacion: firebase.firestore.FieldValue.serverTimestamp()
+                };
+                
+                // Guardar en Firestore
+                const docRef = await db.collection('materias').add(materiaData);
+                materias.push({
+                    id: docRef.id,
+                    ...materiaData
+                });
+                console.log("✅ Materia creada:", nombre);
+            }
+            
+            return materias;
+        }
+
+        // Generar datos de ejemplo (sin guardar en Firestore)
+        function generarDatosEjemplo() {
+            return materiasData.map(nombre => ({
+                id: nombre.replace(/\s+/g, '-').toLowerCase(),
+                nombre: nombre,
+                promedio: 0,
+                numresenas: 0,
+                catedras: generarCatedrasYMaterias()
+            }));
+        }
+
+        // Generar cátedras y prácticos
+        function generarCatedrasYMaterias() {
+            const numCatedras = Math.floor(Math.random() * 2) + 2; // 2-3 cátedras
+            const catedras = [];
+            
+            for (let i = 1; i <= numCatedras; i++) {
+                const numPracticos = Math.floor(Math.random() * 2) + 4; // 4-5 prácticos
+                const practicos = [];
+                
+                for (let j = 1; j <= numPracticos; j++) {
+                    practicos.push(`Práctico ${j}`);
+                }
+                
+                catedras.push({
+                    nombre: `Cátedra ${i}`,
+                    practicos: practicos
+                });
+            }
+            
+            return catedras;
+        }
+
+        // Cargar materias en la UI
+        function cargarMateriasEnUI() {
+            const materiasGrid = document.getElementById('materiasGrid');
+            materiasGrid.innerHTML = '';
+            
+            appState.materias.forEach(materia => {
+                const card = document.createElement('div');
+                card.className = 'materia-card';
+                card.dataset.materiaId = materia.id;
+                
+                let estrellasHTML = '';
+                const promedio = parseFloat(materia.promedio) || 0;
+                for (let i = 1; i <= 5; i++) {
+                    if (i <= Math.floor(promedio)) {
+                        estrellasHTML += '★';
+                    } else if (i - 0.5 <= promedio) {
+                        estrellasHTML += '½';
+                    } else {
+                        estrellasHTML += '☆';
+                    }
+                }
+                
+                card.innerHTML = `
+                    <h3>${materia.nombre}</h3>
+                    <div class="rating">${estrellasHTML} <span>${promedio.toFixed(1)}</span></div>
+                    <div class="review-count">${materia.numresenas || 0} resenas</div>
+                `;
+                
+                card.addEventListener('click', () => {
+                    seleccionarMateria(materia.id);
+                });
+                
+                materiasGrid.appendChild(card);
+            });
+        }
+
+        // Seleccionar una materia
+        async function seleccionarMateria(materiaId) {
+            const materia = appState.materias.find(m => m.id === materiaId);
+            appState.materiaSeleccionada = materia;
+            
+            // Actualizar título del formulario
+            document.getElementById('formTitle').textContent = `Dejar Reseña - ${materia.nombre}`;
+            
+            // Mostrar formulario
+            document.getElementById('reviewForm').classList.add('active');
+            
+            // Cargar cátedras
+            cargarCatedrasEnFormulario(materia.catedras);
+            
+            // Cargar resenas desde Firestore
+            await cargarresenas(materiaId);
+            
+            // Desplazar hacia el formulario
+            document.getElementById('reviewForm').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        // Cargar cátedras en el formulario
+        function cargarCatedrasEnFormulario(catedras) {
+            const catedraSelect = document.getElementById('catedra');
+            catedraSelect.innerHTML = '<option value="">Selecciona una cátedra</option>';
+            
+            catedras.forEach(catedra => {
+                const option = document.createElement('option');
+                option.value = catedra.nombre;
+                option.textContent = catedra.nombre;
+                catedraSelect.appendChild(option);
+            });
+            
+            // Cargar cátedras en el filtro
+            const filterCatedraSelect = document.getElementById('filterCatedra');
+            filterCatedraSelect.innerHTML = '<option value="">Todas las cátedras</option>';
+            
+            catedras.forEach(catedra => {
+                const option = document.createElement('option');
+                option.value = catedra.nombre;
+                option.textContent = catedra.nombre;
+                filterCatedraSelect.appendChild(option);
+            });
+            
+            // Configurar evento para cargar prácticos
+            catedraSelect.addEventListener('change', function() {
+                cargarPracticosEnFormulario(this.value, catedras);
+            });
+        }
+
+        // Cargar prácticos en el formulario
+        function cargarPracticosEnFormulario(catedraNombre, catedras) {
+            const practicoSelect = document.getElementById('practico');
+            practicoSelect.innerHTML = '<option value="">Selecciona un práctico</option>';
+            
+            const filterPracticoSelect = document.getElementById('filterPractico');
+            filterPracticoSelect.innerHTML = '<option value="">Todos los prácticos</option>';
+            
+            if (catedraNombre) {
+                const catedra = catedras.find(c => c.nombre === catedraNombre);
+                if (catedra) {
+                    catedra.practicos.forEach(practico => {
+                        const option = document.createElement('option');
+                        option.value = practico;
+                        option.textContent = practico;
+                        practicoSelect.appendChild(option);
+                        
+                        const filterOption = document.createElement('option');
+                        filterOption.value = practico;
+                        filterOption.textContent = practico;
+                        filterPracticoSelect.appendChild(filterOption);
+                    });
+                }
+            }
+        }
+
+        // Cargar resenas desde Firestore
+async function cargarresenas(materiaId) {
+    try {
+        const resenasSnapshot = await db.collection('resenas')
+            .where('materiaId', '==', materiaId)
+            .get();
+
+        // Convertir a array
+        appState.resenas = resenasSnapshot.docs.map(doc => ({
+            id: doc.id,
+            ...doc.data()
+        }));
+
+        // Ordenar por fecha en JS
+        appState.resenas.sort((a, b) => {
+            const fa = a.fecha?.toMillis?.() || 0;
+            const fb = b.fecha?.toMillis?.() || 0;
+            return fb - fa;
+        });
+
+        console.log("✅ Reseñas cargadas:", appState.resenas.length);
+        cargarresenasEnUI();
+    } catch (error) {
+        console.error('Error cargando resenas:', error);
+        appState.resenas = [];
+        cargarresenasEnUI();
+    }
+}
+
+
+        // Configurar sistema de estrellas
+        function configurarSistemaEstrellas() {
+            const ratingInputs = document.querySelectorAll('.rating-input');
+            
+            ratingInputs.forEach(input => {
+                const stars = input.querySelectorAll('.star');
+                
+                stars.forEach(star => {
+                    star.addEventListener('click', function() {
+                        const value = parseInt(this.dataset.value);
+                        const parent = this.parentElement;
+                        
+                        parent.querySelectorAll('.star').forEach(s => {
+                            if (parseInt(s.dataset.value) <= value) {
+                                s.classList.add('active');
+                            } else {
+                                s.classList.remove('active');
+                            }
+                        });
+                        
+                        parent.dataset.rating = value;
+                    });
+                });
+            });
+        }
+
+        // Configurar formulario de reseña
+        function configurarFormulario() {
+            const form = document.getElementById('reviewFormElement');
+            
+            form.addEventListener('submit', async function(e) {
+                e.preventDefault();
+                
+                if (!appState.user) {
+                    mostrarNotificacion('Debes iniciar sesión para dejar una reseña.', 'error');
+                    return;
+                }
+                
+                if (!appState.materiaSeleccionada) {
+                    mostrarNotificacion('Por favor, selecciona una materia primero.', 'error');
+                    return;
+                }
+                
+                const catedra = document.getElementById('catedra').value;
+                const practico = document.getElementById('practico').value;
+                const reviewText = document.getElementById('reviewText').value;
+                
+                const generalRating = document.getElementById('generalRating').dataset.rating;
+                const claridadRating = document.getElementById('claridadRating').dataset.rating;
+                const dificultadRating = document.getElementById('dificultadRating').dataset.rating;
+                const interesRating = document.getElementById('interesRating').dataset.rating;
+                const evaluacionRating = document.getElementById('evaluacionRating').dataset.rating;
+                
+                if (!catedra || !practico || !reviewText || !generalRating) {
+                    mostrarNotificacion('Por favor, completa todos los campos obligatorios.', 'error');
+                    return;
+                }
+                
+                const submitBtn = form.querySelector('button[type="submit"]');
+                const originalText = submitBtn.textContent;
+                submitBtn.disabled = true;
+                submitBtn.textContent = 'Enviando...';
+                
+                try {
+                    // Crear objeto de reseña
+                    const nuevaReseña = {
+                        materiaId: appState.materiaSeleccionada.id,
+                        materiaNombre: appState.materiaSeleccionada.nombre,
+                        catedra: catedra,
+                        practico: practico,
+                        calificacionGeneral: parseInt(generalRating),
+                        claridad: parseInt(claridadRating) || 0,
+                        dificultad: parseInt(dificultadRating) || 0,
+                        interes: parseInt(interesRating) || 0,
+                        evaluacion: parseInt(evaluacionRating) || 0,
+                        texto: reviewText,
+                        usuarioId: appState.user.uid,
+                        usuarioEmail: appState.user.email,
+                        fecha: firebase.firestore.FieldValue.serverTimestamp()
+                    };
+                    
+                    console.log("📤 Enviando reseña:", nuevaReseña);
+                    
+                    // Guardar en Firestore - USANDO NOMBRE EN INGLÉS
+                    await db.collection('resenas').add(nuevaReseña);
+                    
+                    // Actualizar contador de resenas en la materia
+                    await actualizarContadorresenas(appState.materiaSeleccionada.id);
+                    
+                    // Recargar resenas
+                    await cargarresenas(appState.materiaSeleccionada.id);
+                    
+                    // Limpiar formulario
+                    form.reset();
+                    document.querySelectorAll('.rating-input').forEach(input => {
+                        input.dataset.rating = '';
+                        input.querySelectorAll('.star').forEach(star => {
+                            star.classList.remove('active');
+                        });
+                    });
+                    
+                    mostrarNotificacion('¡Reseña enviada con éxito!', 'success');
+                    
+                } catch (error) {
+                    console.error('Error guardando reseña:', error);
+                    mostrarNotificacion('Error al enviar la reseña: ' + error.message, 'error');
+                } finally {
+                    submitBtn.disabled = false;
+                    submitBtn.textContent = originalText;
+                }
+            });
+        }
+
+        // Actualizar contador de resenas en una materia
+        async function actualizarContadorresenas(materiaId) {
+            try {
+                const resenasSnapshot = await db.collection('resenas')
+                    .where('materiaId', '==', materiaId)
+                    .get();
+                
+                const numresenas = resenasSnapshot.size;
+                
+                // Calcular nuevo promedio
+                let sumaCalificaciones = 0;
+                let totalresenas = 0;
+                
+                resenasSnapshot.forEach(doc => {
+                    const reseña = doc.data();
+                    if (reseña.calificacionGeneral) {
+                        sumaCalificaciones += reseña.calificacionGeneral;
+                        totalresenas++;
+                    }
+                });
+                
+                const promedio = totalresenas > 0 ? (sumaCalificaciones / totalresenas).toFixed(1) : "0.0";
+                
+                // Actualizar en Firestore
+                await db.collection('materias').doc(materiaId).update({
+                    numresenas: numresenas,
+                    promedio: promedio
+                });
+                
+                // Actualizar en el estado local
+                const materiaIndex = appState.materias.findIndex(m => m.id === materiaId);
+                if (materiaIndex !== -1) {
+                    appState.materias[materiaIndex].numresenas = numresenas;
+                    appState.materias[materiaIndex].promedio = promedio;
+                }
+                
+            } catch (error) {
+                console.error('Error actualizando contador:', error);
+            }
+        }
+
+        // Cargar resenas en la UI
+        function cargarresenasEnUI() {
+            const resenasList = document.getElementById('resenasList');
+            
+            if (!appState.resenas || appState.resenas.length === 0) {
+                resenasList.innerHTML = '<div class="no-resenas">No hay resenas para esta materia aún.</div>';
+                return;
+            }
+            
+            // Aplicar filtros
+            const resenasFiltradas = aplicarFiltros(appState.resenas);
+            
+            if (resenasFiltradas.length === 0) {
+                resenasList.innerHTML = '<div class="no-resenas">No hay reseñas que coincidan con los filtros seleccionados.</div>';
+                return;
+            }
+            
+            resenasList.innerHTML = '';
+            
+            resenasFiltradas.forEach(reseña => {
+                const reviewCard = document.createElement('div');
+                reviewCard.className = 'review-card';
+                
+                let estrellasHTML = '';
+                for (let i = 1; i <= 5; i++) {
+                    if (i <= reseña.calificacionGeneral) {
+                        estrellasHTML += '★';
+                    } else {
+                        estrellasHTML += '☆';
+                    }
+                }
+                
+                // Formatear fecha
+let fechaFormateada = "Fecha no disponible";
+
+if (reseña.fecha && reseña.fecha.toDate) {
+    fechaFormateada = reseña.fecha.toDate().toLocaleDateString();
+}
+                
+                reviewCard.innerHTML = `
+                    <div class="review-header">
+                        <div class="review-user">
+                            <div class="user-avatar">${reseña.usuarioEmail ? reseña.usuarioEmail.charAt(0).toUpperCase() : 'U'}</div>
+                            <div>
+                                <div class="review-catedra">${reseña.catedra} - ${reseña.practico}</div>
+                                <div class="review-date">${fechaFormateada}</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="rating">${estrellasHTML}</div>
+                    <div class="review-content">${reseña.texto}</div>
+                    <div class="review-aspects">
+                        <div class="review-aspect">
+                            <span class="aspect-name">Claridad:</span>
+                            <span class="aspect-value">${reseña.claridad}/5</span>
+                        </div>
+                        <div class="review-aspect">
+                            <span class="aspect-name">Dificultad:</span>
+                            <span class="aspect-value">${reseña.dificultad}/5</span>
+                        </div>
+                        <div class="review-aspect">
+                            <span class="aspect-name">Interés:</span>
+                            <span class="aspect-value">${reseña.interes}/5</span>
+                        </div>
+                        <div class="review-aspect">
+                            <span class="aspect-name">Evaluación:</span>
+                            <span class="aspect-value">${reseña.evaluacion}/5</span>
+                        </div>
+                    </div>
+                `;
+                
+                resenasList.appendChild(reviewCard);
+            });
+        }
+
+        // Aplicar filtros a las resenas
+        function aplicarFiltros(resenas) {
+            const filterCatedra = document.getElementById('filterCatedra').value;
+            const filterPractico = document.getElementById('filterPractico').value;
+            const filterRating = document.getElementById('filterRating').value;
+            
+            let resenasFiltradas = [...resenas];
+            
+            if (filterCatedra) {
+                resenasFiltradas = resenasFiltradas.filter(r => r.catedra === filterCatedra);
+            }
+            
+            if (filterPractico) {
+                resenasFiltradas = resenasFiltradas.filter(r => r.practico === filterPractico);
+            }
+            
+            if (filterRating) {
+                const minRating = parseInt(filterRating);
+                resenasFiltradas = resenasFiltradas.filter(r => r.calificacionGeneral >= minRating);
+            }
+            
+            return resenasFiltradas;
+        }
+
+        // Configurar filtros
+        function configurarFiltros() {
+            document.getElementById('filterCatedra').addEventListener('change', () => cargarresenasEnUI());
+            document.getElementById('filterPractico').addEventListener('change', () => cargarresenasEnUI());
+            document.getElementById('filterRating').addEventListener('change', () => cargarresenasEnUI());
+        }
+
+        // Configurar modales de autenticación
+        function configurarModales() {
+    const loginModal = document.getElementById('loginModal');
+    const registerModal = document.getElementById('registerModal');
+    const loginBtn = document.getElementById('loginBtn');
+    const registerBtn = document.getElementById('registerBtn');
+    const cancelLogin = document.getElementById('cancelLogin');
+    const cancelRegister = document.getElementById('cancelRegister');
+    const loginForm = document.getElementById('loginForm');
+    const registerForm = document.getElementById('registerForm');
+    const logoutBtn = document.getElementById('logoutBtn');
+    const loginFromReviewBtn = document.getElementById('loginFromReviewBtn');
+
+    // Abrir modales
+    loginBtn.addEventListener('click', () => loginModal.classList.add('active'));
+    registerBtn.addEventListener('click', () => registerModal.classList.add('active'));
+    loginFromReviewBtn.addEventListener('click', () => loginModal.classList.add('active'));
+
+    // Cerrar modales
+    cancelLogin.addEventListener('click', () => loginModal.classList.remove('active'));
+    cancelRegister.addEventListener('click', () => registerModal.classList.remove('active'));
+
+    // Cerrar al hacer clic afuera
+    window.addEventListener('click', (e) => {
+        if (e.target === loginModal) loginModal.classList.remove('active');
+        if (e.target === registerModal) registerModal.classList.remove('active');
+    });
+
+    // 🔥 Login — ahora correcto
+    loginForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        console.log("🔥 SUBMIT DETECTADO EN LOGIN FORM");
+
+        const email = document.getElementById('loginEmail').value;
+        const password = document.getElementById('loginPassword').value;
+        const errorElement = document.getElementById('loginError');
+
+        try {
+            await auth.signInWithEmailAndPassword(email, password);
+            loginModal.classList.remove('active');
+            loginForm.reset();
+            errorElement.textContent = '';
+        } catch (error) {
+            errorElement.textContent = getAuthErrorMessage(error.code);
+        }
+    });
+
+    // Registro
+    registerForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const name = document.getElementById('registerName').value;
+        const email = document.getElementById('registerEmail').value;
+        const password = document.getElementById('registerPassword').value;
+        const errorElement = document.getElementById('registerError');
+
+        try {
+            await auth.createUserWithEmailAndPassword(email, password);
+            registerModal.classList.remove('active');
+            registerForm.reset();
+            errorElement.textContent = '';
+        } catch (error) {
+            errorElement.textContent = getAuthErrorMessage(error.code);
+        }
+    });
+
+    // Logout
+    logoutBtn.addEventListener('click', () => auth.signOut());
+}
+
+        // Obtener mensajes de error de autenticación
+        function getAuthErrorMessage(errorCode) {
+            const messages = {
+                'auth/invalid-email': 'El email no es válido.',
+                'auth/user-disabled': 'Esta cuenta ha sido deshabilitada.',
+                'auth/user-not-found': 'No existe una cuenta con este email.',
+                'auth/wrong-password': 'La contraseña es incorrecta.',
+                'auth/email-already-in-use': 'Ya existe una cuenta con este email.',
+                'auth/weak-password': 'La contraseña debe tener al menos 6 caracteres.',
+                'auth/operation-not-allowed': 'Esta operación no está permitida.',
+                'auth/network-request-failed': 'Error de conexión. Verifica tu internet.'
+            };
+            return messages[errorCode] || 'Error desconocido. Intenta nuevamente.';
+        }
+
+        // Función para mostrar notificaciones
+        function mostrarNotificacion(mensaje, tipo = 'info') {
+            const notification = document.createElement('div');
+            notification.className = `notification ${tipo}`;
+            notification.textContent = mensaje;
+            
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                if (notification.parentElement) {
+                    notification.remove();
+                }
+            }, 5000);
+        }
+
+        // Inicializar cuando el DOM esté listo
+        document.addEventListener('DOMContentLoaded', init);
+    </script>
+</body>
+</html>
