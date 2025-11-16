@@ -415,9 +415,7 @@
     <header>
         <div class="header-title">
             <h1>Sistema de reseña de materias</h1>
-            <p>Una herramienta del pueblo. 
-            <br>
-            <p> Desarrollada por <a href="https://www.crisispuntocom.substack.com">CrisisPuntoCom</a> y <a href="https://www.instagram.com/helecho.social">Helecho Social</a></p>
+            <p>Una herramienta del pueblo. Desarrollada por <a href="https://www.crisispuntocom.substack.com">CrisisPuntoCom</a> y <a href="https://www.instagram.com/helecho.social">Helecho Social</a></p>
         </div>
         <div class="auth-section">
             <div id="userInfo" class="user-info" style="display: none;">
@@ -463,7 +461,6 @@
                     </select>
                 </div>
                 
-                <!-- NUEVO: Año de cursada -->
                 <div class="form-group">
                     <label for="anioCursada">Año de cursada:</label>
                     <select id="anioCursada" required>
@@ -476,7 +473,6 @@
                     </select>
                 </div>
                 
-                <!-- NUEVO: Tipo de evaluación (múltiple) -->
                 <div class="form-group">
                     <label>Tipo de evaluación:</label>
                     <div class="checkbox-group">
@@ -503,7 +499,6 @@
                     </div>
                 </div>
                 
-                <!-- NUEVO: Toman asistencia -->
                 <div class="form-group">
                     <label for="tomanAsistencia">Toman asistencia:</label>
                     <select id="tomanAsistencia" required>
@@ -727,12 +722,11 @@
                 if (user) {
                     appState.user = user;
                     mostrarInfoUsuario(user);
-                    actualizarUIUsuarioLogueado();
                 } else {
                     appState.user = null;
                     ocultarInfoUsuario();
-                    actualizarUIUsuarioNoLogueado();
                 }
+                actualizarUIUsuario();
             });
         }
 
@@ -757,40 +751,32 @@
         }
 
         // Actualizar UI según estado de autenticación
-        function actualizarUIUsuarioLogueado() {
+        function actualizarUIUsuario() {
             const authRequiredMessage = document.getElementById('authRequiredMessage');
             const reviewForm = document.getElementById('reviewFormElement');
             
             if (authRequiredMessage && reviewForm) {
-                authRequiredMessage.style.display = 'none';
-                reviewForm.style.display = 'block';
-            }
-        }
-
-        function actualizarUIUsuarioNoLogueado() {
-            const authRequiredMessage = document.getElementById('authRequiredMessage');
-            const reviewForm = document.getElementById('reviewFormElement');
-            
-            if (authRequiredMessage && reviewForm) {
-                authRequiredMessage.style.display = 'block';
-                reviewForm.style.display = 'none';
+                if (appState.user) {
+                    authRequiredMessage.style.display = 'none';
+                    reviewForm.style.display = 'block';
+                } else {
+                    authRequiredMessage.style.display = 'block';
+                    reviewForm.style.display = 'none';
+                }
             }
         }
 
         // Cargar materias desde Firestore (o datos de ejemplo)
         async function cargarMaterias() {
             try {
-                // Intentar cargar desde Firestore
                 const materiasSnapshot = await db.collection('materias').get();
                 
                 if (!materiasSnapshot.empty) {
-                    // Cargar desde Firestore
                     appState.materias = materiasSnapshot.docs.map(doc => ({
                         id: doc.id,
                         ...doc.data()
                     }));
                 } else {
-                    // Usar datos de ejemplo y guardar en Firestore
                     appState.materias = await inicializarDatosEjemplo();
                 }
                 
@@ -804,8 +790,7 @@
                 cargarMateriasEnUI();
             } catch (error) {
                 console.error('Error cargando materias:', error);
-                // En caso de error, usar datos de ejemplo
-                appState.materias = await generarDatosEjemplo();
+                appState.materias = await inicializarDatosEjemplo();
                 cargarMateriasEnUI();
             }
         }
@@ -823,7 +808,6 @@
                     fechaCreacion: firebase.firestore.FieldValue.serverTimestamp()
                 };
                 
-                // Guardar en Firestore
                 const docRef = await db.collection('materias').add(materiaData);
                 materias.push({
                     id: docRef.id,
@@ -834,24 +818,13 @@
             return materias;
         }
 
-        // Generar datos de ejemplo (sin guardar en Firestore)
-        function generarDatosEjemplo() {
-            return materiasData.map(nombre => ({
-                id: nombre.replace(/\s+/g, '-').toLowerCase(),
-                nombre: nombre,
-                promedio: 0,
-                numresenas: 0,
-                catedras: generarCatedrasYMaterias()
-            }));
-        }
-
         // Generar cátedras y prácticos
         function generarCatedrasYMaterias() {
-            const numCatedras = Math.floor(Math.random() * 2) + 2; // 2-3 cátedras
+            const numCatedras = Math.floor(Math.random() * 2) + 2;
             const catedras = [];
             
             for (let i = 1; i <= numCatedras; i++) {
-                const numPracticos = Math.floor(Math.random() * 2) + 4; // 4-5 prácticos
+                const numPracticos = Math.floor(Math.random() * 2) + 4;
                 const practicos = [];
                 
                 for (let j = 1; j <= numPracticos; j++) {
@@ -908,46 +881,35 @@
             const materia = appState.materias.find(m => m.id === materiaId);
             appState.materiaSeleccionada = materia;
             
-            // Actualizar título del formulario
             document.getElementById('formTitle').textContent = `Dejar Reseña - ${materia.nombre}`;
-            
-            // Mostrar formulario
             document.getElementById('reviewForm').classList.add('active');
             
-            // Cargar cátedras
             cargarCatedrasEnFormulario(materia.catedras);
-            
-            // Cargar resenas desde Firestore
             await cargarresenas(materiaId);
             
-            // Desplazar hacia el formulario
             document.getElementById('reviewForm').scrollIntoView({ behavior: 'smooth' });
         }
 
         // Cargar cátedras en el formulario
         function cargarCatedrasEnFormulario(catedras) {
             const catedraSelect = document.getElementById('catedra');
-            catedraSelect.innerHTML = '<option value="">Selecciona una cátedra</option>';
-            
-            catedras.forEach(catedra => {
-                const option = document.createElement('option');
-                option.value = catedra.nombre;
-                option.textContent = catedra.nombre;
-                catedraSelect.appendChild(option);
-            });
-            
-            // Cargar cátedras en el filtro
             const filterCatedraSelect = document.getElementById('filterCatedra');
+            
+            catedraSelect.innerHTML = '<option value="">Selecciona una cátedra</option>';
             filterCatedraSelect.innerHTML = '<option value="">Todas las cátedras</option>';
             
             catedras.forEach(catedra => {
                 const option = document.createElement('option');
                 option.value = catedra.nombre;
                 option.textContent = catedra.nombre;
-                filterCatedraSelect.appendChild(option);
+                catedraSelect.appendChild(option);
+                
+                const filterOption = document.createElement('option');
+                filterOption.value = catedra.nombre;
+                filterOption.textContent = catedra.nombre;
+                filterCatedraSelect.appendChild(filterOption);
             });
             
-            // Configurar evento para cargar prácticos
             catedraSelect.addEventListener('change', function() {
                 cargarPracticosEnFormulario(this.value, catedras);
             });
@@ -956,9 +918,9 @@
         // Cargar prácticos en el formulario
         function cargarPracticosEnFormulario(catedraNombre, catedras) {
             const practicoSelect = document.getElementById('practico');
-            practicoSelect.innerHTML = '<option value="">Selecciona un práctico</option>';
-            
             const filterPracticoSelect = document.getElementById('filterPractico');
+            
+            practicoSelect.innerHTML = '<option value="">Selecciona un práctico</option>';
             filterPracticoSelect.innerHTML = '<option value="">Todos los prácticos</option>';
             
             if (catedraNombre) {
@@ -986,13 +948,11 @@
                     .where('materiaId', '==', materiaId)
                     .get();
 
-                // Convertir a array
                 appState.resenas = resenasSnapshot.docs.map(doc => ({
                     id: doc.id,
                     ...doc.data()
                 }));
 
-                // Ordenar por fecha en JS
                 appState.resenas.sort((a, b) => {
                     const fa = a.fecha?.toMillis?.() || 0;
                     const fb = b.fecha?.toMillis?.() || 0;
@@ -1009,9 +969,7 @@
 
         // Configurar sistema de estrellas
         function configurarSistemaEstrellas() {
-            const ratingInputs = document.querySelectorAll('.rating-input');
-            
-            ratingInputs.forEach(input => {
+            document.querySelectorAll('.rating-input').forEach(input => {
                 const stars = input.querySelectorAll('.star');
                 
                 stars.forEach(star => {
@@ -1020,11 +978,7 @@
                         const parent = this.parentElement;
                         
                         parent.querySelectorAll('.star').forEach(s => {
-                            if (parseInt(s.dataset.value) <= value) {
-                                s.classList.add('active');
-                            } else {
-                                s.classList.remove('active');
-                            }
+                            s.classList.toggle('active', parseInt(s.dataset.value) <= value);
                         });
                         
                         parent.dataset.rating = value;
@@ -1056,12 +1010,8 @@
                 const reviewText = document.getElementById('reviewText').value;
                 const tomanAsistencia = document.getElementById('tomanAsistencia').value;
                 
-                // Obtener tipos de evaluación seleccionados
-                const tiposEvaluacion = [];
-                const checkboxes = document.querySelectorAll('input[type="checkbox"]:checked');
-                checkboxes.forEach(checkbox => {
-                    tiposEvaluacion.push(checkbox.value);
-                });
+                const tiposEvaluacion = Array.from(document.querySelectorAll('input[type="checkbox"]:checked'))
+                    .map(checkbox => checkbox.value);
                 
                 const generalRating = document.getElementById('generalRating').dataset.rating;
                 const claridadRating = document.getElementById('claridadRating').dataset.rating;
@@ -1080,7 +1030,6 @@
                 submitBtn.textContent = 'Enviando...';
                 
                 try {
-                    // Crear objeto de reseña
                     const nuevaReseña = {
                         materiaId: appState.materiaSeleccionada.id,
                         materiaNombre: appState.materiaSeleccionada.nombre,
@@ -1100,23 +1049,12 @@
                         fecha: firebase.firestore.FieldValue.serverTimestamp()
                     };
                     
-                    // Guardar en Firestore
                     await db.collection('resenas').add(nuevaReseña);
-                    
-                    // Actualizar contador de resenas en la materia
                     await actualizarContadorresenas(appState.materiaSeleccionada.id);
-                    
-                    // Recargar resenas
                     await cargarresenas(appState.materiaSeleccionada.id);
                     
-                    // Limpiar formulario
                     form.reset();
-                    document.querySelectorAll('.rating-input').forEach(input => {
-                        input.dataset.rating = '';
-                        input.querySelectorAll('.star').forEach(star => {
-                            star.classList.remove('active');
-                        });
-                    });
+                    limpiarEstrellas();
                     
                     mostrarNotificacion('¡Reseña enviada con éxito!', 'success');
                     
@@ -1130,6 +1068,16 @@
             });
         }
 
+        // Limpiar estrellas seleccionadas
+        function limpiarEstrellas() {
+            document.querySelectorAll('.rating-input').forEach(input => {
+                input.dataset.rating = '';
+                input.querySelectorAll('.star').forEach(star => {
+                    star.classList.remove('active');
+                });
+            });
+        }
+
         // Actualizar contador de resenas en una materia
         async function actualizarContadorresenas(materiaId) {
             try {
@@ -1139,7 +1087,6 @@
                 
                 const numresenas = resenasSnapshot.size;
                 
-                // Calcular nuevo promedio
                 let sumaCalificaciones = 0;
                 let totalresenas = 0;
                 
@@ -1153,13 +1100,11 @@
                 
                 const promedio = totalresenas > 0 ? (sumaCalificaciones / totalresenas).toFixed(1) : "0.0";
                 
-                // Actualizar en Firestore
                 await db.collection('materias').doc(materiaId).update({
                     numresenas: numresenas,
                     promedio: promedio
                 });
                 
-                // Actualizar en el estado local
                 const materiaIndex = appState.materias.findIndex(m => m.id === materiaId);
                 if (materiaIndex !== -1) {
                     appState.materias[materiaIndex].numresenas = numresenas;
@@ -1180,7 +1125,6 @@
                 return;
             }
             
-            // Aplicar filtros
             const resenasFiltradas = aplicarFiltros(appState.resenas);
             
             if (resenasFiltradas.length === 0) {
@@ -1196,24 +1140,17 @@
                 
                 let estrellasHTML = '';
                 for (let i = 1; i <= 5; i++) {
-                    if (i <= reseña.calificacionGeneral) {
-                        estrellasHTML += '★';
-                    } else {
-                        estrellasHTML += '☆';
-                    }
+                    estrellasHTML += i <= reseña.calificacionGeneral ? '★' : '☆';
                 }
                 
-                // Formatear fecha
                 let fechaFormateada = "Fecha no disponible";
                 if (reseña.fecha && reseña.fecha.toDate) {
                     fechaFormateada = reseña.fecha.toDate().toLocaleDateString();
                 }
                 
-                // Formatear tipos de evaluación
-                let tiposEvaluacionHTML = '';
-                if (reseña.tiposEvaluacion && Array.isArray(reseña.tiposEvaluacion)) {
-                    tiposEvaluacionHTML = reseña.tiposEvaluacion.join(', ');
-                }
+                const tiposEvaluacionHTML = reseña.tiposEvaluacion && Array.isArray(reseña.tiposEvaluacion) 
+                    ? reseña.tiposEvaluacion.join(', ') 
+                    : 'No especificado';
                 
                 reviewCard.innerHTML = `
                     <div class="review-header">
@@ -1248,7 +1185,7 @@
                     <div class="review-aspects">
                         <div class="review-aspect">
                             <span class="aspect-name">Tipo de evaluación:</span>
-                            <span class="aspect-value">${tiposEvaluacionHTML || 'No especificado'}</span>
+                            <span class="aspect-value">${tiposEvaluacionHTML}</span>
                         </div>
                         <div class="review-aspect">
                             <span class="aspect-name">Toman asistencia:</span>
@@ -1267,29 +1204,19 @@
             const filterPractico = document.getElementById('filterPractico').value;
             const filterRating = document.getElementById('filterRating').value;
             
-            let resenasFiltradas = [...resenas];
-            
-            if (filterCatedra) {
-                resenasFiltradas = resenasFiltradas.filter(r => r.catedra === filterCatedra);
-            }
-            
-            if (filterPractico) {
-                resenasFiltradas = resenasFiltradas.filter(r => r.practico === filterPractico);
-            }
-            
-            if (filterRating) {
-                const minRating = parseInt(filterRating);
-                resenasFiltradas = resenasFiltradas.filter(r => r.calificacionGeneral >= minRating);
-            }
-            
-            return resenasFiltradas;
+            return resenas.filter(r => {
+                return (!filterCatedra || r.catedra === filterCatedra) &&
+                       (!filterPractico || r.practico === filterPractico) &&
+                       (!filterRating || r.calificacionGeneral >= parseInt(filterRating));
+            });
         }
 
         // Configurar filtros
         function configurarFiltros() {
-            document.getElementById('filterCatedra').addEventListener('change', () => cargarresenasEnUI());
-            document.getElementById('filterPractico').addEventListener('change', () => cargarresenasEnUI());
-            document.getElementById('filterRating').addEventListener('change', () => cargarresenasEnUI());
+            const filterIds = ['filterCatedra', 'filterPractico', 'filterRating'];
+            filterIds.forEach(id => {
+                document.getElementById(id).addEventListener('change', () => cargarresenasEnUI());
+            });
         }
 
         // Configurar modales de autenticación
@@ -1306,9 +1233,8 @@
             const loginFromReviewBtn = document.getElementById('loginFromReviewBtn');
 
             // Abrir modales
-            loginBtn.addEventListener('click', () => loginModal.classList.add('active'));
+            [loginBtn, loginFromReviewBtn].forEach(btn => btn.addEventListener('click', () => loginModal.classList.add('active')));
             registerBtn.addEventListener('click', () => registerModal.classList.add('active'));
-            loginFromReviewBtn.addEventListener('click', () => loginModal.classList.add('active'));
 
             // Cerrar modales
             cancelLogin.addEventListener('click', () => loginModal.classList.remove('active'));
@@ -1394,4 +1320,3 @@
     </script>
 </body>
 </html>
-
