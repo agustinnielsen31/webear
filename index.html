@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sistema de resenas - Firebase</title>
-    <!-- Firebase SDK -->
+    
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
@@ -12,11 +12,11 @@
         :root {
             --primary-color: #ff7d29;
             --secondary-color: #ecf0f1;
-            --accent-color: #e74c3c;
             --light-color: #ecf0f1;
-            --dark-color: #f7d10;
             --success-color: #2ecc71;
             --warning-color: #f39c12;
+            --accent-color: #e74c3c;
+            --dark-color: #2c3e50;
         }
         
         * {
@@ -28,7 +28,6 @@
         
         body {
             background-color: #f5f7fa;
-            color: #33;
             line-height: 1.6;
         }
         
@@ -79,14 +78,14 @@
         }
         
         .btn:hover {
-             background-color: #ff7d19;
+            background-color: #ff7d19;
             border: 2px solid var(--secondary-color);
             color: white;
         }
         
         .btn-outline {
             background-color: var(--secondary-color);
-            border: 2 solid var(--secondary-color);
+            border: 2px solid var(--secondary-color);
             color: black;
         }
         
@@ -364,6 +363,23 @@
             background-color: var(--accent-color);
         }
         
+        .checkbox-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            margin-top: 0.5rem;
+        }
+        
+        .checkbox-option {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .checkbox-option input {
+            width: auto;
+        }
+        
         @keyframes slideIn {
             from { transform: translateX(100%); opacity: 0; }
             to { transform: translateX(0); opacity: 1; }
@@ -386,6 +402,11 @@
                 flex-direction: column;
                 gap: 1rem;
                 text-align: center;
+            }
+            
+            .checkbox-group {
+                flex-direction: column;
+                gap: 0.5rem;
             }
         }
     </style>
@@ -412,7 +433,7 @@
     <div class="container">
         <h2>Materias disponibles</h2>
         <div class="materias-grid" id="materiasGrid">
-            <!-- Las materias se cargarán aquí dinámicamente -->
+            
         </div>
         
         <div class="review-form-container" id="reviewForm">
@@ -439,6 +460,56 @@
                     </select>
                 </div>
                 
+                <!-- NUEVO: Año de cursada -->
+                <div class="form-group">
+                    <label for="anioCursada">Año de cursada:</label>
+                    <select id="anioCursada" required>
+                        <option value="">Selecciona el año</option>
+                        <option value="2021">2021</option>
+                        <option value="2022">2022</option>
+                        <option value="2023">2023</option>
+                        <option value="2024">2024</option>
+                        <option value="2025">2025</option>
+                    </select>
+                </div>
+                
+                <!-- NUEVO: Tipo de evaluación (múltiple) -->
+                <div class="form-group">
+                    <label>Tipo de evaluación:</label>
+                    <div class="checkbox-group">
+                        <div class="checkbox-option">
+                            <input type="checkbox" id="evalParciales" value="Parciales">
+                            <label for="evalParciales">Parciales</label>
+                        </div>
+                        <div class="checkbox-option">
+                            <input type="checkbox" id="evalMonografia" value="Monografía">
+                            <label for="evalMonografia">Monografía</label>
+                        </div>
+                        <div class="checkbox-option">
+                            <input type="checkbox" id="evalInvestigacion" value="Investigación">
+                            <label for="evalInvestigacion">Investigación</label>
+                        </div>
+                        <div class="checkbox-option">
+                            <input type="checkbox" id="evalEnsayo" value="Ensayo">
+                            <label for="evalEnsayo">Ensayo</label>
+                        </div>
+                        <div class="checkbox-option">
+                            <input type="checkbox" id="evalColoquio" value="Coloquio/Oral">
+                            <label for="evalColoquio">Coloquio/Oral</label>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- NUEVO: Toman asistencia -->
+                <div class="form-group">
+                    <label for="tomanAsistencia">Toman asistencia:</label>
+                    <select id="tomanAsistencia" required>
+                        <option value="">Selecciona una opción</option>
+                        <option value="Si">Sí</option>
+                        <option value="No">No</option>
+                    </select>
+                </div>
+                
                 <div class="form-group">
                     <label>Calificación General:</label>
                     <div class="rating-input" id="generalRating">
@@ -450,17 +521,24 @@
                     </div>
                 </div>
                 
-                <div class="form-group">
-                    <label for="reviewText">Reseña:</label>
-                    <textarea id="reviewText" placeholder="Comparte tu experiencia con esta materia..." required></textarea>
-                </div>
-                
+
                 <div class="form-group">
                     <h3>Calificación por Aspectos</h3>
                     
                     <div class="aspect-rating">
-                        <label>Claridad de Explicación:</label>
+                        <label>Claridad de la explicación (Pedagogía):</label>
                         <div class="rating-input" id="claridadRating">
+                            <span class="star" data-value="1">★</span>
+                            <span class="star" data-value="2">★</span>
+                            <span class="star" data-value="3">★</span>
+                            <span class="star" data-value="4">★</span>
+                            <span class="star" data-value="5">★</span>
+                        </div>
+                    </div>
+                    
+                    <div class="aspect-rating">
+                        <label>Programa y bibliografía:</label>
+                        <div class="rating-input" id="programaRating">
                             <span class="star" data-value="1">★</span>
                             <span class="star" data-value="2">★</span>
                             <span class="star" data-value="3">★</span>
@@ -481,8 +559,8 @@
                     </div>
                     
                     <div class="aspect-rating">
-                        <label>Interés del Contenido:</label>
-                        <div class="rating-input" id="interesRating">
+                        <label>Oferta horaria:</label>
+                        <div class="rating-input" id="ofertaRating">
                             <span class="star" data-value="1">★</span>
                             <span class="star" data-value="2">★</span>
                             <span class="star" data-value="3">★</span>
@@ -490,17 +568,10 @@
                             <span class="star" data-value="5">★</span>
                         </div>
                     </div>
-                    
-                    <div class="aspect-rating">
-                        <label>Evaluación Justa:</label>
-                        <div class="rating-input" id="evaluacionRating">
-                            <span class="star" data-value="1">★</span>
-                            <span class="star" data-value="2">★</span>
-                            <span class="star" data-value="3">★</span>
-                            <span class="star" data-value="4">★</span>
-                            <span class="star" data-value="5">★</span>
-                        </div>
-                    </div>
+                </div>
+                                <div class="form-group">
+                    <label for="reviewText">Reseña:</label>
+                    <textarea id="reviewText" placeholder="Comparte tu experiencia con esta materia..." required></textarea>
                 </div>
                 
                 <button type="submit" class="btn btn-block">Enviar Reseña</button>
@@ -539,12 +610,12 @@
             </div>
             
             <div id="resenasList">
-                <!-- Las reseñas se cargarán aquí dinámicamente -->
+                
             </div>
         </div>
     </div>
 
-    <!-- Modal de Login -->
+    
     <div class="modal" id="loginModal">
         <div class="modal-content">
             <h2>Iniciar Sesión</h2>
@@ -566,7 +637,7 @@
         </div>
     </div>
 
-    <!-- Modal de Registro -->
+    
     <div class="modal" id="registerModal">
         <div class="modal-content">
             <h2>Registrarse</h2>
@@ -617,24 +688,24 @@
             user: null
         };
 
-        // Datos de ejemplo para las materias
+        // Datos de ejemplo para las materias - ORDEN ESPECÍFICO
         const materiasData = [
             "Sociología General",
             "Filosofía",
             "Economía 2",
+            "Epistemología de las Ciencias Sociales",
             "Historia Social Moderna y Contemporánea",
             "Historia Social Latinoamericana",
             "Historia Social Argentina",
             "Análisis de la sociedad Argentina",
-            "Epistemología de las Ciencias Sociales",
             "Historia del Conocimiento Sociológico 1",
             "Historia del Conocimiento Sociológico 2",
             "Sociología Sistemática",
-            "Sociología Política",
-            "Psicología Social",
             "Metodología 1",
             "Metodología 2",
-            "Metodología 3"
+            "Metodología 3",
+            "Sociología política",
+            "Psicología Social"
         ];
 
         // Inicializar la aplicación
@@ -654,12 +725,10 @@
                     appState.user = user;
                     mostrarInfoUsuario(user);
                     actualizarUIUsuarioLogueado();
-                    console.log("✅ Usuario autenticado:", user.email);
                 } else {
                     appState.user = null;
                     ocultarInfoUsuario();
                     actualizarUIUsuarioNoLogueado();
-                    console.log("🔒 Usuario no autenticado");
                 }
             });
         }
@@ -717,12 +786,17 @@
                         id: doc.id,
                         ...doc.data()
                     }));
-                    console.log("✅ Materias cargadas desde Firestore:", appState.materias.length);
                 } else {
                     // Usar datos de ejemplo y guardar en Firestore
                     appState.materias = await inicializarDatosEjemplo();
-                    console.log("✅ Materias inicializadas con datos de ejemplo");
                 }
+                
+                // Ordenar las materias según el orden específico
+                appState.materias.sort((a, b) => {
+                    const indexA = materiasData.indexOf(a.nombre);
+                    const indexB = materiasData.indexOf(b.nombre);
+                    return indexA - indexB;
+                });
                 
                 cargarMateriasEnUI();
             } catch (error) {
@@ -752,7 +826,6 @@
                     id: docRef.id,
                     ...materiaData
                 });
-                console.log("✅ Materia creada:", nombre);
             }
             
             return materias;
@@ -904,34 +977,32 @@
         }
 
         // Cargar resenas desde Firestore
-async function cargarresenas(materiaId) {
-    try {
-        const resenasSnapshot = await db.collection('resenas')
-            .where('materiaId', '==', materiaId)
-            .get();
+        async function cargarresenas(materiaId) {
+            try {
+                const resenasSnapshot = await db.collection('resenas')
+                    .where('materiaId', '==', materiaId)
+                    .get();
 
-        // Convertir a array
-        appState.resenas = resenasSnapshot.docs.map(doc => ({
-            id: doc.id,
-            ...doc.data()
-        }));
+                // Convertir a array
+                appState.resenas = resenasSnapshot.docs.map(doc => ({
+                    id: doc.id,
+                    ...doc.data()
+                }));
 
-        // Ordenar por fecha en JS
-        appState.resenas.sort((a, b) => {
-            const fa = a.fecha?.toMillis?.() || 0;
-            const fb = b.fecha?.toMillis?.() || 0;
-            return fb - fa;
-        });
-
-        console.log("✅ Reseñas cargadas:", appState.resenas.length);
-        cargarresenasEnUI();
-    } catch (error) {
-        console.error('Error cargando resenas:', error);
-        appState.resenas = [];
-        cargarresenasEnUI();
-    }
-}
-
+                // Ordenar por fecha en JS
+                appState.resenas.sort((a, b) => {
+                    const fa = a.fecha?.toMillis?.() || 0;
+                    const fb = b.fecha?.toMillis?.() || 0;
+                    return fb - fa;
+                });
+                
+                cargarresenasEnUI();
+            } catch (error) {
+                console.error('Error cargando resenas:', error);
+                appState.resenas = [];
+                cargarresenasEnUI();
+            }
+        }
 
         // Configurar sistema de estrellas
         function configurarSistemaEstrellas() {
@@ -978,15 +1049,24 @@ async function cargarresenas(materiaId) {
                 
                 const catedra = document.getElementById('catedra').value;
                 const practico = document.getElementById('practico').value;
+                const anioCursada = document.getElementById('anioCursada').value;
                 const reviewText = document.getElementById('reviewText').value;
+                const tomanAsistencia = document.getElementById('tomanAsistencia').value;
+                
+                // Obtener tipos de evaluación seleccionados
+                const tiposEvaluacion = [];
+                const checkboxes = document.querySelectorAll('input[type="checkbox"]:checked');
+                checkboxes.forEach(checkbox => {
+                    tiposEvaluacion.push(checkbox.value);
+                });
                 
                 const generalRating = document.getElementById('generalRating').dataset.rating;
                 const claridadRating = document.getElementById('claridadRating').dataset.rating;
+                const programaRating = document.getElementById('programaRating').dataset.rating;
                 const dificultadRating = document.getElementById('dificultadRating').dataset.rating;
-                const interesRating = document.getElementById('interesRating').dataset.rating;
-                const evaluacionRating = document.getElementById('evaluacionRating').dataset.rating;
+                const ofertaRating = document.getElementById('ofertaRating').dataset.rating;
                 
-                if (!catedra || !practico || !reviewText || !generalRating) {
+                if (!catedra || !practico || !anioCursada || !tomanAsistencia || !reviewText || !generalRating) {
                     mostrarNotificacion('Por favor, completa todos los campos obligatorios.', 'error');
                     return;
                 }
@@ -1003,20 +1083,21 @@ async function cargarresenas(materiaId) {
                         materiaNombre: appState.materiaSeleccionada.nombre,
                         catedra: catedra,
                         practico: practico,
+                        anioCursada: anioCursada,
+                        tiposEvaluacion: tiposEvaluacion,
+                        tomanAsistencia: tomanAsistencia,
                         calificacionGeneral: parseInt(generalRating),
                         claridad: parseInt(claridadRating) || 0,
+                        programa: parseInt(programaRating) || 0,
                         dificultad: parseInt(dificultadRating) || 0,
-                        interes: parseInt(interesRating) || 0,
-                        evaluacion: parseInt(evaluacionRating) || 0,
+                        oferta: parseInt(ofertaRating) || 0,
                         texto: reviewText,
                         usuarioId: appState.user.uid,
                         usuarioEmail: appState.user.email,
                         fecha: firebase.firestore.FieldValue.serverTimestamp()
                     };
                     
-                    console.log("📤 Enviando reseña:", nuevaReseña);
-                    
-                    // Guardar en Firestore - USANDO NOMBRE EN INGLÉS
+                    // Guardar en Firestore
                     await db.collection('resenas').add(nuevaReseña);
                     
                     // Actualizar contador de resenas en la materia
@@ -1120,11 +1201,16 @@ async function cargarresenas(materiaId) {
                 }
                 
                 // Formatear fecha
-let fechaFormateada = "Fecha no disponible";
-
-if (reseña.fecha && reseña.fecha.toDate) {
-    fechaFormateada = reseña.fecha.toDate().toLocaleDateString();
-}
+                let fechaFormateada = "Fecha no disponible";
+                if (reseña.fecha && reseña.fecha.toDate) {
+                    fechaFormateada = reseña.fecha.toDate().toLocaleDateString();
+                }
+                
+                // Formatear tipos de evaluación
+                let tiposEvaluacionHTML = '';
+                if (reseña.tiposEvaluacion && Array.isArray(reseña.tiposEvaluacion)) {
+                    tiposEvaluacionHTML = reseña.tiposEvaluacion.join(', ');
+                }
                 
                 reviewCard.innerHTML = `
                     <div class="review-header">
@@ -1132,7 +1218,7 @@ if (reseña.fecha && reseña.fecha.toDate) {
                             <div class="user-avatar">${reseña.usuarioEmail ? reseña.usuarioEmail.charAt(0).toUpperCase() : 'U'}</div>
                             <div>
                                 <div class="review-catedra">${reseña.catedra} - ${reseña.practico}</div>
-                                <div class="review-date">${fechaFormateada}</div>
+                                <div class="review-date">${fechaFormateada} | Año: ${reseña.anioCursada || 'No especificado'}</div>
                             </div>
                         </div>
                     </div>
@@ -1140,20 +1226,30 @@ if (reseña.fecha && reseña.fecha.toDate) {
                     <div class="review-content">${reseña.texto}</div>
                     <div class="review-aspects">
                         <div class="review-aspect">
-                            <span class="aspect-name">Claridad:</span>
+                            <span class="aspect-name">Claridad (Pedagogía):</span>
                             <span class="aspect-value">${reseña.claridad}/5</span>
+                        </div>
+                        <div class="review-aspect">
+                            <span class="aspect-name">Programa y bibliografía:</span>
+                            <span class="aspect-value">${reseña.programa}/5</span>
                         </div>
                         <div class="review-aspect">
                             <span class="aspect-name">Dificultad:</span>
                             <span class="aspect-value">${reseña.dificultad}/5</span>
                         </div>
                         <div class="review-aspect">
-                            <span class="aspect-name">Interés:</span>
-                            <span class="aspect-value">${reseña.interes}/5</span>
+                            <span class="aspect-name">Oferta horaria:</span>
+                            <span class="aspect-value">${reseña.oferta}/5</span>
+                        </div>
+                    </div>
+                    <div class="review-aspects">
+                        <div class="review-aspect">
+                            <span class="aspect-name">Tipo de evaluación:</span>
+                            <span class="aspect-value">${tiposEvaluacionHTML || 'No especificado'}</span>
                         </div>
                         <div class="review-aspect">
-                            <span class="aspect-name">Evaluación:</span>
-                            <span class="aspect-value">${reseña.evaluacion}/5</span>
+                            <span class="aspect-name">Toman asistencia:</span>
+                            <span class="aspect-value">${reseña.tomanAsistencia || 'No especificado'}</span>
                         </div>
                     </div>
                 `;
@@ -1195,72 +1291,70 @@ if (reseña.fecha && reseña.fecha.toDate) {
 
         // Configurar modales de autenticación
         function configurarModales() {
-    const loginModal = document.getElementById('loginModal');
-    const registerModal = document.getElementById('registerModal');
-    const loginBtn = document.getElementById('loginBtn');
-    const registerBtn = document.getElementById('registerBtn');
-    const cancelLogin = document.getElementById('cancelLogin');
-    const cancelRegister = document.getElementById('cancelRegister');
-    const loginForm = document.getElementById('loginForm');
-    const registerForm = document.getElementById('registerForm');
-    const logoutBtn = document.getElementById('logoutBtn');
-    const loginFromReviewBtn = document.getElementById('loginFromReviewBtn');
+            const loginModal = document.getElementById('loginModal');
+            const registerModal = document.getElementById('registerModal');
+            const loginBtn = document.getElementById('loginBtn');
+            const registerBtn = document.getElementById('registerBtn');
+            const cancelLogin = document.getElementById('cancelLogin');
+            const cancelRegister = document.getElementById('cancelRegister');
+            const loginForm = document.getElementById('loginForm');
+            const registerForm = document.getElementById('registerForm');
+            const logoutBtn = document.getElementById('logoutBtn');
+            const loginFromReviewBtn = document.getElementById('loginFromReviewBtn');
 
-    // Abrir modales
-    loginBtn.addEventListener('click', () => loginModal.classList.add('active'));
-    registerBtn.addEventListener('click', () => registerModal.classList.add('active'));
-    loginFromReviewBtn.addEventListener('click', () => loginModal.classList.add('active'));
+            // Abrir modales
+            loginBtn.addEventListener('click', () => loginModal.classList.add('active'));
+            registerBtn.addEventListener('click', () => registerModal.classList.add('active'));
+            loginFromReviewBtn.addEventListener('click', () => loginModal.classList.add('active'));
 
-    // Cerrar modales
-    cancelLogin.addEventListener('click', () => loginModal.classList.remove('active'));
-    cancelRegister.addEventListener('click', () => registerModal.classList.remove('active'));
+            // Cerrar modales
+            cancelLogin.addEventListener('click', () => loginModal.classList.remove('active'));
+            cancelRegister.addEventListener('click', () => registerModal.classList.remove('active'));
 
-    // Cerrar al hacer clic afuera
-    window.addEventListener('click', (e) => {
-        if (e.target === loginModal) loginModal.classList.remove('active');
-        if (e.target === registerModal) registerModal.classList.remove('active');
-    });
+            // Cerrar al hacer clic afuera
+            window.addEventListener('click', (e) => {
+                if (e.target === loginModal) loginModal.classList.remove('active');
+                if (e.target === registerModal) registerModal.classList.remove('active');
+            });
 
-    // 🔥 Login — ahora correcto
-    loginForm.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        console.log("🔥 SUBMIT DETECTADO EN LOGIN FORM");
+            // Login
+            loginForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const email = document.getElementById('loginEmail').value;
+                const password = document.getElementById('loginPassword').value;
+                const errorElement = document.getElementById('loginError');
 
-        const email = document.getElementById('loginEmail').value;
-        const password = document.getElementById('loginPassword').value;
-        const errorElement = document.getElementById('loginError');
+                try {
+                    await auth.signInWithEmailAndPassword(email, password);
+                    loginModal.classList.remove('active');
+                    loginForm.reset();
+                    errorElement.textContent = '';
+                } catch (error) {
+                    errorElement.textContent = getAuthErrorMessage(error.code);
+                }
+            });
 
-        try {
-            await auth.signInWithEmailAndPassword(email, password);
-            loginModal.classList.remove('active');
-            loginForm.reset();
-            errorElement.textContent = '';
-        } catch (error) {
-            errorElement.textContent = getAuthErrorMessage(error.code);
+            // Registro
+            registerForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const name = document.getElementById('registerName').value;
+                const email = document.getElementById('registerEmail').value;
+                const password = document.getElementById('registerPassword').value;
+                const errorElement = document.getElementById('registerError');
+
+                try {
+                    await auth.createUserWithEmailAndPassword(email, password);
+                    registerModal.classList.remove('active');
+                    registerForm.reset();
+                    errorElement.textContent = '';
+                } catch (error) {
+                    errorElement.textContent = getAuthErrorMessage(error.code);
+                }
+            });
+
+            // Logout
+            logoutBtn.addEventListener('click', () => auth.signOut());
         }
-    });
-
-    // Registro
-    registerForm.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const name = document.getElementById('registerName').value;
-        const email = document.getElementById('registerEmail').value;
-        const password = document.getElementById('registerPassword').value;
-        const errorElement = document.getElementById('registerError');
-
-        try {
-            await auth.createUserWithEmailAndPassword(email, password);
-            registerModal.classList.remove('active');
-            registerForm.reset();
-            errorElement.textContent = '';
-        } catch (error) {
-            errorElement.textContent = getAuthErrorMessage(error.code);
-        }
-    });
-
-    // Logout
-    logoutBtn.addEventListener('click', () => auth.signOut());
-}
 
         // Obtener mensajes de error de autenticación
         function getAuthErrorMessage(errorCode) {
