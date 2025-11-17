@@ -1728,7 +1728,16 @@
                 const errorElement = document.getElementById('loginError');
 
                 try {
-                    await auth.signInWithEmailAndPassword(email, password);
+                    // --- INICIO DE LA MODIFICACIÓN: Verificar email ---
+                    const userCredential = await auth.signInWithEmailAndPassword(email, password);
+                    
+                    if (!userCredential.user.emailVerified) {
+                        await auth.signOut(); // Cerramos la sesión si no está verificado
+                        errorElement.textContent = 'Email no verificado. Por favor, revisa tu bandeja de entrada.';
+                        return; // Detenemos el inicio de sesión
+                    }
+                    // --- FIN DE LA MODIFICACIÓN ---
+
                     loginModal.classList.remove('active');
                     loginForm.reset();
                     errorElement.textContent = '';
@@ -1747,6 +1756,14 @@
 
                 try {
                     await auth.createUserWithEmailAndPassword(email, password);
+
+                    // --- INICIO DE LA MODIFICACIÓN: Enviar email y cerrar sesión ---
+                    await auth.currentUser.sendEmailVerification();
+                    await auth.signOut(); // Forzamos al usuario a verificar antes de loguearse
+                    
+                    mostrarNotificacion('¡Registro exitoso! Revisa tu email para verificar tu cuenta.', 'success');
+                    // --- FIN DE LA MODIFICACIÓN ---
+                    
                     registerModal.classList.remove('active');
                     registerForm.reset();
                     errorElement.textContent = '';
