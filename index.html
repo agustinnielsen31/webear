@@ -930,8 +930,6 @@
                     // --- FIN DE LA CORRECCIÓN ---
                 }
                 
-                // Quitamos el orden de aquí
-                
                 actualizarVistaMaterias(); // Llama a la nueva función de renderizado
             } catch (error) {
                 console.error('Error cargando materias:', error);
@@ -940,52 +938,7 @@
             }
         }
 
-        // Inicializar datos de ejemplo en Firestore
-        async function inicializarDatosEjemplo() {
-            const materias = [];
-            
-            for (const nombre of materiasData) {
-                const materiaData = {
-                    nombre: nombre,
-                    promedio: 0,
-                    numresenas: 0,
-                    catedras: generarCatedrasYMaterias(),
-                    fechaCreacion: firebase.firestore.FieldValue.serverTimestamp()
-                };
-                
-                const docRef = await db.collection('materias').add(materiaData);
-                materias.push({
-                    id: docRef.id,
-                    ...materiaData
-                });
-            }
-            
-            return materias;
-        }
-
-        // Generar cátedras y prácticos
-        function generarCatedrasYMaterias() {
-            const numCatedras = Math.floor(Math.random() * 2) + 2;
-            const catedras = [];
-            
-            for (let i = 1; i <= numCatedras; i++) {
-                const numPracticos = Math.floor(Math.random() * 2) + 4;
-                const practicos = [];
-                
-                for (let j = 1; j <= numPracticos; j++) {
-                    practicos.push(`Práctico ${j}`);
-                }
-                
-                catedras.push({
-                    nombre: `Cátedra ${i}`,
-                    practicos: practicos
-                });
-            }
-            
-            return catedras;
-        }
-
-        // Cargar materias en la UI (versión modificada con parámetro)
+               // Cargar materias en la UI (versión modificada con parámetro)
         function cargarMateriasEnUI(listaMaterias) { // Ya no tiene valor default
             const materiasGrid = document.getElementById('materiasGrid');
             materiasGrid.innerHTML = '';
