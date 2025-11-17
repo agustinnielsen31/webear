@@ -922,7 +922,12 @@
                         ...doc.data()
                     }));
                 } else {
-                    appState.materias = await inicializarDatosEjemplo();
+                    // --- INICIO DE LA CORRECCIÓN ---
+                    // Se comenta la siguiente línea para evitar que se creen materias
+                    // de ejemplo si la base de datos está vacía.
+                    // appState.materias = await inicializarDatosEjemplo();
+                    console.log("La colección de materias está vacía, no se crearán datos de ejemplo.");
+                    // --- FIN DE LA CORRECCIÓN ---
                 }
                 
                 // Quitamos el orden de aquí
@@ -1566,4 +1571,6 @@
         document.addEventListener('DOMContentLoaded', init);
     </script>
 </body>
-</html>
+</html>I'm seeing a typo in this file, fix it:
+
+`div classAFspeA-rating`
