@@ -19,6 +19,42 @@
             --dark-color: #2c3e50;
         }
         
+        /* --- INICIO: Estilos de Botones de Categoría --- */
+        .category-filters {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.75rem;
+            margin-bottom: 1.5rem;
+            border-bottom: 2px solid var(--secondary-color);
+            padding-bottom: 1.5rem;
+        }
+        
+        .category-btn {
+            flex: 1 1 auto; /* Permite que los botones crezcan y se encojan */
+            padding: 0.75rem 1rem;
+            border: 2px solid var(--secondary-color);
+            background-color: #ffffff;
+            color: var(--dark-color);
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            font-weight: 600;
+            text-align: center;
+            transition: background-color 0.3s, color 0.3s, border-color 0.3s;
+        }
+        
+        .category-btn:hover {
+            background-color: #f8f9fa;
+            border-color: #ddd;
+        }
+        
+        .category-btn.active {
+            background-color: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+        /* --- FIN: Estilos de Botones de Categoría --- */
+
         .controles-busqueda-container {
             display: flex;
             align-items: center; 
@@ -494,6 +530,17 @@
         }
         
         @media (max-width: 768px) {
+            /* --- INICIO: Estilos de Botones de Categoría (Móvil) --- */
+            .category-filters {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+            
+            .category-btn {
+                width: 100%;
+            }
+            /* --- FIN: Estilos de Botones de Categoría (Móvil) --- */
+
             .materias-grid {
                 grid-template-columns: 1fr;
             }
@@ -551,6 +598,15 @@
     </header>
     
     <div class="container">
+        <!-- --- INICIO: Botones de Categoría --- -->
+        <div class="category-filters">
+            <button class="category-btn active" data-category="materias">Materias obligatorias</button>
+            <button class="category-btn" data-category="especiales">Sociologías especiales</button>
+            <button class="category-btn" data-category="teorias">Teorías sociológicas</button>
+            <button class="category-btn" data-category="horasdeinv">Talleres/Seminarios</button>
+        </div>
+        <!-- --- FIN: Botones de Categoría --- -->
+        
         <!-- Barra de búsqueda y Filtros de Orden -->
         <div class="controles-busqueda-container">
             <div class="search-container">
@@ -569,7 +625,7 @@
             </div>
         </div>
         
-        <h2>Materias obligatorias</h2>
+        <h2 id="materiasGridTitle">Materias obligatorias</h2>
         <br>
         <!-- Grilla de materias (una sola vez) -->
         <div class="materias-grid" id="materiasGrid">
@@ -789,7 +845,8 @@
     </div>
 
     <script>
-        // Configuración de Firebase
+        // --- INICIO DE LA CORRECCIÓN: Volver a la config original ---
+        // Configuración de Firebase (la original de tu archivo)
         const firebaseConfig = {
             apiKey: "AIzaSyBnpshX3I7ZY3EUoraDZPdb2W6B6HZOYR0",
             authDomain: "social-sociales.firebaseapp.com",
@@ -804,13 +861,18 @@
         firebase.initializeApp(firebaseConfig);
         const auth = firebase.auth();
         const db = firebase.firestore();
+        
+        // Ya no usamos 'appId' ni 'setLogLevel'
+        // --- FIN DE LA CORRECCIÓN ---
+
 
         // Estado de la aplicación
         let appState = {
-            materias: [],
+            materias: [], // <-- contendrá TODAS las materias
             resenas: [],
             materiaSeleccionada: null,
-            user: null
+            user: null,
+            currentCategory: 'materias', // <-- NUEVO: Categoría por defecto
         };
 
         // --- INICIO DE CAMBIOS JS ---
@@ -818,7 +880,7 @@
         let currentSearch = '';
         // --- FIN DE CAMBIOS JS ---
 
-        // Datos de ejemplo para las materias - ORDEN ESPECÍFICO
+        // Datos de ejemplo para las materias - ORDEN ESPECÍÍFICO
         const materiasData = [
             "Sociología General",
             "Filosofía",
@@ -839,20 +901,30 @@
         ];
 
         // Inicializar la aplicación
+        // --- INICIO DE LA CORRECCIÓN: Revertir lógica de 'init' ---
         function init() {
+            // 1. Configurar el listener de auth PRIMERO
             configurarFirebaseAuth();
-            cargarMaterias();
+
+            // 2. Cargar materias INMEDIATAMENTE (como en el original)
+            // Esto asume que tus reglas de Firestore permiten lectura pública
+            cargarMaterias(); 
+            
+            // 3. Cargar el resto
+            configurarFiltrosCategoria(); // <-- NUEVO: Añadir listeners a los botones
             configurarSistemaEstrellas();
             configurarFormulario();
             configurarFiltros();
             configurarModales();
-            configurarBuscador(); // <--- Llamada a la función del buscador
-            configurarSort(); // <--- NUEVA FUNCIÓN
+            configurarBuscador(); 
+            configurarSort(); 
         }
+        // --- FIN DE LA CORRECCIÓN ---
 
         // --- INICIO DEL CÓDIGO RESTAURADO ---
 
         // Configurar autenticación de Firebase
+        // --- INICIO DE LA CORRECCIÓN: Simplificar listener ---
         function configurarFirebaseAuth() {
             auth.onAuthStateChanged((user) => {
                 if (user) {
@@ -865,6 +937,7 @@
                 actualizarUIUsuario();
             });
         }
+        // --- FIN DE LA CORRECCIÓN ---
 
         // Mostrar información del usuario
         function mostrarInfoUsuario(user) {
@@ -873,9 +946,17 @@
             const userName = document.getElementById('userName');
             const authButtons = document.getElementById('authButtons');
             
-            const firstLetter = user.email.charAt(0).toUpperCase();
-            userAvatar.textContent = firstLetter;
-            userName.textContent = user.email;
+            // --- INICIO DE LA CORRECCIÓN ---
+            // Comprobar si el usuario tiene email, si no, usar "Anónimo" o "A"
+            if (user.email) {
+                const firstLetter = user.email.charAt(0).toUpperCase();
+                userAvatar.textContent = firstLetter;
+                userName.textContent = user.email;
+            } else {
+                userAvatar.textContent = 'A'; // Por "Anónimo"
+                userName.textContent = 'Anónimo';
+            }
+            // --- FIN DE LA CORRECCIÓN ---
             
             userInfo.style.display = 'flex';
             authButtons.style.display = 'none';
@@ -904,38 +985,82 @@
 
         // Cargar materias desde Firestore (o datos de ejemplo)
         async function cargarMaterias() {
+            
+            // --- INICIO DE LA MODIFICACIÓN: Cargar todo y guardar 'tipo' ---
             try {
-                const materiasSnapshot = await db.collection('materias').get();
-                
-                if (!materiasSnapshot.empty) {
-                    appState.materias = materiasSnapshot.docs.map(doc => ({
-                        id: doc.id,
-                        ...doc.data()
+                const collectionNames = ['materias', 'especiales', 'teorias', 'horasdeinv']; 
+                console.log("Iniciando carga de todas las colecciones...");
+
+                const collectionPromises = collectionNames.map(name => {
+                    console.log(`Intentando cargar desde la RAÍZ: ${name}`);
+                    return db.collection(name).get();
+                });
+
+                const snapshots = await Promise.all(collectionPromises);
+
+                console.log("Éxito: Todas las colecciones se cargaron (o estaban vacías).");
+
+                const allMaterias = snapshots.reduce((acc, snapshot, index) => {
+                    const name = collectionNames[index];
+                    if (snapshot.empty) {
+                        console.log(`Aviso: La colección '${name}' está vacía.`);
+                        return acc; 
+                    }
+                    // --- ¡IMPORTANTE! Guardamos el 'tipo' (nombre de la colección) ---
+                    const docsData = snapshot.docs.map(doc => ({ 
+                        id: doc.id, 
+                        ...doc.data(), 
+                        tipo: name // <-- Guardamos la categoría/colección de origen
                     }));
+                    console.log(`Info: Se procesaron ${docsData.length} documentos de '${name}'`);
+                    return acc.concat(docsData);
+                }, []); 
+
+                if (allMaterias.length > 0) {
+                    appState.materias = allMaterias; // Guardamos TODAS las materias
                 } else {
-                    // --- INICIO DE LA CORRECCIÓN ---
-                    // Se comenta la siguiente línea para evitar que se creen materias
-                    // de ejemplo si la base de datos está vacía.
-                    // appState.materias = await inicializarDatosEjemplo();
-                    console.log("La colección de materias está vacía, no se crearán datos de ejemplo.");
-                    // --- FIN DE LA CORRECCIÓN ---
+                    console.log("Todas las colecciones (materias, especiales, teorias, horasdeinv) están vacías."); 
+                    appState.materias = []; 
                 }
                 
-                actualizarVistaMaterias(); // Llama a la nueva función de renderizado
+                // Renderizamos la vista (que por defecto filtra por 'materias')
+                actualizarVistaMaterias(); 
+            
             } catch (error) {
-                console.error('Error cargando materias:', error);
-                appState.materias = await inicializarDatosEjemplo();
+                console.error('Error cargando una o más colecciones de materias (Promise.all):', error);
+                
+                // Plan B (cargar solo 'materias') se mantiene por si fallan las reglas
+                console.log("Plan B: Intentando cargar solo 'materias'...");
+                try {
+                    const materiasSnapshot = await db.collection('materias').get();
+                    if (!materiasSnapshot.empty) {
+                        // Añadimos el 'tipo' también al plan B
+                        appState.materias = materiasSnapshot.docs.map(doc => ({ 
+                            id: doc.id, 
+                            ...doc.data(), 
+                            tipo: 'materias' 
+                        }));
+                    } else {
+                        appState.materias = [];
+                    }
+                } catch (materiasError) {
+                    console.error("Error en Plan B: No se pudo cargar ni siquiera 'materias':", materiasError);
+                    appState.materias = [];
+                }
+                
                 actualizarVistaMaterias();
             }
+            // --- FIN DE LA MODIFICACIÓN ---
         }
 
-               // Cargar materias en la UI (versión modificada con parámetro)
+        // Cargar materias en la UI (versión modificada con parámetro)
         function cargarMateriasEnUI(listaMaterias) { // Ya no tiene valor default
             const materiasGrid = document.getElementById('materiasGrid');
             materiasGrid.innerHTML = '';
 
             if (listaMaterias.length === 0) {
-                materiasGrid.innerHTML = '<p style="grid-column: 1/-1; text-align: center; color: #777;">No se encontraron materias con ese nombre.</p>';
+                // --- MODIFICACIÓN: Mensaje más específico ---
+                materiasGrid.innerHTML = '<p style="grid-column: 1/-1; text-align: center; color: #777;">No se encontraron materias para esta categoría o búsqueda.</p>';
                 return;
             }
             
@@ -947,7 +1072,8 @@
                 
                 // 1. Procesar la lista de cátedras
                 let catedrasHTML = 'No hay cátedras cargadas';
-                if (materia.catedras && materia.catedras.length > 0) {
+                // --- MODIFICACIÓN: Comprobar que 'catedras' sea un array ---
+                if (Array.isArray(materia.catedras) && materia.catedras.length > 0) {
                     // Mapeamos para crear SPANs clickeables en lugar de texto plano
                     catedrasHTML = materia.catedras.map(c => 
                         `<span class="catedra-link" data-catedra-nombre="${c.nombre}">${c.nombre}</span>`
@@ -957,7 +1083,7 @@
                 // 2. Crear el nuevo HTML de la tarjeta (sin rating, con cátedras)
                 card.innerHTML = `
                     <div>
-                        <h3>${materia.nombre}</h3>
+                        <h3>${materia.nombre || 'Sin Nombre'}</h3>
                         <div class="materia-catedras">
                             ${catedrasHTML}
                         </div>
@@ -988,13 +1114,23 @@
         // Seleccionar una materia (con parámetro opcional 'catedraNombre')
         async function seleccionarMateria(materiaId, catedraNombre = null) {
             const materia = appState.materias.find(m => m.id === materiaId);
+            
+            // Verificación: Asegurarse de que la materia se encontró
+            if (!materia) {
+                console.error("No se pudo encontrar la materia con ID:", materiaId);
+                return;
+            }
+
             appState.materiaSeleccionada = materia;
             
             document.getElementById('formTitle').textContent = `Dejar Reseña - ${materia.nombre}`;
             document.getElementById('reviewForm').classList.add('active');
             document.querySelector('.resenas-container').classList.add('active'); // <-- AÑADIDO: Muestra el contenedor de reseñas
             
-            cargarCatedrasEnFormulario(materia.catedras);
+            // Verificación: Asegurarse de que 'catedras' es un array
+            const catedras = Array.isArray(materia.catedras) ? materia.catedras : [];
+            cargarCatedrasEnFormulario(catedras);
+            
             await cargarresenas(materiaId);
             
             if (catedraNombre) {
@@ -1021,25 +1157,28 @@
             catedraSelect.innerHTML = '<option value="">Selecciona una cátedra</option>';
             filterCatedraSelect.innerHTML = '<option value="">Todas las cátedras</option>';
             
-            catedras.forEach(catedra => {
-                const option = document.createElement('option');
-                option.value = catedra.nombre;
-                option.textContent = catedra.nombre;
-                catedraSelect.appendChild(option);
-                
-                const filterOption = document.createElement('option');
-                filterOption.value = catedra.nombre;
-                filterOption.textContent = catedra.nombre;
-                filterCatedraSelect.appendChild(filterOption);
-            });
+            // Verificación: Asegurarse de que 'catedras' es un array antes de hacer forEach
+            if (Array.isArray(catedras)) {
+                catedras.forEach(catedra => {
+                    const option = document.createElement('option');
+                    option.value = catedra.nombre;
+                    option.textContent = catedra.nombre;
+                    catedraSelect.appendChild(option.cloneNode(true)); // Clonamos el nodo para el filtro
+                    filterCatedraSelect.appendChild(option);
+                });
+            }
             
-            catedraSelect.addEventListener('change', function() {
+            // Remover listeners anteriores para evitar duplicados (buena práctica)
+            // Clona el nodo y reemplázalo para limpiar listeners
+            const newCatedraSelect = catedraSelect.cloneNode(true);
+            catedraSelect.parentNode.replaceChild(newCatedraSelect, catedraSelect);
+
+            // Añade el listener al nuevo nodo
+            newCatedraSelect.addEventListener('change', function() {
                 cargarPracticosEnFormulario(this.value, catedras);
             });
             
-            filterCatedraSelect.addEventListener('change', function() {
-                cargarPracticosEnFormulario(this.value, catedras);
-            });
+            // El listener para filterCatedraSelect se añade en configurarFiltros
         }
 
         // Cargar prácticos en el formulario
@@ -1050,19 +1189,17 @@
             practicoSelect.innerHTML = '<option value="">Selecciona un práctico</option>';
             filterPracticoSelect.innerHTML = '<option value="">Todos los prácticos</option>';
             
-            if (catedraNombre) {
+            if (catedraNombre && Array.isArray(catedras)) {
                 const catedra = catedras.find(c => c.nombre === catedraNombre);
-                if (catedra) {
+                
+                // Verificación: Asegurarse de que 'catedra' se encontró y 'practicos' es un array
+                if (catedra && Array.isArray(catedra.practicos)) {
                     catedra.practicos.forEach(practico => {
                         const option = document.createElement('option');
                         option.value = practico;
                         option.textContent = practico;
-                        practicoSelect.appendChild(option);
-                        
-                        const filterOption = document.createElement('option');
-                        filterOption.value = practico;
-                        filterOption.textContent = practico;
-                        filterPracticoSelect.appendChild(filterOption);
+                        practicoSelect.appendChild(option.cloneNode(true)); // Clonamos el nodo
+                        filterPracticoSelect.appendChild(option);
                     });
                 }
             }
@@ -1071,9 +1208,11 @@
         // Cargar resenas desde Firestore
         async function cargarresenas(materiaId) {
             try {
+                // --- INICIO DE LA CORRECCIÓN: Quitar la ruta 'artifacts' ---
                 const resenasSnapshot = await db.collection('resenas')
                     .where('materiaId', '==', materiaId)
                     .get();
+                // --- FIN DE LA CORRECCIÓN ---
 
                 appState.resenas = resenasSnapshot.docs.map(doc => ({
                     id: doc.id,
@@ -1142,7 +1281,7 @@
                 
                 const generalRating = document.getElementById('generalRating').dataset.rating;
                 const claridadRating = document.getElementById('claridadRating').dataset.rating;
-                const programaRating = document.getElementById('programaRating').dataset.rating;
+                // const programaRating = document.getElementById('programaRating').dataset.rating; // Este ID no existe en el HTML
                 const dificultadRating = document.getElementById('dificultadRating').dataset.rating;
                 const ofertaRating = document.getElementById('ofertaRating').dataset.rating;
                 
@@ -1167,7 +1306,7 @@
                         tomanAsistencia: tomanAsistencia,
                         calificacionGeneral: parseInt(generalRating),
                         claridad: parseInt(claridadRating) || 0,
-                        programa: parseInt(programaRating) || 0,
+                        // programa: parseInt(programaRating) || 0, // ID no existe
                         dificultad: parseInt(dificultadRating) || 0,
                         oferta: parseInt(ofertaRating) || 0,
                         texto: reviewText,
@@ -1176,7 +1315,10 @@
                         fecha: firebase.firestore.FieldValue.serverTimestamp()
                     };
                     
+                    // --- INICIO DE LA CORRECCIÓN: Quitar la ruta 'artifacts' ---
                     await db.collection('resenas').add(nuevaReseña);
+                    // --- FIN DE LA CORRECCIÓN ---
+                    
                     await actualizarContadorresenas(appState.materiaSeleccionada.id);
                     await cargarresenas(appState.materiaSeleccionada.id);
                     
@@ -1207,40 +1349,76 @@
 
         // Actualizar contador de resenas en una materia
         async function actualizarContadorresenas(materiaId) {
+            
+            let numresenas = 0;
+            let sumaCalificaciones = 0;
+            let totalresenas = 0;
+            let promedio = "0.0";
+            
             try {
+                // --- INICIO DE LA CORRECCIÓN: Quitar la ruta 'artifacts' ---
                 const resenasSnapshot = await db.collection('resenas')
                     .where('materiaId', '==', materiaId)
                     .get();
+                // --- FIN DE LA CORRECCIÓN ---
                 
-                const numresenas = resenasSnapshot.size;
-                
-                let sumaCalificaciones = 0;
-                let totalresenas = 0;
+                numresenas = resenasSnapshot.size;
                 
                 resenasSnapshot.forEach(doc => {
                     const reseña = doc.data();
                     if (reseña.calificacionGeneral) {
-                        sumaCalificaciones += reseña.calificacionGeneral;
+                        sumaCalificaciones += reseña.calificacionGeneral; // <-- CORREGIDO: 'calificacionGeneral'
                         totalresenas++;
                     }
                 });
                 
-                const promedio = totalresenas > 0 ? (sumaCalificaciones / totalresenas).toFixed(1) : "0.0";
-                
-                await db.collection('materias').doc(materiaId).update({
-                    numresenas: numresenas,
-                    promedio: promedio
-                });
-                
-                const materiaIndex = appState.materias.findIndex(m => m.id === materiaId);
-                if (materiaIndex !== -1) {
-                    appState.materias[materiaIndex].numresenas = numresenas;
-                    appState.materias[materiaIndex].promedio = promedio;
-                }
-                
+                promedio = totalresenas > 0 ? (sumaCalificaciones / totalresenas).toFixed(1) : "0.0";
+            
             } catch (error) {
-                console.error('Error actualizando contador:', error);
+                console.error("Error al calcular reseñas:", error);
+                return; // Salir si no se pueden calcular las reseñas
             }
+
+            // --- INICIO DE LA CORRECCIÓN DE RUTA ---
+            // No sabemos de qué colección vino esta materia (materias, especiales, etc.)
+            // así que intentamos actualizar en todas las colecciones posibles.
+            
+            const coleccionesPosibles = ['materias', 'especiales', 'teorias', 'horasdeinv']; 
+            let actualizado = false;
+
+            for (const col of coleccionesPosibles) {
+                try {
+                    // --- INICIO DE LA CORRECCIÓN: Quitar la ruta 'artifacts' ---
+                    const docRef = db.collection(col).doc(materiaId);
+                    // --- FIN DE LA CORRECCIÓN ---
+                    const docSnap = await docRef.get(); // Verificar si existe en esta colección
+
+                    if (docSnap.exists) {
+                        await docRef.update({
+                            numresenas: numresenas,
+                            promedio: promedio
+                        });
+                        actualizado = true;
+                        
+                        // Actualizar estado local
+                        const materiaIndex = appState.materias.findIndex(m => m.id === materiaId);
+                        if (materiaIndex !== -1) {
+                            appState.materias[materiaIndex].numresenas = numresenas;
+                            appState.materias[materiaIndex].promedio = promedio;
+                        }
+                        actualizarVistaMaterias(); // Actualizar la UI
+                        break; // Salir del bucle si se actualizó
+                    }
+                } catch (err) {
+                    // Esto es esperado si el doc no está en esta colección, no es un error fatal
+                    // console.warn(`Documento no encontrado en ${col}, probando siguiente.`);
+                }
+            }
+
+            if (!actualizado) {
+                console.error("Error: No se pudo actualizar el contador de reseñas en ninguna colección para el ID:", materiaId);
+            }
+            // --- FIN DE LA CORRECCIÓN DE RUTA ---
         }
 
         // Cargar resenas en la UI
@@ -1279,6 +1457,25 @@
                     ? reseña.tiposEvaluacion.join(', ') 
                     : 'No especificado';
                 
+                // HTML para los aspectos (solo si tienen valor)
+                let aspectosHTML = `
+                    <div class="review-aspect">
+                        <span class="aspect-name">Claridad (Pedagogía):</span>
+                        <span class="aspect-value">${reseña.claridad || 'N/A'}/5</span>
+                    </div>
+                    <div class="review-aspect">
+                        <span class="aspect-name">Dificultad:</span>
+                        <span class="aspect-value">${reseña.dificultad || 'N/A'}/5</span>
+                    </div>
+                    <div class="review-aspect">
+                        <span class="aspect-name">Oferta horaria:</span>
+                        <span class="aspect-value">${reseña.oferta || 'N/A'}/5</span>
+                    </div>
+                `;
+                
+                // Nota: 'programa' no está en el formulario, así que lo omitimos
+                // del 'review-aspects' para evitar mostrar "N/A" siempre.
+
                 reviewCard.innerHTML = `
                     <div class="review-header">
                         <div class="review-user">
@@ -1292,22 +1489,7 @@
                     <div class="rating">${estrellasHTML}</div>
                     <div class="review-content">${reseña.texto}</div>
                     <div class="review-aspects">
-                        <div class="review-aspect">
-                            <span class="aspect-name">Claridad (Pedagogía):</span>
-                            <span class="aspect-value">${reseña.claridad}/5</span>
-                        </div>
-                        <div class="review-aspect">
-                            <span class="aspect-name">Programa y bibliografía:</span>
-                            <span class="aspect-value">${reseña.programa}/5</span>
-                        </div>
-                        <div class="review-aspect">
-                            <span class="aspect-name">Dificultad:</span>
-                            <span class="aspect-value">${reseña.dificultad}/5</span>
-                        </div>
-                        <div class="review-aspect">
-                            <span class="aspect-name">Oferta horaria:</span>
-                            <span class="aspect-value">${reseña.oferta}/5</span>
-                        </div>
+                        ${aspectosHTML}
                     </div>
                     <div class="review-aspects">
                         <div class="review-aspect">
@@ -1361,24 +1543,75 @@
             });
         }
 
+        // --- INICIO: NUEVA FUNCIÓN para los botones de categoría ---
+        function configurarFiltrosCategoria() {
+            const buttons = document.querySelectorAll('.category-btn');
+            const titleElement = document.getElementById('materiasGridTitle');
+            
+            buttons.forEach(button => {
+                button.addEventListener('click', () => {
+                    // 1. Obtener la categoría y el texto del botón
+                    const category = button.dataset.category;
+                    const buttonText = button.textContent;
+                    
+                    // 2. Actualizar el estado
+                    appState.currentCategory = category;
+                    
+                    // 3. Actualizar la clase 'active' de los botones
+                    buttons.forEach(btn => btn.classList.remove('active'));
+                    button.classList.add('active');
+                    
+                    // 4. Actualizar el título h2
+                    titleElement.textContent = buttonText;
+                    
+                    // 5. Ocultar el formulario y las reseñas si estaban visibles
+                    document.getElementById('reviewForm').classList.remove('active');
+                    document.querySelector('.resenas-container').classList.remove('active');
+                    appState.materiaSeleccionada = null;
+
+                    // 6. Volver a renderizar la lista de materias
+                    actualizarVistaMaterias();
+                });
+            });
+        }
+        // --- FIN: NUEVA FUNCIÓN ---
+
         // NUEVA: Función central para actualizar qué materias se ven
         function actualizarVistaMaterias() {
             let materiasParaRenderizar = [...appState.materias];
 
-            // 1. Aplicar filtro de búsqueda
+            // --- INICIO: MODIFICACIÓN ---
+            // 1. Filtrar por CATEGORÍA
+            materiasParaRenderizar = materiasParaRenderizar.filter(materia => 
+                materia.tipo === appState.currentCategory
+            );
+
+            // 2. Aplicar filtro de búsqueda
             if (currentSearch.length > 0) {
                 materiasParaRenderizar = materiasParaRenderizar.filter(materia => 
-                    materia.nombre.toLowerCase().includes(currentSearch)
+                    (materia.nombre || '').toLowerCase().includes(currentSearch)
                 );
             }
 
-            // 2. Aplicar filtro de orden
+            // 3. Aplicar filtro de orden
+            // --- FIN: MODIFICACIÓN ---
+            
             switch (currentSort) {
                 case 'carrera':
                     materiasParaRenderizar.sort((a, b) => {
-                        const indexA = materiasData.indexOf(a.nombre);
-                        const indexB = materiasData.indexOf(b.nombre);
-                        return indexA - indexB;
+                        // --- INICIO DE LA CORRECCIÓN ---
+                        const nombreA = a.nombre || ''; // Default a string vacío si es undefined
+                        const nombreB = b.nombre || ''; // Default a string vacío si es undefined
+
+                        const indexA = materiasData.indexOf(nombreA);
+                        const indexB = materiasData.indexOf(nombreB);
+                        
+                        if (indexA === -1 && indexB === -1) return nombreA.localeCompare(nombreB); // Compara los strings (seguros)
+                        // --- FIN DE LA CORRECCIÓN ---
+                        if (indexA === -1) return 1; // A al final
+                        if (indexB === -1) return -1; // B al final
+                        
+                        return indexA - indexB; // Ambas dentro, orden de lista
                     });
                     break;
                 case 'reviews-desc':
@@ -1388,23 +1621,45 @@
                     materiasParaRenderizar.sort((a, b) => (a.numresenas || 0) - (b.numresenas || 0));
                     break;
                 case 'alpha-asc':
-                    materiasParaRenderizar.sort((a, b) => a.nombre.localeCompare(b.nombre));
+                    // --- INICIO DE LA CORRECCIÓN ---
+                    materiasParaRenderizar.sort((a, b) => (a.nombre || '').localeCompare(b.nombre || ''));
+                    // --- FIN DE LA CORRECCIÓN ---
                     break;
                 case 'alpha-desc':
-                    materiasParaRenderizar.sort((a, b) => b.nombre.localeCompare(a.nombre));
+                    // --- INICIO DE LA CORRECCIÓN ---
+                    materiasParaRenderizar.sort((a, b) => (b.nombre || '').localeCompare(a.nombre || ''));
+                    // --- FIN DE LA CORRECCIÓN ---
                     break;
             }
 
-            // 3. Renderizar en la UI
+            // 4. Renderizar en la UI
             cargarMateriasEnUI(materiasParaRenderizar);
         }
 
         // Configurar filtros (una sola vez)
         function configurarFiltros() {
-            const filterIds = ['filterCatedra', 'filterPractico', 'filterRating'];
-            filterIds.forEach(id => {
-                document.getElementById(id).addEventListener('change', () => cargarresenasEnUI());
+            // -- CORRECCIÓN DE BUG LÓGICO --
+            // Separamos los listeners para que filterCatedra pueda recargar los prácticos
+            
+            document.getElementById('filterCatedra').addEventListener('change', () => {
+                // 1. Cargar los prácticos correspondientes en el filtro de prácticos
+                const catedras = appState.materiaSeleccionada?.catedras || [];
+                // Obtenemos el valor actual del filtro de cátedra
+                const selectedCatedra = document.getElementById('filterCatedra').value;
+                
+                // Recargamos los prácticos usando una función modificada o la existente
+                // (Nota: cargarPracticosEnFormulario actualiza AMBOS selects, lo cual está bien por ahora)
+                cargarPracticosEnFormulario(selectedCatedra, catedras);
+                
+                // 2. Limpiar el filtro de práctico ya que la lista cambió
+                document.getElementById('filterPractico').value = "";
+                
+                // 3. Volver a cargar las reseñas
+                cargarresenasEnUI();
             });
+            
+            document.getElementById('filterPractico').addEventListener('change', () => cargarresenasEnUI());
+            document.getElementById('filterRating').addEventListener('change', () => cargarresenasEnUI());
         }
 
         // Configurar modales de autenticación
@@ -1503,9 +1758,9 @@
             }, 5000);
         }
 
+        // --- INICIO DE LA CORRECCIÓN: Revertir 'DOMContentLoaded' ---
         document.addEventListener('DOMContentLoaded', init);
+        // --- FIN DE LA CORRECCIÓN ---
     </script>
 </body>
 </html>
-
-
