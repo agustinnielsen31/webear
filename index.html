@@ -19,18 +19,34 @@
             --dark-color: #2c3e50;
         }
         
+        /* --- INICIO DE CAMBIOS CSS --- */
+        
+        /* Contenedor principal para búsqueda y filtros */
+        .controles-busqueda-container {
+            display: flex;
+            /* flex-direction: column; <-- REVERTIDO */
+            align-items: center; /* <-- CAMBIO: de 'stretch' a 'center' */
+            justify-content: space-between; /* <-- NUEVO: Para separar los items */
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
         /* Estilos del Buscador */
         .search-container {
-            margin-bottom: 1.5rem;
-            width: 100%;
+            flex: 1; /* <-- NUEVO: para que ocupe el espacio sobrante */
+            min-width: 250px; /* <-- NUEVO: ancho mínimo */
         }
 
         .search-input {
             width: 100%;
-            padding: 1rem;
+            padding: 0.75rem 1.25rem; /* Ajustado para la altura */
             font-size: 1rem;
             border: 2px solid #ecf0f1;
-            border-radius: 8px;
+            /* border-radius: 30px; <-- CAMBIADO */
+            border-top-left-radius: 30px; /* Punta izquierda redondeada */
+            border-bottom-left-radius: 30px; /* Punta izquierda redondeada */
+            border-top-right-radius: 8px; /* Radio normal para el lado derecho */
+            border-bottom-right-radius: 8px; /* Radio normal para el lado derecho */
             transition: border-color 0.3s ease, box-shadow 0.3s ease;
             outline: none;
         }
@@ -38,6 +54,32 @@
             border-color: var(--primary-color);
             box-shadow: 0 0 0 3px rgba(255, 125, 41, 0.1);
         }
+        
+        /* Contenedor para los botones de orden */
+        .sort-controls {
+            display: flex;
+            gap: 0.5rem;
+            /* flex-wrap: wrap; <-- Eliminado para forzar que queden en línea */
+            justify-content: flex-end; /* <-- CAMBIO: Alineado a la derecha */
+        }
+
+        /* ESTILOS ELIMINADOS: .btn-sort, .btn-sort:hover, .btn-sort.active ya no se usan */
+
+        /* Estilo para el <select> de orden */
+        .sort-select {
+            padding: 0.75rem 1rem;
+            border: 2px solid var(--secondary-color);
+            border-radius: 8px;
+            background-color: white;
+            color: var(--dark-color);
+            font-weight: 600;
+            font-size: 0.9rem;
+            cursor: pointer;
+            /* flex: 1; <-- CAMBIO: Eliminado */
+            /* min-width: 0; <-- CAMBIO: Eliminado */
+        }
+        
+        /* --- FIN DE CAMBIOS CSS --- */
         
         * {
             margin: 0;
@@ -165,10 +207,39 @@
             color: #555;
             margin-bottom: 0.75rem;
             line-height: 1.4;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px; /* <-- Reactivamos el 'gap' */
+            align-items: center;
         }
 
         .materia-catedras strong {
             color: var(--dark-color);
+        }
+        
+        /* NUEVO: Estilo para los links de cátedra */
+        .catedra-link {
+            /* --- INICIO DE CAMBIOS (Estilo de etiqueta) --- */
+            background-color: var(--secondary-color); /* Fondo gris claro */
+            color: var(--dark-color); /* Texto oscuro */
+            padding: 4px 10px; /* Relleno */
+            border-radius: 12px; /* Bordes redondeados (forma de píldora) */
+            font-size: 0.8rem;
+            font-weight: 600;
+            text-decoration: none; /* Quitamos subrayado */
+            /* --- FIN DE CAMBIOS --- */
+            cursor: pointer;
+            transition: background-color 0.2s, color 0.2s;
+            /* Quitamos el margen, ahora usamos 'gap' */
+        }
+        
+        /* BLOQUE ELIMINADO: Ya no necesitamos el punto separador */
+        
+        .catedra-link:hover {
+            /* --- INICIO DE CAMBIOS (Hover) --- */
+            background-color: var(--primary-color); /* Fondo naranja al pasar el mouse */
+            color: white; /* Texto blanco */
+            /* --- FIN DE CAMBIOS --- */
         }
         
         .rating {
@@ -449,6 +520,18 @@
                 text-align: center;
             }
             
+            /* CAMBIO: Reactivamos esta regla para móviles */
+            
+            .controles-busqueda-container {
+                flex-direction: column;
+                align-items: stretch; 
+            }
+            
+            
+            .sort-controls {
+                /* flex-direction: column; <-- Eliminado para que se queden en línea */
+            }
+            
             .checkbox-group {
                 flex-direction: column;
                 gap: 0.5rem;
@@ -476,9 +559,22 @@
     </header>
     
     <div class="container">
-        <!-- Barra de búsqueda -->
-        <div class="search-container">
-            <input type="text" id="searchMaterias" placeholder="Buscar materia por nombre..." class="search-input">
+        <!-- Barra de búsqueda y Filtros de Orden -->
+        <div class="controles-busqueda-container">
+            <div class="search-container">
+                <input type="text" id="searchMaterias" placeholder="🔍 Buscar materia por nombre..." class="search-input">
+            </div>
+            
+            <div class="sort-controls">
+                <!-- Botón de "Orden Carrera" ELIMINADO -->
+                <select id="sortSelect" class="sort-select">
+                    <option value="carrera">Orden Carrera</option> <!-- Opción por defecto -->
+                    <option value="reviews-desc">Más reseñas</option>
+                    <option value="reviews-asc">Menos reseñas</option>
+                    <option value="alpha-asc">A-Z</option>
+                    <option value="alpha-desc">Z-A</option>
+                </select>
+            </div>
         </div>
         
         <h2>Materias obligatorias</h2>
@@ -736,6 +832,11 @@
             user: null
         };
 
+        // --- INICIO DE CAMBIOS JS ---
+        let currentSort = 'carrera'; // Estado inicial
+        let currentSearch = '';
+        // --- FIN DE CAMBIOS JS ---
+
         // Datos de ejemplo para las materias - ORDEN ESPECÍFICO
         const materiasData = [
             "Sociología General",
@@ -765,7 +866,10 @@
             configurarFiltros();
             configurarModales();
             configurarBuscador(); // <--- Llamada a la función del buscador
+            configurarSort(); // <--- NUEVA FUNCIÓN
         }
+
+        // --- INICIO DEL CÓDIGO RESTAURADO ---
 
         // Configurar autenticación de Firebase
         function configurarFirebaseAuth() {
@@ -831,18 +935,13 @@
                     appState.materias = await inicializarDatosEjemplo();
                 }
                 
-                // Ordenar las materias según el orden específico
-                appState.materias.sort((a, b) => {
-                    const indexA = materiasData.indexOf(a.nombre);
-                    const indexB = materiasData.indexOf(b.nombre);
-                    return indexA - indexB;
-                });
+                // Quitamos el orden de aquí
                 
-                cargarMateriasEnUI(); // Llama a la versión actualizada
+                actualizarVistaMaterias(); // Llama a la nueva función de renderizado
             } catch (error) {
                 console.error('Error cargando materias:', error);
                 appState.materias = await inicializarDatosEjemplo();
-                cargarMateriasEnUI();
+                actualizarVistaMaterias();
             }
         }
 
@@ -892,7 +991,7 @@
         }
 
         // Cargar materias en la UI (versión modificada con parámetro)
-        function cargarMateriasEnUI(listaMaterias = appState.materias) {
+        function cargarMateriasEnUI(listaMaterias) { // Ya no tiene valor default
             const materiasGrid = document.getElementById('materiasGrid');
             materiasGrid.innerHTML = '';
 
@@ -911,8 +1010,10 @@
                 // 1. Procesar la lista de cátedras
                 let catedrasHTML = 'No hay cátedras cargadas';
                 if (materia.catedras && materia.catedras.length > 0) {
-                    // Mapeamos el array de objetos para obtener solo los nombres
-                    catedrasHTML = materia.catedras.map(c => c.nombre).join(', ');
+                    // Mapeamos para crear SPANs clickeables en lugar de texto plano
+                    catedrasHTML = materia.catedras.map(c => 
+                        `<span class="catedra-link" data-catedra-nombre="${c.nombre}">${c.nombre}</span>`
+                    ).join(''); /* <-- QUITAMOS LA COMA DE AQUÍ */
                 }
                 
                 // 2. Crear el nuevo HTML de la tarjeta (sin rating, con cátedras)
@@ -920,7 +1021,7 @@
                     <div>
                         <h3>${materia.nombre}</h3>
                         <div class="materia-catedras">
-                            <strong>Cátedras:</strong> ${catedrasHTML}
+                            ${catedrasHTML}
                         </div>
                     </div>
                     <div class="review-count">${materia.numresenas || 0} reseñas</div>
@@ -928,16 +1029,26 @@
                 
                 // --- FIN DE LA LÓGICA MODIFICADA ---
                 
-                card.addEventListener('click', () => {
-                    seleccionarMateria(materia.id);
+                card.addEventListener('click', (e) => {
+                    // Revisamos si el clic fue en un link de cátedra
+                    const linkClickeado = e.target.closest('.catedra-link');
+                    
+                    if (linkClickeado) {
+                        // Sí fue en un link, pasamos el ID y el nombre de la cátedra
+                        const catedraNombre = linkClickeado.dataset.catedraNombre;
+                        seleccionarMateria(materia.id, catedraNombre);
+                    } else {
+                        // Fue un clic normal en la tarjeta, solo pasamos el ID
+                        seleccionarMateria(materia.id);
+                    }
                 });
                 
                 materiasGrid.appendChild(card);
             });
         }
 
-        // Seleccionar una materia
-        async function seleccionarMateria(materiaId) {
+        // Seleccionar una materia (con parámetro opcional 'catedraNombre')
+        async function seleccionarMateria(materiaId, catedraNombre = null) {
             const materia = appState.materias.find(m => m.id === materiaId);
             appState.materiaSeleccionada = materia;
             
@@ -947,7 +1058,22 @@
             cargarCatedrasEnFormulario(materia.catedras);
             await cargarresenas(materiaId);
             
-            document.getElementById('reviewForm').scrollIntoView({ behavior: 'smooth' });
+            // --- INICIO DE LÓGICA DE FILTRO Y SCROLL ---
+            if (catedraNombre) {
+                // Si se pasó una cátedra, la seleccionamos en el filtro
+                const filterSelect = document.getElementById('filterCatedra');
+                filterSelect.value = catedraNombre;
+                
+                // Volvemos a renderizar las reseñas para que se aplique el filtro
+                cargarresenasEnUI();
+                
+                // Hacemos scroll a la LISTA DE RESEÑAS
+                document.getElementById('resenasList').scrollIntoView({ behavior: 'smooth' });
+            } else {
+                // Comportamiento original: scroll al FORMULARIO
+                document.getElementById('reviewForm').scrollIntoView({ behavior: 'smooth' });
+            }
+            // --- FIN DE LÓGICA DE FILTRO Y SCROLL ---
         }
 
         // Cargar cátedras en el formulario
@@ -973,6 +1099,13 @@
             catedraSelect.addEventListener('change', function() {
                 cargarPracticosEnFormulario(this.value, catedras);
             });
+            
+            // --- INICIO DE LA CORRECCIÓN ---
+            // Agregamos el listener al <select> del FILTRO, que faltaba
+            filterCatedraSelect.addEventListener('change', function() {
+                cargarPracticosEnFormulario(this.value, catedras);
+            });
+            // --- FIN DE LA CORRECCIÓN ---
         }
 
         // Cargar prácticos en el formulario
@@ -1276,16 +1409,62 @@
             const searchInput = document.getElementById('searchMaterias');
             
             searchInput.addEventListener('input', (e) => {
-                const terminoBusqueda = e.target.value.toLowerCase().trim();
-                
-                // Filtramos las materias del estado global
-                const materiasFiltradas = appState.materias.filter(materia => 
-                    materia.nombre.toLowerCase().includes(terminoBusqueda)
-                );
-                
-                // Renderizamos solo las filtradas
-                cargarMateriasEnUI(materiasFiltradas);
+                currentSearch = e.target.value.toLowerCase().trim();
+                actualizarVistaMaterias(); // Llama a la función central
             });
+        }
+
+        // --- FIN DEL CÓDIGO RESTAURADO ---
+
+        // NUEVA: Configuración de los botones de orden (simplificada)
+        function configurarSort() {
+            const sortSelect = document.getElementById('sortSelect');
+
+            // Asegurarnos de que el select muestre el estado inicial
+            sortSelect.value = currentSort;
+
+            sortSelect.addEventListener('change', (e) => {
+                currentSort = e.target.value;
+                actualizarVistaMaterias();
+            });
+        }
+
+        // NUEVA: Función central para actualizar qué materias se ven
+        function actualizarVistaMaterias() {
+            let materiasParaRenderizar = [...appState.materias];
+
+            // 1. Aplicar filtro de búsqueda
+            if (currentSearch.length > 0) {
+                materiasParaRenderizar = materiasParaRenderizar.filter(materia => 
+                    materia.nombre.toLowerCase().includes(currentSearch)
+                );
+            }
+
+            // 2. Aplicar filtro de orden
+            switch (currentSort) {
+                case 'carrera':
+                    materiasParaRenderizar.sort((a, b) => {
+                        const indexA = materiasData.indexOf(a.nombre);
+                        const indexB = materiasData.indexOf(b.nombre);
+                        return indexA - indexB;
+                    });
+                    break;
+                case 'reviews-desc':
+                    materiasParaRenderizar.sort((a, b) => (b.numresenas || 0) - (a.numresenas || 0));
+                    break;
+                case 'reviews-asc':
+                    materiasParaRenderizar.sort((a, b) => (a.numresenas || 0) - (b.numresenas || 0));
+                    break;
+                case 'alpha-asc':
+                    materiasParaRenderizar.sort((a, b) => a.nombre.localeCompare(b.nombre));
+                    break;
+                case 'alpha-desc':
+                    materiasParaRenderizar.sort((a, b) => b.nombre.localeCompare(a.nombre));
+                    break;
+            }
+
+            // 3. Renderizar en la UI
+            cargarMateriasEnUI(materiasParaRenderizar);
         }
 
         // Configurar filtros (una sola vez)
