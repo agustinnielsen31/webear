@@ -61,6 +61,12 @@
             align-items: center;
         }
         
+        /* ESTILO NUEVO PARA SEPARAR BOTONES */
+        #authButtons {
+            display: flex;
+            gap: 0.5rem; /* Ajusta este valor si quieres más o menos espacio */
+        }
+
         .auth-section {
             display: flex;
             align-items: center;
@@ -131,10 +137,13 @@
         .materia-card {
             background: white;
             border-radius: 8px;
-            padding: 1.5rem;
+            padding: 1rem; /* <-- Reducido */
             box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
             transition: transform 0.3s ease, box-shadow 0.3s ease;
             cursor: pointer;
+            display: flex; /* <-- Nuevo */
+            flex-direction: column; /* <-- Nuevo */
+            justify-content: space-between; /* <-- Nuevo */
         }
         
         .materia-card:hover {
@@ -144,9 +153,22 @@
         
         .materia-card h3 {
             color: black;
-            margin-bottom: 0.5rem;
-            border-bottom: 2px solid var(--light-color);
-            padding-bottom: 0.5rem;
+            margin-bottom: 0.75rem; /* <-- Ajustado */
+            border-bottom: none; /* <-- Eliminado el borde */
+            padding-bottom: 0; /* <-- Eliminado */
+            font-size: 1.15rem; /* <-- Ligeramente más grande */
+        }
+        
+        /* NUEVO: Estilos para la lista de cátedras */
+        .materia-catedras {
+            font-size: 0.9rem;
+            color: #555;
+            margin-bottom: 0.75rem;
+            line-height: 1.4;
+        }
+
+        .materia-catedras strong {
+            color: var(--dark-color);
         }
         
         .rating {
@@ -158,6 +180,9 @@
         .review-count {
             color: var(--dark-color);
             font-size: 0.9rem;
+            margin-top: auto; /* <-- Empuja al fondo */
+            padding-top: 0.5rem; /* <-- Espacio superior */
+            border-top: 1px solid #f0f0f0; /* <-- Separador sutil */
         }
         
         .review-form-container {
@@ -881,23 +906,27 @@
                 card.className = 'materia-card';
                 card.dataset.materiaId = materia.id;
                 
-                let estrellasHTML = '';
-                const promedio = parseFloat(materia.promedio) || 0;
-                for (let i = 1; i <= 5; i++) {
-                    if (i <= Math.floor(promedio)) {
-                        estrellasHTML += '★';
-                    } else if (i - 0.5 <= promedio) {
-                        estrellasHTML += '½';
-                    } else {
-                        estrellasHTML += '☆';
-                    }
+                // --- INICIO DE LA LÓGICA MODIFICADA ---
+                
+                // 1. Procesar la lista de cátedras
+                let catedrasHTML = 'No hay cátedras cargadas';
+                if (materia.catedras && materia.catedras.length > 0) {
+                    // Mapeamos el array de objetos para obtener solo los nombres
+                    catedrasHTML = materia.catedras.map(c => c.nombre).join(', ');
                 }
                 
+                // 2. Crear el nuevo HTML de la tarjeta (sin rating, con cátedras)
                 card.innerHTML = `
-                    <h3>${materia.nombre}</h3>
-                    <div class="rating">${estrellasHTML} <span>${promedio.toFixed(1)}</span></div>
+                    <div>
+                        <h3>${materia.nombre}</h3>
+                        <div class="materia-catedras">
+                            <strong>Cátedras:</strong> ${catedrasHTML}
+                        </div>
+                    </div>
                     <div class="review-count">${materia.numresenas || 0} reseñas</div>
                 `;
+                
+                // --- FIN DE LA LÓGICA MODIFICADA ---
                 
                 card.addEventListener('click', () => {
                     seleccionarMateria(materia.id);
