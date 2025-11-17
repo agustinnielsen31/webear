@@ -24,17 +24,16 @@
         /* Contenedor principal para búsqueda y filtros */
         .controles-busqueda-container {
             display: flex;
-            /* flex-direction: column; <-- REVERTIDO */
-            align-items: center; /* <-- CAMBIO: de 'stretch' a 'center' */
-            justify-content: space-between; /* <-- NUEVO: Para separar los items */
+            align-items: center; 
+            justify-content: space-between; 
             gap: 1rem;
             margin-bottom: 1.5rem;
         }
 
         /* Estilos del Buscador */
         .search-container {
-            flex: 1; /* <-- NUEVO: para que ocupe el espacio sobrante */
-            min-width: 250px; /* <-- NUEVO: ancho mínimo */
+            flex: 1; /* para que ocupe el espacio sobrante */
+            min-width: 250px; /* ancho mínimo */
         }
 
         .search-input {
@@ -42,7 +41,6 @@
             padding: 0.75rem 1.25rem; /* Ajustado para la altura */
             font-size: 1rem;
             border: 2px solid #ecf0f1;
-            /* border-radius: 30px; <-- CAMBIADO */
             border-top-left-radius: 30px; /* Punta izquierda redondeada */
             border-bottom-left-radius: 30px; /* Punta izquierda redondeada */
             border-top-right-radius: 8px; /* Radio normal para el lado derecho */
@@ -59,8 +57,7 @@
         .sort-controls {
             display: flex;
             gap: 0.5rem;
-            /* flex-wrap: wrap; <-- Eliminado para forzar que queden en línea */
-            justify-content: flex-end; /* <-- CAMBIO: Alineado a la derecha */
+            justify-content: flex-end; /* Alineado a la derecha */
         }
 
         /* ESTILOS ELIMINADOS: .btn-sort, .btn-sort:hover, .btn-sort.active ya no se usan */
@@ -75,8 +72,6 @@
             font-weight: 600;
             font-size: 0.9rem;
             cursor: pointer;
-            /* flex: 1; <-- CAMBIO: Eliminado */
-            /* min-width: 0; <-- CAMBIO: Eliminado */
         }
         
         /* --- FIN DE CAMBIOS CSS --- */
@@ -320,7 +315,7 @@
         
         .aspect-rating {
             margin-bottom: 1rem;
-            padding-bottom: 0rem;
+            padding-bottom: 1rem;
             border-bottom: 1px solid #eee;
         }
         
@@ -335,6 +330,12 @@
         
         .resenas-container {
             margin-top: 2rem;
+            display: none; /* <-- AÑADIDO: Oculto por defecto */
+        }
+        
+        /* NUEVO: Regla para mostrar el contenedor */
+        .resenas-container.active {
+            display: block;
         }
         
         .review-card {
@@ -624,7 +625,7 @@
                     <div class="checkbox-group">
                         <div class="checkbox-option">
                             <input type="checkbox" id="evalParciales" value="Parciales">
-                            <label for="evalParciales">Parciales</label>
+                            <label for="evalParcialChes">Parciales</label>
                         </div>
                         <div class="checkbox-option">
                             <input type="checkbox" id="evalMonografia" value="Monografía">
@@ -680,18 +681,7 @@
                         </div>
                     </div>
                     
-                    <div class="aspect-rating">
-                        <label>Programa y bibliografía:</label>
-                        <div class="rating-input" id="programaRating">
-                            <span class="star" data-value="1">★</span>
-                            <span class="star" data-value="2">★</span>
-                            <span class="star" data-value="3">★</span>
-                            <span class="star" data-value="4">★</span>
-                            <span class="star" data-value="5">★</span>
-                        </div>
-                    </div>
-                    
-                    <div class="aspect-rating">
+                    <div class="aspect-rating"> <!-- <-- CORREGIDO: (Estaba roto como div classAFspeA-rating) -->
                         <label>Dificultad:</label>
                         <div class="rating-input" id="dificultadRating">
                             <span class="star" data-value="1">★</span>
@@ -1054,6 +1044,7 @@
             
             document.getElementById('formTitle').textContent = `Dejar Reseña - ${materia.nombre}`;
             document.getElementById('reviewForm').classList.add('active');
+            document.querySelector('.resenas-container').classList.add('active'); // <-- AÑADIDO: Muestra el contenedor de reseñas
             
             cargarCatedrasEnFormulario(materia.catedras);
             await cargarresenas(materiaId);
@@ -1575,5 +1566,6 @@
         document.addEventListener('DOMContentLoaded', init);
     </script>
 </body>
-</html>
+</html>I'm seeing a typo in this file, fix it:
 
+`div classAFspeA-rating`
