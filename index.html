@@ -648,7 +648,7 @@
                     </select>
                 </div>
                 
-                <div class="form-group">
+                <div class="form-group" id="practico-form-group">
                     <label for="practico">Práctico:</label>
                     <select id="practico" required>
                         <option value="">Selecciona un práctico</option>
@@ -770,7 +770,7 @@
                     </select>
                 </div>
                 
-                <div class="form-group filter-select">
+                <div class="form-group filter-select" id="practico-filter-group">
                     <label for="filterPractico">Filtrar por Práctico:</label>
                     <select id="filterPractico">
                         <option value="">Todos los prácticos</option>
@@ -1130,6 +1130,23 @@
             // Verificación: Asegurarse de que 'catedras' es un array
             const catedras = Array.isArray(materia.catedras) ? materia.catedras : [];
             cargarCatedrasEnFormulario(catedras);
+
+            // --- INICIO DE LA NUEVA LÓGICA: Ocultar/Mostrar Práctico ---
+            const practicoFormGroup = document.getElementById('practico-form-group');
+            const practicoSelect = document.getElementById('practico');
+            const filterPracticoGroup = document.getElementById('practico-filter-group');
+
+            if (materia.tipo === 'materias') {
+                practicoFormGroup.style.display = 'block';
+                filterPracticoGroup.style.display = 'block';
+                practicoSelect.required = true;
+                practicoSelect.innerHTML = '<option value="">Selecciona un práctico</option>';
+            } else {
+                practicoFormGroup.style.display = 'none';
+                filterPracticoGroup.style.display = 'none';
+                practicoSelect.required = false;
+            }
+            // --- FIN DE LA NUEVA LÓGICA ---
             
             await cargarresenas(materiaId);
             
@@ -1271,7 +1288,14 @@
                 }
                 
                 const catedra = document.getElementById('catedra').value;
-                const practico = document.getElementById('practico').value;
+                // --- INICIO DE LA MODIFICACIÓN: Asignación de 'practico' ---
+                let practico;
+                if (appState.materiaSeleccionada.tipo === 'materias') {
+                    practico = document.getElementById('practico').value;
+                } else {
+                    practico = "Único"; // Valor por defecto para las que no tienen
+                }
+                // --- FIN DE LA MODIFICACIÓN ---
                 const anioCursada = document.getElementById('anioCursada').value;
                 const reviewText = document.getElementById('reviewText').value;
                 const tomanAsistencia = document.getElementById('tomanAsistencia').value;
@@ -1453,6 +1477,13 @@
                     fechaFormateada = reseña.fecha.toDate().toLocaleDateString();
                 }
                 
+                // --- INICIO DE LA MODIFICACIÓN: Mostrar Práctico condicionalmente ---
+                let catedraPracticoHTML = reseña.catedra;
+                if (reseña.practico && reseña.practico !== 'Único') {
+                    catedraPracticoHTML = `${reseña.catedra} - ${reseña.practico}`;
+                }
+                // --- FIN DE LA MODIFICACIÓN ---
+
                 const tiposEvaluacionHTML = reseña.tiposEvaluacion && Array.isArray(reseña.tiposEvaluacion) 
                     ? reseña.tiposEvaluacion.join(', ') 
                     : 'No especificado';
@@ -1481,7 +1512,7 @@
                         <div class="review-user">
                             <div class="user-avatar">${reseña.usuarioEmail ? reseña.usuarioEmail.charAt(0).toUpperCase() : 'U'}</div>
                             <div>
-                                <div class="review-catedra">${reseña.catedra} - ${reseña.practico}</div>
+                                <div class="review-catedra">${catedraPracticoHTML}</div>
                                 <div class="review-date">${fechaFormateada} | Cursada en ${reseña.anioCursada || 'No especificado'}</div>
                             </div>
                         </div>
