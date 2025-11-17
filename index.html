@@ -19,9 +19,6 @@
             --dark-color: #2c3e50;
         }
         
-        /* --- INICIO DE CAMBIOS CSS --- */
-        
-        /* Contenedor principal para búsqueda y filtros */
         .controles-busqueda-container {
             display: flex;
             align-items: center; 
@@ -53,16 +50,12 @@
             box-shadow: 0 0 0 3px rgba(255, 125, 41, 0.1);
         }
         
-        /* Contenedor para los botones de orden */
         .sort-controls {
             display: flex;
             gap: 0.5rem;
-            justify-content: flex-end; /* Alineado a la derecha */
+            justify-content: flex-end;
         }
 
-        /* ESTILOS ELIMINADOS: .btn-sort, .btn-sort:hover, .btn-sort.active ya no se usan */
-
-        /* Estilo para el <select> de orden */
         .sort-select {
             padding: 0.75rem 1rem;
             border: 2px solid var(--secondary-color);
@@ -73,9 +66,7 @@
             font-size: 0.9rem;
             cursor: pointer;
         }
-        
-        /* --- FIN DE CAMBIOS CSS --- */
-        
+             
         * {
             margin: 0;
             padding: 0;
@@ -953,7 +944,6 @@
                 card.className = 'materia-card';
                 card.dataset.materiaId = materia.id;
                 
-                // --- INICIO DE LA LÓGICA MODIFICADA ---
                 
                 // 1. Procesar la lista de cátedras
                 let catedrasHTML = 'No hay cátedras cargadas';
@@ -1007,7 +997,6 @@
             cargarCatedrasEnFormulario(materia.catedras);
             await cargarresenas(materiaId);
             
-            // --- INICIO DE LÓGICA DE FILTRO Y SCROLL ---
             if (catedraNombre) {
                 // Si se pasó una cátedra, la seleccionamos en el filtro
                 const filterSelect = document.getElementById('filterCatedra');
@@ -1022,7 +1011,6 @@
                 // Comportamiento original: scroll al FORMULARIO
                 document.getElementById('reviewForm').scrollIntoView({ behavior: 'smooth' });
             }
-            // --- FIN DE LÓGICA DE FILTRO Y SCROLL ---
         }
 
         // Cargar cátedras en el formulario
@@ -1049,12 +1037,9 @@
                 cargarPracticosEnFormulario(this.value, catedras);
             });
             
-            // --- INICIO DE LA CORRECCIÓN ---
-            // Agregamos el listener al <select> del FILTRO, que faltaba
             filterCatedraSelect.addEventListener('change', function() {
                 cargarPracticosEnFormulario(this.value, catedras);
             });
-            // --- FIN DE LA CORRECCIÓN ---
         }
 
         // Cargar prácticos en el formulario
@@ -1363,8 +1348,6 @@
             });
         }
 
-        // --- FIN DEL CÓDIGO RESTAURADO ---
-
         // NUEVA: Configuración de los botones de orden (simplificada)
         function configurarSort() {
             const sortSelect = document.getElementById('sortSelect');
@@ -1520,9 +1503,9 @@
             }, 5000);
         }
 
-        // Inicializar cuando el DOM esté listo
         document.addEventListener('DOMContentLoaded', init);
     </script>
 </body>
 </html>
+
 
