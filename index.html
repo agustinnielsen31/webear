@@ -297,7 +297,7 @@
             color: var(--dark-color);
         }
         
-        select, textarea, input[type="text"], input[type="email"], input[type="password"] {
+        select, textarea, input[type="text"], input[type="email"], input[type="password"], input[type="number"] {
             width: 100%;
             padding: 0.75rem;
             border: 1px solid #ddd;
@@ -310,7 +310,6 @@
             resize: vertical;
         }
 
-        /* --- Estilos para mostrar contraseña --- */
         .password-wrapper {
             position: relative;
             width: 100%;
@@ -318,7 +317,7 @@
 
         .password-wrapper input {
             width: 100%;
-            padding-right: 40px; /* Espacio para el botón */
+            padding-right: 40px;
         }
 
         .toggle-password-btn {
@@ -463,6 +462,25 @@
         .filter-select {
             flex: 1;
             min-width: 200px;
+        }
+
+        .year-input-group {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-top: 0.5rem;
+        }
+
+        .year-input-group select {
+            width: 120px;
+            padding: 0.75rem;
+        }
+
+        .curso-verano-checkbox {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            flex-grow: 1;
         }
         
         .modal {
@@ -669,19 +687,25 @@
                 
                 <div class="form-group">
                     <label for="anioCursada">Año de cursada:</label>
-                    <select id="anioCursada" required>
-                        <option value="">Selecciona el año</option>
-                        <option value="2021">2021</option>
-                        <option value="2022">2022</option>
-                        <option value="2023">2023</option>
-                        <option value="2024">2024</option>
-                        <option value="2025">2025</option>
-                    </select>
+                    <div class="year-input-group">
+                        <select id="anioCursada" required>
+                            <option value="">Selecciona el año</option>
+                            <option value="2021">2021</option>
+                            <option value="2022">2022</option>
+                            <option value="2023">2023</option>
+                            <option value="2024">2024</option>
+                            <option value="2025">2025</option>
+                        </select>
+                        <div class="curso-verano-checkbox">
+                            <input type="checkbox" id="cursoVerano">
+                            <label for="cursoVerano">Curso de verano</label>
+                        </div>
+                    </div>
                 </div>
                 
                 <div class="form-group">
                     <label>Tipo de evaluación:</label>
-                    <div class="checkbox-group">
+                    <div class="checkbox-group" id="tiposEvaluacionCheckboxes"> 
                         <div class="checkbox-option">
                             <input type="checkbox" id="evalParciales" value="Parciales">
                             <label for="evalParcialChes">Parciales</label>
@@ -932,7 +956,7 @@
             configurarModales();
             configurarBuscador(); 
             configurarSort(); 
-            configurarTogglePasswords(); // Nuevo
+            configurarTogglePasswords();
         }
 
         function configurarFirebaseAuth() {
@@ -954,12 +978,10 @@
             const userName = document.getElementById('userName');
             const authButtons = document.getElementById('authButtons');
             
-            // Mostrar Nombre (si existe) o Email
             const displayName = user.displayName || user.email;
             userName.textContent = displayName;
             
             if (user.displayName) {
-                 // Usar la inicial del nombre
                 userAvatar.textContent = user.displayName.charAt(0).toUpperCase();
             } else if (user.email) {
                 userAvatar.textContent = user.email.charAt(0).toUpperCase();
@@ -1252,11 +1274,14 @@
                 } else {
                     practico = "Único";
                 }
+                
                 const anioCursada = document.getElementById('anioCursada').value;
+                const cursoVerano = document.getElementById('cursoVerano').checked;
+
                 const reviewText = document.getElementById('reviewText').value;
                 const tomanAsistencia = document.getElementById('tomanAsistencia').value;
                 
-                const tiposEvaluacion = Array.from(document.querySelectorAll('input[type="checkbox"]:checked'))
+                const tiposEvaluacion = Array.from(document.getElementById('tiposEvaluacionCheckboxes').querySelectorAll('input[type="checkbox"]:checked'))
                     .map(checkbox => checkbox.value);
                 
                 const generalRating = document.getElementById('generalRating').dataset.rating;
@@ -1265,7 +1290,7 @@
                 const dificultadRating = document.getElementById('dificultadRating').dataset.rating;
                 const ofertaRating = document.getElementById('ofertaRating').dataset.rating;
                 
-                if (!catedra || !practico || !anioCursada || !tomanAsistencia || !reviewText || !generalRating) {
+                if (!catedra || (appState.materiaSeleccionada.tipo === 'materias' && !practico) || !anioCursada || !tomanAsistencia || !reviewText || !generalRating) {
                     mostrarNotificacion('Por favor, completa todos los campos obligatorios.', 'error');
                     return;
                 }
@@ -1276,7 +1301,6 @@
                 submitBtn.textContent = 'Enviando...';
                 
                 try {
-                    // Usar el nombre del perfil si existe, si no, una parte del email o "Usuario"
                     const nombreAutor = appState.user.displayName || (appState.user.email ? appState.user.email.split('@')[0] : "Usuario");
 
                     const nuevaReseña = {
@@ -1284,7 +1308,8 @@
                         materiaNombre: appState.materiaSeleccionada.nombre,
                         catedra: catedra,
                         practico: practico,
-                        anioCursada: anioCursada,
+                        anioCursada: parseInt(anioCursada),
+                        cursoVerano: cursoVerano,
                         tiposEvaluacion: tiposEvaluacion,
                         tomanAsistencia: tomanAsistencia,
                         calificacionGeneral: parseInt(generalRating),
@@ -1295,7 +1320,7 @@
                         texto: reviewText,
                         usuarioId: appState.user.uid,
                         usuarioEmail: appState.user.email,
-                        usuarioNombre: nombreAutor, // <-- Guardamos el Nombre y Apellido
+                        usuarioNombre: nombreAutor,
                         fecha: firebase.firestore.FieldValue.serverTimestamp()
                     };
                     
@@ -1425,11 +1450,17 @@
                 if (reseña.practico && reseña.practico !== 'Único') {
                     catedraPracticoHTML = `${reseña.catedra} - ${reseña.practico}`;
                 }
-
-                const tiposEvaluacionHTML = reseña.tiposEvaluacion && Array.isArray(reseña.tiposEvaluacion) 
-                    ? reseña.tiposEvaluacion.join(', ') 
-                    : 'No especificado';
                 
+                // CORRECCIÓN PARA FILTRAR "on" y valores vacíos en la visualización
+                let tiposEvaluacionArray = reseña.tiposEvaluacion || [];
+                if (Array.isArray(tiposEvaluacionArray)) {
+                    tiposEvaluacionArray = tiposEvaluacionArray.filter(t => t && t.toLowerCase() !== 'on');
+                }
+                const tiposEvaluacionHTML = tiposEvaluacionArray.length > 0
+                    ? tiposEvaluacionArray.join(', ') 
+                    : 'No especificado';
+                // FIN DE CORRECCIÓN
+
                 let aspectosHTML = `
                     <div class="review-aspect">
                         <span class="aspect-name">Claridad (Pedagogía):</span>
@@ -1449,10 +1480,13 @@
                     </div>
                 `;
                 
-                // Determinar qué nombre mostrar
                 const nombreMostrar = reseña.usuarioNombre || (reseña.usuarioEmail ? reseña.usuarioEmail.split('@')[0] : 'Anónimo');
-                // Inicial
                 const inicial = nombreMostrar.charAt(0).toUpperCase();
+
+                let anioDisplay = reseña.anioCursada || 'No especificado';
+                if (reseña.cursoVerano) {
+                    anioDisplay += ' | Curso de verano';
+                }
 
                 reviewCard.innerHTML = `
                     <div class="review-header">
@@ -1461,7 +1495,7 @@
                             <div class="review-user-info">
                                 <div class="review-user-name">${nombreMostrar}</div>
                                 <div class="review-catedra">${catedraPracticoHTML}</div>
-                                <div class="review-date">${fechaFormateada} | Cursada en ${reseña.anioCursada || 'No especificado'}</div>
+                                <div class="review-date">${fechaFormateada} | Cursada en ${anioDisplay}</div>
                             </div>
                         </div>
                     </div>
@@ -1605,7 +1639,6 @@
             document.getElementById('filterRating').addEventListener('change', () => cargarresenasEnUI());
         }
 
-        // Nueva función para el toggle de contraseñas
         function configurarTogglePasswords() {
             document.querySelectorAll('.toggle-password-btn').forEach(btn => {
                 btn.addEventListener('click', function() {
@@ -1614,11 +1647,8 @@
                     
                     if (input.type === 'password') {
                         input.type = 'text';
-                        // Opcional: cambiar ícono
-                        // this.textContent = '🙈'; 
                     } else {
                         input.type = 'password';
-                        // this.textContent = '👁️';
                     }
                 });
             });
@@ -1678,7 +1708,6 @@
                 const password = document.getElementById('registerPassword').value;
                 const errorElement = document.getElementById('registerError');
 
-                // Validación básica
                 if (!firstName || !lastName) {
                     errorElement.textContent = "Por favor, completa tu nombre y apellido.";
                     return;
@@ -1687,7 +1716,6 @@
                 try {
                     const userCredential = await auth.createUserWithEmailAndPassword(email, password);
                     
-                    // Actualizar el perfil con el Nombre y Apellido
                     const fullName = `${firstName} ${lastName}`;
                     await userCredential.user.updateProfile({
                         displayName: fullName
