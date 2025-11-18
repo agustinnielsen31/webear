@@ -445,6 +445,50 @@
             color: var(--warning-color);
             font-weight: 600;
         }
+
+        /* --- VOTE STYLES --- */
+        .review-footer {
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+            gap: 1.5rem;
+            border-top: 1px solid #eee;
+            padding-top: 1rem;
+            margin-top: 1rem;
+        }
+
+        .vote-control {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.9rem;
+            color: var(--dark-color);
+        }
+
+        .vote-btn {
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 1.2rem;
+            transition: transform 0.1s;
+            padding: 0;
+            line-height: 1;
+        }
+
+        .vote-btn:hover {
+            transform: scale(1.15);
+        }
+
+        .vote-btn.like-active {
+            color: var(--success-color);
+            transform: scale(1.15);
+        }
+
+        .vote-btn.dislike-active {
+            color: var(--accent-color);
+            transform: scale(1.15);
+        }
+        /* --- END VOTE STYLES --- */
         
         .no-resenas {
             text-align: center;
@@ -482,6 +526,32 @@
             gap: 0.5rem;
             flex-grow: 1;
         }
+
+        /* --- SCROLL TO TOP BUTTON STYLES --- */
+        #scrollToTopBtn {
+            display: none; /* Oculto por defecto */
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 99;
+            border: none;
+            outline: none;
+            background-color: var(--primary-color);
+            color: white;
+            cursor: pointer;
+            padding: 15px;
+            border-radius: 50%;
+            font-size: 1.5rem;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            transition: opacity 0.3s, transform 0.3s;
+            line-height: 1;
+        }
+
+        #scrollToTopBtn:hover {
+            background-color: #ff7d19; /* Ligeramente más oscuro al pasar el ratón */
+            transform: scale(1.05);
+        }
+        /* --- END SCROLL TO TOP BUTTON STYLES --- */
         
         .modal {
             display: none;
@@ -609,6 +679,9 @@
             .checkbox-group {
                 flex-direction: column;
                 gap: 0.5rem;
+            }
+            .review-footer {
+                justify-content: center;
             }
         }
     </style>
@@ -843,6 +916,8 @@
         </div>
     </div>
 
+    <!-- Botón flotante para volver arriba -->
+    <button id="scrollToTopBtn" title="Ir arriba">▲</button>
     
     <div class="modal" id="loginModal">
         <div class="modal-content">
@@ -957,6 +1032,7 @@
             configurarBuscador(); 
             configurarSort(); 
             configurarTogglePasswords();
+            configurarScrollToTop();
         }
 
         function configurarFirebaseAuth() {
@@ -1251,6 +1327,69 @@
             });
         }
 
+        // Nueva función para manejar el voto
+        async function handleVote(reviewId, voteType) {
+            if (!appState.user) {
+                mostrarNotificacion('Debes iniciar sesión para votar.', 'error');
+                return;
+            }
+
+            const userId = appState.user.uid;
+            const reviewRef = db.collection('resenas').doc(reviewId);
+
+            try {
+                const doc = await reviewRef.get();
+                if (!doc.exists) {
+                    mostrarNotificacion('Error: Reseña no encontrada.', 'error');
+                    return;
+                }
+
+                const data = doc.data();
+                const votes = data.votes || {};
+                const currentVote = votes[userId];
+                
+                let newVote = voteType; // 1 (Like) or -1 (Dislike)
+                
+                // Lógica de voto
+                if (currentVote === voteType) {
+                    // El usuario hace clic en su voto actual -> Quitar voto
+                    delete votes[userId];
+                } else if (currentVote !== undefined) {
+                    // El usuario ya votó diferente -> Cambiar voto
+                    votes[userId] = newVote;
+                } else {
+                    // El usuario no ha votado -> Añadir voto
+                    votes[userId] = newVote;
+                }
+                
+                // Calcular likes y dislikes
+                let likes = 0;
+                let dislikes = 0;
+                for (const uid in votes) {
+                    if (votes[uid] === 1) {
+                        likes++;
+                    } else if (votes[uid] === -1) {
+                        dislikes++;
+                    }
+                }
+
+                // Guardar la actualización
+                await reviewRef.update({
+                    votes: votes,
+                    likes_count: likes,
+                    dislikes_count: dislikes
+                });
+
+                // Recargar reseñas para actualizar la UI
+                await cargarresenas(appState.materiaSeleccionada.id);
+                
+            } catch (error) {
+                console.error('Error al votar:', error);
+                mostrarNotificacion('Error al registrar tu voto: ' + error.message, 'error');
+            }
+        }
+
+
         function configurarFormulario() {
             const form = document.getElementById('reviewFormElement');
             
@@ -1321,7 +1460,11 @@
                         usuarioId: appState.user.uid,
                         usuarioEmail: appState.user.email,
                         usuarioNombre: nombreAutor,
-                        fecha: firebase.firestore.FieldValue.serverTimestamp()
+                        fecha: firebase.firestore.FieldValue.serverTimestamp(),
+                        // Inicializar campos de votos
+                        votes: {},
+                        likes_count: 0,
+                        dislikes_count: 0
                     };
                     
                     await db.collection('resenas').add(nuevaReseña);
@@ -1451,7 +1594,6 @@
                     catedraPracticoHTML = `${reseña.catedra} - ${reseña.practico}`;
                 }
                 
-                // CORRECCIÓN PARA FILTRAR "on" y valores vacíos en la visualización
                 let tiposEvaluacionArray = reseña.tiposEvaluacion || [];
                 if (Array.isArray(tiposEvaluacionArray)) {
                     tiposEvaluacionArray = tiposEvaluacionArray.filter(t => t && t.toLowerCase() !== 'on');
@@ -1459,7 +1601,6 @@
                 const tiposEvaluacionHTML = tiposEvaluacionArray.length > 0
                     ? tiposEvaluacionArray.join(', ') 
                     : 'No especificado';
-                // FIN DE CORRECCIÓN
 
                 let aspectosHTML = `
                     <div class="review-aspect">
@@ -1488,6 +1629,31 @@
                     anioDisplay += ' | Curso de verano';
                 }
 
+                // --- VOTE LOGIC START ---
+                const currentUserId = appState.user ? appState.user.uid : null;
+                const votes = reseña.votes || {};
+                const userVote = currentUserId ? votes[currentUserId] : 0; // 1, -1, or 0/undefined
+                
+                const likesCount = reseña.likes_count || 0;
+                const dislikesCount = reseña.dislikes_count || 0;
+                
+                const likeClass = userVote === 1 ? 'like-active' : '';
+                const dislikeClass = userVote === -1 ? 'dislike-active' : '';
+
+                const voteControlsHTML = `
+                    <div class="review-footer">
+                        <div class="vote-control">
+                            <button class="vote-btn vote-like ${likeClass}" data-review-id="${reseña.id}" data-vote-type="1" title="Útil">👍</button>
+                            <span class="like-count">${likesCount}</span>
+                        </div>
+                        <div class="vote-control">
+                            <button class="vote-btn vote-dislike ${dislikeClass}" data-review-id="${reseña.id}" data-vote-type="-1" title="No útil">👎</button>
+                            <span class="dislike-count">${dislikesCount}</span>
+                        </div>
+                    </div>
+                `;
+                // --- VOTE LOGIC END ---
+
                 reviewCard.innerHTML = `
                     <div class="review-header">
                         <div class="review-user">
@@ -1514,7 +1680,12 @@
                             <span class="aspect-value">${reseña.tomanAsistencia || 'No especificado'}</span>
                         </div>
                     </div>
+                    ${voteControlsHTML}
                 `;
+                
+                // Add event listeners for votes
+                reviewCard.querySelector('.vote-like').addEventListener('click', () => handleVote(reseña.id, 1));
+                reviewCard.querySelector('.vote-dislike').addEventListener('click', () => handleVote(reseña.id, -1));
                 
                 resenasList.appendChild(reviewCard);
             });
@@ -1764,6 +1935,30 @@
                 }
             }, 5000);
         }
+        
+        // --- SCROLL TO TOP LOGIC ---
+        function scrollToTop() {
+            window.scrollTo({
+                top: 0,
+                behavior: 'smooth'
+            });
+        }
+
+        function toggleScrollButton() {
+            const btn = document.getElementById('scrollToTopBtn');
+            if (document.body.scrollTop > 300 || document.documentElement.scrollTop > 300) {
+                btn.style.display = 'block';
+            } else {
+                btn.style.display = 'none';
+            }
+        }
+
+        function configurarScrollToTop() {
+            const btn = document.getElementById('scrollToTopBtn');
+            window.addEventListener('scroll', toggleScrollButton);
+            btn.addEventListener('click', scrollToTop);
+        }
+        // --- END SCROLL TO TOP LOGIC ---
 
         document.addEventListener('DOMContentLoaded', init);
     </script>
