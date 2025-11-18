@@ -309,6 +309,34 @@
             min-height: 120px;
             resize: vertical;
         }
+
+        /* --- Estilos para mostrar contraseña --- */
+        .password-wrapper {
+            position: relative;
+            width: 100%;
+        }
+
+        .password-wrapper input {
+            width: 100%;
+            padding-right: 40px; /* Espacio para el botón */
+        }
+
+        .toggle-password-btn {
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 1.2rem;
+            color: #777;
+            padding: 0;
+        }
+
+        .toggle-password-btn:hover {
+            color: var(--primary-color);
+        }
         
         .rating-input {
             display: flex;
@@ -371,15 +399,27 @@
             align-items: center;
             gap: 0.5rem;
         }
+
+        .review-user-info {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .review-user-name {
+            font-weight: 700;
+            color: var(--dark-color);
+            font-size: 0.95rem;
+        }
         
         .review-catedra {
             font-weight: 600;
             color: var(--primary-color);
+            font-size: 0.9rem;
         }
         
         .review-date {
             color: #777;
-            font-size: 0.9rem;
+            font-size: 0.85rem;
         }
         
         .review-content {
@@ -790,7 +830,10 @@
                 </div>
                 <div class="form-group">
                     <label for="loginPassword">Contraseña:</label>
-                    <input type="password" id="loginPassword" required>
+                    <div class="password-wrapper">
+                        <input type="password" id="loginPassword" required>
+                        <button type="button" class="toggle-password-btn" data-target="loginPassword">👁️</button>
+                    </div>
                 </div>
                 <div id="loginError" class="error-message"></div>
                 <div class="modal-actions">
@@ -807,8 +850,12 @@
             <h2>Registrarse</h2>
             <form id="registerForm">
                 <div class="form-group">
-                    <label for="registerName">Nombre:</label>
-                    <input type="text" id="registerName" required>
+                    <label for="registerFirstName">Nombre:</label>
+                    <input type="text" id="registerFirstName" required>
+                </div>
+                <div class="form-group">
+                    <label for="registerLastName">Apellido:</label>
+                    <input type="text" id="registerLastName" required>
                 </div>
                 <div class="form-group">
                     <label for="registerEmail">Email:</label>
@@ -816,7 +863,10 @@
                 </div>
                 <div class="form-group">
                     <label for="registerPassword">Contraseña:</label>
-                    <input type="password" id="registerPassword" required minlength="6">
+                    <div class="password-wrapper">
+                        <input type="password" id="registerPassword" required minlength="6">
+                        <button type="button" class="toggle-password-btn" data-target="registerPassword">👁️</button>
+                    </div>
                 </div>
                 <div id="registerError" class="error-message"></div>
                 <div class="modal-actions">
@@ -882,6 +932,7 @@
             configurarModales();
             configurarBuscador(); 
             configurarSort(); 
+            configurarTogglePasswords(); // Nuevo
         }
 
         function configurarFirebaseAuth() {
@@ -903,13 +954,17 @@
             const userName = document.getElementById('userName');
             const authButtons = document.getElementById('authButtons');
             
-            if (user.email) {
-                const firstLetter = user.email.charAt(0).toUpperCase();
-                userAvatar.textContent = firstLetter;
-                userName.textContent = user.email;
+            // Mostrar Nombre (si existe) o Email
+            const displayName = user.displayName || user.email;
+            userName.textContent = displayName;
+            
+            if (user.displayName) {
+                 // Usar la inicial del nombre
+                userAvatar.textContent = user.displayName.charAt(0).toUpperCase();
+            } else if (user.email) {
+                userAvatar.textContent = user.email.charAt(0).toUpperCase();
             } else {
                 userAvatar.textContent = 'A';
-                userName.textContent = 'Anónimo';
             }
             
             userInfo.style.display = 'flex';
@@ -1221,6 +1276,9 @@
                 submitBtn.textContent = 'Enviando...';
                 
                 try {
+                    // Usar el nombre del perfil si existe, si no, una parte del email o "Usuario"
+                    const nombreAutor = appState.user.displayName || (appState.user.email ? appState.user.email.split('@')[0] : "Usuario");
+
                     const nuevaReseña = {
                         materiaId: appState.materiaSeleccionada.id,
                         materiaNombre: appState.materiaSeleccionada.nombre,
@@ -1237,6 +1295,7 @@
                         texto: reviewText,
                         usuarioId: appState.user.uid,
                         usuarioEmail: appState.user.email,
+                        usuarioNombre: nombreAutor, // <-- Guardamos el Nombre y Apellido
                         fecha: firebase.firestore.FieldValue.serverTimestamp()
                     };
                     
@@ -1390,11 +1449,17 @@
                     </div>
                 `;
                 
+                // Determinar qué nombre mostrar
+                const nombreMostrar = reseña.usuarioNombre || (reseña.usuarioEmail ? reseña.usuarioEmail.split('@')[0] : 'Anónimo');
+                // Inicial
+                const inicial = nombreMostrar.charAt(0).toUpperCase();
+
                 reviewCard.innerHTML = `
                     <div class="review-header">
                         <div class="review-user">
-                            <div class="user-avatar">${reseña.usuarioEmail ? reseña.usuarioEmail.charAt(0).toUpperCase() : 'U'}</div>
-                            <div>
+                            <div class="user-avatar">${inicial}</div>
+                            <div class="review-user-info">
+                                <div class="review-user-name">${nombreMostrar}</div>
                                 <div class="review-catedra">${catedraPracticoHTML}</div>
                                 <div class="review-date">${fechaFormateada} | Cursada en ${reseña.anioCursada || 'No especificado'}</div>
                             </div>
@@ -1540,6 +1605,25 @@
             document.getElementById('filterRating').addEventListener('change', () => cargarresenasEnUI());
         }
 
+        // Nueva función para el toggle de contraseñas
+        function configurarTogglePasswords() {
+            document.querySelectorAll('.toggle-password-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const targetId = this.getAttribute('data-target');
+                    const input = document.getElementById(targetId);
+                    
+                    if (input.type === 'password') {
+                        input.type = 'text';
+                        // Opcional: cambiar ícono
+                        // this.textContent = '🙈'; 
+                    } else {
+                        input.type = 'password';
+                        // this.textContent = '👁️';
+                    }
+                });
+            });
+        }
+
         function configurarModales() {
             const loginModal = document.getElementById('loginModal');
             const registerModal = document.getElementById('registerModal');
@@ -1588,13 +1672,26 @@
 
             registerForm.addEventListener('submit', async (e) => {
                 e.preventDefault();
-                const name = document.getElementById('registerName').value;
+                const firstName = document.getElementById('registerFirstName').value.trim();
+                const lastName = document.getElementById('registerLastName').value.trim();
                 const email = document.getElementById('registerEmail').value;
                 const password = document.getElementById('registerPassword').value;
                 const errorElement = document.getElementById('registerError');
 
+                // Validación básica
+                if (!firstName || !lastName) {
+                    errorElement.textContent = "Por favor, completa tu nombre y apellido.";
+                    return;
+                }
+
                 try {
-                    await auth.createUserWithEmailAndPassword(email, password);
+                    const userCredential = await auth.createUserWithEmailAndPassword(email, password);
+                    
+                    // Actualizar el perfil con el Nombre y Apellido
+                    const fullName = `${firstName} ${lastName}`;
+                    await userCredential.user.updateProfile({
+                        displayName: fullName
+                    });
 
                     await auth.currentUser.sendEmailVerification();
                     await auth.signOut();
