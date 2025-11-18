@@ -19,7 +19,6 @@
             --dark-color: #2c3e50;
         }
         
-        /* --- INICIO: Estilos de Botones de Categoría --- */
         .category-filters {
             display: flex;
             flex-wrap: wrap;
@@ -30,7 +29,7 @@
         }
         
         .category-btn {
-            flex: 1 1 auto; /* Permite que los botones crezcan y se encojan */
+            flex: 1 1 auto;
             padding: 0.75rem 1rem;
             border: 2px solid var(--secondary-color);
             background-color: #ffffff;
@@ -53,7 +52,6 @@
             color: white;
             border-color: var(--primary-color);
         }
-        /* --- FIN: Estilos de Botones de Categoría --- */
 
         .controles-busqueda-container {
             display: flex;
@@ -63,21 +61,20 @@
             margin-bottom: 1.5rem;
         }
 
-        /* Estilos del Buscador */
         .search-container {
-            flex: 1; /* para que ocupe el espacio sobrante */
-            min-width: 250px; /* ancho mínimo */
+            flex: 1;
+            min-width: 250px;
         }
 
         .search-input {
             width: 100%;
-            padding: 0.75rem 1.25rem; /* Ajustado para la altura */
+            padding: 0.75rem 1.25rem;
             font-size: 1rem;
             border: 2px solid #ecf0f1;
-            border-top-left-radius: 30px; /* Punta izquierda redondeada */
-            border-bottom-left-radius: 30px; /* Punta izquierda redondeada */
-            border-top-right-radius: 8px; /* Radio normal para el lado derecho */
-            border-bottom-right-radius: 8px; /* Radio normal para el lado derecho */
+            border-top-left-radius: 30px;
+            border-bottom-left-radius: 30px;
+            border-top-right-radius: 8px;
+            border-bottom-right-radius: 8px;
             transition: border-color 0.3s ease, box-shadow 0.3s ease;
             outline: none;
         }
@@ -125,10 +122,9 @@
             align-items: center;
         }
         
-        /* ESTILO NUEVO PARA SEPARAR BOTONES */
         #authButtons {
             display: flex;
-            gap: 0.5rem; /* Ajusta este valor si quieres más o menos espacio */
+            gap: 0.5rem;
         }
 
         .auth-section {
@@ -201,13 +197,13 @@
         .materia-card {
             background: white;
             border-radius: 8px;
-            padding: 1rem; /* <-- Reducido */
+            padding: 1rem;
             box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
             transition: transform 0.3s ease, box-shadow 0.3s ease;
             cursor: pointer;
-            display: flex; /* <-- Nuevo */
-            flex-direction: column; /* <-- Nuevo */
-            justify-content: space-between; /* <-- Nuevo */
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
         }
         
         .materia-card:hover {
@@ -217,13 +213,12 @@
         
         .materia-card h3 {
             color: black;
-            margin-bottom: 0.75rem; /* <-- Ajustado */
-            border-bottom: none; /* <-- Eliminado el borde */
-            padding-bottom: 0; /* <-- Eliminado */
-            font-size: 1.15rem; /* <-- Ligeramente más grande */
+            margin-bottom: 0.75rem;
+            border-bottom: none;
+            padding-bottom: 0;
+            font-size: 1.15rem;
         }
         
-        /* NUEVO: Estilos para la lista de cátedras */
         .materia-catedras {
             font-size: 0.9rem;
             color: #555;
@@ -231,7 +226,7 @@
             line-height: 1.4;
             display: flex;
             flex-wrap: wrap;
-            gap: 6px; /* <-- Reactivamos el 'gap' */
+            gap: 6px;
             align-items: center;
         }
 
@@ -239,29 +234,21 @@
             color: var(--dark-color);
         }
         
-        /* NUEVO: Estilo para los links de cátedra */
         .catedra-link {
-            /* --- INICIO DE CAMBIOS (Estilo de etiqueta) --- */
-            background-color: var(--secondary-color); /* Fondo gris claro */
-            color: var(--dark-color); /* Texto oscuro */
-            padding: 4px 10px; /* Relleno */
-            border-radius: 12px; /* Bordes redondeados (forma de píldora) */
+            background-color: var(--secondary-color);
+            color: var(--dark-color);
+            padding: 4px 10px;
+            border-radius: 12px;
             font-size: 0.8rem;
             font-weight: 600;
-            text-decoration: none; /* Quitamos subrayado */
-            /* --- FIN DE CAMBIOS --- */
+            text-decoration: none;
             cursor: pointer;
             transition: background-color 0.2s, color 0.2s;
-            /* Quitamos el margen, ahora usamos 'gap' */
         }
         
-        /* BLOQUE ELIMINADO: Ya no necesitamos el punto separador */
-        
         .catedra-link:hover {
-            /* --- INICIO DE CAMBIOS (Hover) --- */
-            background-color: var(--primary-color); /* Fondo naranja al pasar el mouse */
-            color: white; /* Texto blanco */
-            /* --- FIN DE CAMBIOS --- */
+            background-color: var(--primary-color);
+            color: white;
         }
         
         .rating {
@@ -273,9 +260,9 @@
         .review-count {
             color: var(--dark-color);
             font-size: 0.9rem;
-            margin-top: auto; /* <-- Empuja al fondo */
-            padding-top: 0.5rem; /* <-- Espacio superior */
-            border-top: 1px solid #f0f0f0; /* <-- Separador sutil */
+            margin-top: auto;
+            padding-top: 0.5rem;
+            border-top: 1px solid #f0f0f0;
         }
         
         .review-form-container {
@@ -357,10 +344,9 @@
         
         .resenas-container {
             margin-top: 2rem;
-            display: none; /* <-- AÑADIDO: Oculto por defecto */
+            display: none;
         }
         
-        /* NUEVO: Regla para mostrar el contenedor */
         .resenas-container.active {
             display: block;
         }
@@ -530,7 +516,6 @@
         }
         
         @media (max-width: 768px) {
-            /* --- INICIO: Estilos de Botones de Categoría (Móvil) --- */
             .category-filters {
                 flex-direction: column;
                 gap: 0.5rem;
@@ -539,7 +524,6 @@
             .category-btn {
                 width: 100%;
             }
-            /* --- FIN: Estilos de Botones de Categoría (Móvil) --- */
 
             .materias-grid {
                 grid-template-columns: 1fr;
@@ -559,16 +543,9 @@
                 text-align: center;
             }
             
-            /* CAMBIO: Reactivamos esta regla para móviles */
-            
             .controles-busqueda-container {
                 flex-direction: column;
                 align-items: stretch; 
-            }
-            
-            
-            .sort-controls {
-                /* flex-direction: column; <-- Eliminado para que se queden en línea */
             }
             
             .checkbox-group {
@@ -598,25 +575,21 @@
     </header>
     
     <div class="container">
-        <!-- --- INICIO: Botones de Categoría --- -->
         <div class="category-filters">
             <button class="category-btn active" data-category="materias">Materias obligatorias</button>
             <button class="category-btn" data-category="especiales">Sociologías especiales</button>
             <button class="category-btn" data-category="teorias">Teorías sociológicas</button>
             <button class="category-btn" data-category="horasdeinv">Talleres/Seminarios</button>
         </div>
-        <!-- --- FIN: Botones de Categoría --- -->
         
-        <!-- Barra de búsqueda y Filtros de Orden -->
         <div class="controles-busqueda-container">
             <div class="search-container">
                 <input type="text" id="searchMaterias" placeholder="🔍 Buscar materia por nombre..." class="search-input">
             </div>
             
             <div class="sort-controls">
-                <!-- Botón de "Orden Carrera" ELIMINADO -->
                 <select id="sortSelect" class="sort-select">
-                    <option value="carrera">Orden Carrera</option> <!-- Opción por defecto -->
+                    <option value="carrera">Orden Carrera</option>
                     <option value="reviews-desc">Más reseñas</option>
                     <option value="reviews-asc">Menos reseñas</option>
                     <option value="alpha-asc">A-Z</option>
@@ -627,7 +600,6 @@
         
         <h2 id="materiasGridTitle">Materias obligatorias</h2>
         <br>
-        <!-- Grilla de materias (una sola vez) -->
         <div class="materias-grid" id="materiasGrid">
         </div>
         
@@ -728,7 +700,18 @@
                         </div>
                     </div>
                     
-                    <div class="aspect-rating"> <!-- <-- CORREGIDO: (Estaba roto como div classAFspeA-rating) -->
+                    <div class="aspect-rating">
+                        <label>Programa y contenidos:</label>
+                        <div class="rating-input" id="programaRating">
+                            <span class="star" data-value="1">★</span>
+                            <span class="star" data-value="2">★</span>
+                            <span class="star" data-value="3">★</span>
+                            <span class="star" data-value="4">★</span>
+                            <span class="star" data-value="5">★</span>
+                        </div>
+                    </div>
+
+                    <div class="aspect-rating">
                         <label>Dificultad:</label>
                         <div class="rating-input" id="dificultadRating">
                             <span class="star" data-value="1">★</span>
@@ -845,8 +828,6 @@
     </div>
 
     <script>
-        // --- INICIO DE LA CORRECCIÓN: Volver a la config original ---
-        // Configuración de Firebase (la original de tu archivo)
         const firebaseConfig = {
             apiKey: "AIzaSyBnpshX3I7ZY3EUoraDZPdb2W6B6HZOYR0",
             authDomain: "social-sociales.firebaseapp.com",
@@ -857,30 +838,21 @@
             measurementId: "G-8BZFCJBMY6"
         };
 
-        // Inicializar Firebase
         firebase.initializeApp(firebaseConfig);
         const auth = firebase.auth();
         const db = firebase.firestore();
         
-        // Ya no usamos 'appId' ni 'setLogLevel'
-        // --- FIN DE LA CORRECCIÓN ---
-
-
-        // Estado de la aplicación
         let appState = {
-            materias: [], // <-- contendrá TODAS las materias
+            materias: [],
             resenas: [],
             materiaSeleccionada: null,
             user: null,
-            currentCategory: 'materias', // <-- NUEVO: Categoría por defecto
+            currentCategory: 'materias',
         };
 
-        // --- INICIO DE CAMBIOS JS ---
-        let currentSort = 'carrera'; // Estado inicial
+        let currentSort = 'carrera';
         let currentSearch = '';
-        // --- FIN DE CAMBIOS JS ---
 
-        // Datos de ejemplo para las materias - ORDEN ESPECÍÍFICO
         const materiasData = [
             "Sociología General",
             "Filosofía",
@@ -900,18 +872,10 @@
             "Psicología Social"
         ];
 
-        // Inicializar la aplicación
-        // --- INICIO DE LA CORRECCIÓN: Revertir lógica de 'init' ---
         function init() {
-            // 1. Configurar el listener de auth PRIMERO
             configurarFirebaseAuth();
-
-            // 2. Cargar materias INMEDIATAMENTE (como en el original)
-            // Esto asume que tus reglas de Firestore permiten lectura pública
             cargarMaterias(); 
-            
-            // 3. Cargar el resto
-            configurarFiltrosCategoria(); // <-- NUEVO: Añadir listeners a los botones
+            configurarFiltrosCategoria();
             configurarSistemaEstrellas();
             configurarFormulario();
             configurarFiltros();
@@ -919,12 +883,7 @@
             configurarBuscador(); 
             configurarSort(); 
         }
-        // --- FIN DE LA CORRECCIÓN ---
 
-        // --- INICIO DEL CÓDIGO RESTAURADO ---
-
-        // Configurar autenticación de Firebase
-        // --- INICIO DE LA CORRECCIÓN: Simplificar listener ---
         function configurarFirebaseAuth() {
             auth.onAuthStateChanged((user) => {
                 if (user) {
@@ -937,26 +896,21 @@
                 actualizarUIUsuario();
             });
         }
-        // --- FIN DE LA CORRECCIÓN ---
 
-        // Mostrar información del usuario
         function mostrarInfoUsuario(user) {
             const userInfo = document.getElementById('userInfo');
             const userAvatar = document.getElementById('userAvatar');
             const userName = document.getElementById('userName');
             const authButtons = document.getElementById('authButtons');
             
-            // --- INICIO DE LA CORRECCIÓN ---
-            // Comprobar si el usuario tiene email, si no, usar "Anónimo" o "A"
             if (user.email) {
                 const firstLetter = user.email.charAt(0).toUpperCase();
                 userAvatar.textContent = firstLetter;
                 userName.textContent = user.email;
             } else {
-                userAvatar.textContent = 'A'; // Por "Anónimo"
+                userAvatar.textContent = 'A';
                 userName.textContent = 'Anónimo';
             }
-            // --- FIN DE LA CORRECCIÓN ---
             
             userInfo.style.display = 'flex';
             authButtons.style.display = 'none';
@@ -967,7 +921,6 @@
             document.getElementById('authButtons').style.display = 'flex';
         }
 
-        // Actualizar UI según estado de autenticación
         function actualizarUIUsuario() {
             const authRequiredMessage = document.getElementById('authRequiredMessage');
             const reviewForm = document.getElementById('reviewFormElement');
@@ -983,58 +936,44 @@
             }
         }
 
-        // Cargar materias desde Firestore (o datos de ejemplo)
         async function cargarMaterias() {
-            
-            // --- INICIO DE LA MODIFICACIÓN: Cargar todo y guardar 'tipo' ---
             try {
                 const collectionNames = ['materias', 'especiales', 'teorias', 'horasdeinv']; 
                 console.log("Iniciando carga de todas las colecciones...");
 
                 const collectionPromises = collectionNames.map(name => {
-                    console.log(`Intentando cargar desde la RAÍZ: ${name}`);
                     return db.collection(name).get();
                 });
 
                 const snapshots = await Promise.all(collectionPromises);
 
-                console.log("Éxito: Todas las colecciones se cargaron (o estaban vacías).");
-
                 const allMaterias = snapshots.reduce((acc, snapshot, index) => {
                     const name = collectionNames[index];
                     if (snapshot.empty) {
-                        console.log(`Aviso: La colección '${name}' está vacía.`);
                         return acc; 
                     }
-                    // --- ¡IMPORTANTE! Guardamos el 'tipo' (nombre de la colección) ---
                     const docsData = snapshot.docs.map(doc => ({ 
                         id: doc.id, 
                         ...doc.data(), 
-                        tipo: name // <-- Guardamos la categoría/colección de origen
+                        tipo: name
                     }));
-                    console.log(`Info: Se procesaron ${docsData.length} documentos de '${name}'`);
                     return acc.concat(docsData);
                 }, []); 
 
                 if (allMaterias.length > 0) {
-                    appState.materias = allMaterias; // Guardamos TODAS las materias
+                    appState.materias = allMaterias;
                 } else {
-                    console.log("Todas las colecciones (materias, especiales, teorias, horasdeinv) están vacías."); 
                     appState.materias = []; 
                 }
                 
-                // Renderizamos la vista (que por defecto filtra por 'materias')
                 actualizarVistaMaterias(); 
             
             } catch (error) {
                 console.error('Error cargando una o más colecciones de materias (Promise.all):', error);
                 
-                // Plan B (cargar solo 'materias') se mantiene por si fallan las reglas
-                console.log("Plan B: Intentando cargar solo 'materias'...");
                 try {
                     const materiasSnapshot = await db.collection('materias').get();
                     if (!materiasSnapshot.empty) {
-                        // Añadimos el 'tipo' también al plan B
                         appState.materias = materiasSnapshot.docs.map(doc => ({ 
                             id: doc.id, 
                             ...doc.data(), 
@@ -1050,16 +989,13 @@
                 
                 actualizarVistaMaterias();
             }
-            // --- FIN DE LA MODIFICACIÓN ---
         }
 
-        // Cargar materias en la UI (versión modificada con parámetro)
-        function cargarMateriasEnUI(listaMaterias) { // Ya no tiene valor default
+        function cargarMateriasEnUI(listaMaterias) {
             const materiasGrid = document.getElementById('materiasGrid');
             materiasGrid.innerHTML = '';
 
             if (listaMaterias.length === 0) {
-                // --- MODIFICACIÓN: Mensaje más específico ---
                 materiasGrid.innerHTML = '<p style="grid-column: 1/-1; text-align: center; color: #777;">No se encontraron materias para esta categoría o búsqueda.</p>';
                 return;
             }
@@ -1069,18 +1005,13 @@
                 card.className = 'materia-card';
                 card.dataset.materiaId = materia.id;
                 
-                
-                // 1. Procesar la lista de cátedras
                 let catedrasHTML = 'No hay cátedras cargadas';
-                // --- MODIFICACIÓN: Comprobar que 'catedras' sea un array ---
                 if (Array.isArray(materia.catedras) && materia.catedras.length > 0) {
-                    // Mapeamos para crear SPANs clickeables en lugar de texto plano
                     catedrasHTML = materia.catedras.map(c => 
                         `<span class="catedra-link" data-catedra-nombre="${c.nombre}">${c.nombre}</span>`
-                    ).join(''); /* <-- QUITAMOS LA COMA DE AQUÍ */
+                    ).join('');
                 }
                 
-                // 2. Crear el nuevo HTML de la tarjeta (sin rating, con cátedras)
                 card.innerHTML = `
                     <div>
                         <h3>${materia.nombre || 'Sin Nombre'}</h3>
@@ -1091,18 +1022,13 @@
                     <div class="review-count">${materia.numresenas || 0} reseñas</div>
                 `;
                 
-                // --- FIN DE LA LÓGICA MODIFICADA ---
-                
                 card.addEventListener('click', (e) => {
-                    // Revisamos si el clic fue en un link de cátedra
                     const linkClickeado = e.target.closest('.catedra-link');
                     
                     if (linkClickeado) {
-                        // Sí fue en un link, pasamos el ID y el nombre de la cátedra
                         const catedraNombre = linkClickeado.dataset.catedraNombre;
                         seleccionarMateria(materia.id, catedraNombre);
                     } else {
-                        // Fue un clic normal en la tarjeta, solo pasamos el ID
                         seleccionarMateria(materia.id);
                     }
                 });
@@ -1111,11 +1037,9 @@
             });
         }
 
-        // Seleccionar una materia (con parámetro opcional 'catedraNombre')
         async function seleccionarMateria(materiaId, catedraNombre = null) {
             const materia = appState.materias.find(m => m.id === materiaId);
             
-            // Verificación: Asegurarse de que la materia se encontró
             if (!materia) {
                 console.error("No se pudo encontrar la materia con ID:", materiaId);
                 return;
@@ -1125,13 +1049,11 @@
             
             document.getElementById('formTitle').textContent = `Dejar Reseña - ${materia.nombre}`;
             document.getElementById('reviewForm').classList.add('active');
-            document.querySelector('.resenas-container').classList.add('active'); // <-- AÑADIDO: Muestra el contenedor de reseñas
+            document.querySelector('.resenas-container').classList.add('active');
             
-            // Verificación: Asegurarse de que 'catedras' es un array
             const catedras = Array.isArray(materia.catedras) ? materia.catedras : [];
             cargarCatedrasEnFormulario(catedras);
 
-            // --- INICIO DE LA NUEVA LÓGICA: Ocultar/Mostrar Práctico ---
             const practicoFormGroup = document.getElementById('practico-form-group');
             const practicoSelect = document.getElementById('practico');
             const filterPracticoGroup = document.getElementById('practico-filter-group');
@@ -1146,27 +1068,21 @@
                 filterPracticoGroup.style.display = 'none';
                 practicoSelect.required = false;
             }
-            // --- FIN DE LA NUEVA LÓGICA ---
             
             await cargarresenas(materiaId);
             
             if (catedraNombre) {
-                // Si se pasó una cátedra, la seleccionamos en el filtro
                 const filterSelect = document.getElementById('filterCatedra');
                 filterSelect.value = catedraNombre;
                 
-                // Volvemos a renderizar las reseñas para que se aplique el filtro
                 cargarresenasEnUI();
                 
-                // Hacemos scroll a la LISTA DE RESEÑAS
                 document.getElementById('resenasList').scrollIntoView({ behavior: 'smooth' });
             } else {
-                // Comportamiento original: scroll al FORMULARIO
                 document.getElementById('reviewForm').scrollIntoView({ behavior: 'smooth' });
             }
         }
 
-        // Cargar cátedras en el formulario
         function cargarCatedrasEnFormulario(catedras) {
             const catedraSelect = document.getElementById('catedra');
             const filterCatedraSelect = document.getElementById('filterCatedra');
@@ -1174,31 +1090,24 @@
             catedraSelect.innerHTML = '<option value="">Selecciona una cátedra</option>';
             filterCatedraSelect.innerHTML = '<option value="">Todas las cátedras</option>';
             
-            // Verificación: Asegurarse de que 'catedras' es un array antes de hacer forEach
             if (Array.isArray(catedras)) {
                 catedras.forEach(catedra => {
                     const option = document.createElement('option');
                     option.value = catedra.nombre;
                     option.textContent = catedra.nombre;
-                    catedraSelect.appendChild(option.cloneNode(true)); // Clonamos el nodo para el filtro
+                    catedraSelect.appendChild(option.cloneNode(true));
                     filterCatedraSelect.appendChild(option);
                 });
             }
             
-            // Remover listeners anteriores para evitar duplicados (buena práctica)
-            // Clona el nodo y reemplázalo para limpiar listeners
             const newCatedraSelect = catedraSelect.cloneNode(true);
             catedraSelect.parentNode.replaceChild(newCatedraSelect, catedraSelect);
 
-            // Añade el listener al nuevo nodo
             newCatedraSelect.addEventListener('change', function() {
                 cargarPracticosEnFormulario(this.value, catedras);
             });
-            
-            // El listener para filterCatedraSelect se añade en configurarFiltros
         }
 
-        // Cargar prácticos en el formulario
         function cargarPracticosEnFormulario(catedraNombre, catedras) {
             const practicoSelect = document.getElementById('practico');
             const filterPracticoSelect = document.getElementById('filterPractico');
@@ -1209,27 +1118,23 @@
             if (catedraNombre && Array.isArray(catedras)) {
                 const catedra = catedras.find(c => c.nombre === catedraNombre);
                 
-                // Verificación: Asegurarse de que 'catedra' se encontró y 'practicos' es un array
                 if (catedra && Array.isArray(catedra.practicos)) {
                     catedra.practicos.forEach(practico => {
                         const option = document.createElement('option');
                         option.value = practico;
                         option.textContent = practico;
-                        practicoSelect.appendChild(option.cloneNode(true)); // Clonamos el nodo
+                        practicoSelect.appendChild(option.cloneNode(true));
                         filterPracticoSelect.appendChild(option);
                     });
                 }
             }
         }
 
-        // Cargar resenas desde Firestore
         async function cargarresenas(materiaId) {
             try {
-                // --- INICIO DE LA CORRECCIÓN: Quitar la ruta 'artifacts' ---
                 const resenasSnapshot = await db.collection('resenas')
                     .where('materiaId', '==', materiaId)
                     .get();
-                // --- FIN DE LA CORRECCIÓN ---
 
                 appState.resenas = resenasSnapshot.docs.map(doc => ({
                     id: doc.id,
@@ -1250,7 +1155,6 @@
             }
         }
 
-        // Configurar sistema de estrellas
         function configurarSistemaEstrellas() {
             document.querySelectorAll('.rating-input').forEach(input => {
                 const stars = input.querySelectorAll('.star');
@@ -1270,7 +1174,6 @@
             });
         }
 
-        // Configurar formulario de reseña
         function configurarFormulario() {
             const form = document.getElementById('reviewFormElement');
             
@@ -1288,14 +1191,12 @@
                 }
                 
                 const catedra = document.getElementById('catedra').value;
-                // --- INICIO DE LA MODIFICACIÓN: Asignación de 'practico' ---
                 let practico;
                 if (appState.materiaSeleccionada.tipo === 'materias') {
                     practico = document.getElementById('practico').value;
                 } else {
-                    practico = "Único"; // Valor por defecto para las que no tienen
+                    practico = "Único";
                 }
-                // --- FIN DE LA MODIFICACIÓN ---
                 const anioCursada = document.getElementById('anioCursada').value;
                 const reviewText = document.getElementById('reviewText').value;
                 const tomanAsistencia = document.getElementById('tomanAsistencia').value;
@@ -1305,7 +1206,7 @@
                 
                 const generalRating = document.getElementById('generalRating').dataset.rating;
                 const claridadRating = document.getElementById('claridadRating').dataset.rating;
-                // const programaRating = document.getElementById('programaRating').dataset.rating; // Este ID no existe en el HTML
+                const programaRating = document.getElementById('programaRating').dataset.rating;
                 const dificultadRating = document.getElementById('dificultadRating').dataset.rating;
                 const ofertaRating = document.getElementById('ofertaRating').dataset.rating;
                 
@@ -1330,7 +1231,7 @@
                         tomanAsistencia: tomanAsistencia,
                         calificacionGeneral: parseInt(generalRating),
                         claridad: parseInt(claridadRating) || 0,
-                        // programa: parseInt(programaRating) || 0, // ID no existe
+                        programa: parseInt(programaRating) || 0,
                         dificultad: parseInt(dificultadRating) || 0,
                         oferta: parseInt(ofertaRating) || 0,
                         texto: reviewText,
@@ -1339,9 +1240,7 @@
                         fecha: firebase.firestore.FieldValue.serverTimestamp()
                     };
                     
-                    // --- INICIO DE LA CORRECCIÓN: Quitar la ruta 'artifacts' ---
                     await db.collection('resenas').add(nuevaReseña);
-                    // --- FIN DE LA CORRECCIÓN ---
                     
                     await actualizarContadorresenas(appState.materiaSeleccionada.id);
                     await cargarresenas(appState.materiaSeleccionada.id);
@@ -1361,7 +1260,6 @@
             });
         }
 
-        // Limpiar estrellas seleccionadas
         function limpiarEstrellas() {
             document.querySelectorAll('.rating-input').forEach(input => {
                 input.dataset.rating = '';
@@ -1371,7 +1269,6 @@
             });
         }
 
-        // Actualizar contador de resenas en una materia
         async function actualizarContadorresenas(materiaId) {
             
             let numresenas = 0;
@@ -1380,18 +1277,16 @@
             let promedio = "0.0";
             
             try {
-                // --- INICIO DE LA CORRECCIÓN: Quitar la ruta 'artifacts' ---
                 const resenasSnapshot = await db.collection('resenas')
                     .where('materiaId', '==', materiaId)
                     .get();
-                // --- FIN DE LA CORRECCIÓN ---
                 
                 numresenas = resenasSnapshot.size;
                 
                 resenasSnapshot.forEach(doc => {
                     const reseña = doc.data();
                     if (reseña.calificacionGeneral) {
-                        sumaCalificaciones += reseña.calificacionGeneral; // <-- CORREGIDO: 'calificacionGeneral'
+                        sumaCalificaciones += reseña.calificacionGeneral;
                         totalresenas++;
                     }
                 });
@@ -1400,22 +1295,16 @@
             
             } catch (error) {
                 console.error("Error al calcular reseñas:", error);
-                return; // Salir si no se pueden calcular las reseñas
+                return;
             }
 
-            // --- INICIO DE LA CORRECCIÓN DE RUTA ---
-            // No sabemos de qué colección vino esta materia (materias, especiales, etc.)
-            // así que intentamos actualizar en todas las colecciones posibles.
-            
             const coleccionesPosibles = ['materias', 'especiales', 'teorias', 'horasdeinv']; 
             let actualizado = false;
 
             for (const col of coleccionesPosibles) {
                 try {
-                    // --- INICIO DE LA CORRECCIÓN: Quitar la ruta 'artifacts' ---
                     const docRef = db.collection(col).doc(materiaId);
-                    // --- FIN DE LA CORRECCIÓN ---
-                    const docSnap = await docRef.get(); // Verificar si existe en esta colección
+                    const docSnap = await docRef.get();
 
                     if (docSnap.exists) {
                         await docRef.update({
@@ -1424,28 +1313,24 @@
                         });
                         actualizado = true;
                         
-                        // Actualizar estado local
                         const materiaIndex = appState.materias.findIndex(m => m.id === materiaId);
                         if (materiaIndex !== -1) {
                             appState.materias[materiaIndex].numresenas = numresenas;
                             appState.materias[materiaIndex].promedio = promedio;
                         }
-                        actualizarVistaMaterias(); // Actualizar la UI
-                        break; // Salir del bucle si se actualizó
+                        actualizarVistaMaterias();
+                        break;
                     }
                 } catch (err) {
-                    // Esto es esperado si el doc no está en esta colección, no es un error fatal
-                    // console.warn(`Documento no encontrado en ${col}, probando siguiente.`);
+                    
                 }
             }
 
             if (!actualizado) {
                 console.error("Error: No se pudo actualizar el contador de reseñas en ninguna colección para el ID:", materiaId);
             }
-            // --- FIN DE LA CORRECCIÓN DE RUTA ---
         }
 
-        // Cargar resenas en la UI
         function cargarresenasEnUI() {
             const resenasList = document.getElementById('resenasList');
             
@@ -1477,22 +1362,23 @@
                     fechaFormateada = reseña.fecha.toDate().toLocaleDateString();
                 }
                 
-                // --- INICIO DE LA MODIFICACIÓN: Mostrar Práctico condicionalmente ---
                 let catedraPracticoHTML = reseña.catedra;
                 if (reseña.practico && reseña.practico !== 'Único') {
                     catedraPracticoHTML = `${reseña.catedra} - ${reseña.practico}`;
                 }
-                // --- FIN DE LA MODIFICACIÓN ---
 
                 const tiposEvaluacionHTML = reseña.tiposEvaluacion && Array.isArray(reseña.tiposEvaluacion) 
                     ? reseña.tiposEvaluacion.join(', ') 
                     : 'No especificado';
                 
-                // HTML para los aspectos (solo si tienen valor)
                 let aspectosHTML = `
                     <div class="review-aspect">
                         <span class="aspect-name">Claridad (Pedagogía):</span>
                         <span class="aspect-value">${reseña.claridad || 'N/A'}/5</span>
+                    </div>
+                    <div class="review-aspect">
+                        <span class="aspect-name">Programa y contenidos:</span>
+                        <span class="aspect-value">${reseña.programa || 'N/A'}/5</span>
                     </div>
                     <div class="review-aspect">
                         <span class="aspect-name">Dificultad:</span>
@@ -1504,9 +1390,6 @@
                     </div>
                 `;
                 
-                // Nota: 'programa' no está en el formulario, así que lo omitimos
-                // del 'review-aspects' para evitar mostrar "N/A" siempre.
-
                 reviewCard.innerHTML = `
                     <div class="review-header">
                         <div class="review-user">
@@ -1538,7 +1421,6 @@
             });
         }
 
-        // Aplicar filtros a las resenas
         function aplicarFiltros(resenas) {
             const filterCatedra = document.getElementById('filterCatedra').value;
             const filterPractico = document.getElementById('filterPractico').value;
@@ -1551,21 +1433,18 @@
             });
         }
         
-        // Función del buscador
         function configurarBuscador() {
             const searchInput = document.getElementById('searchMaterias');
             
             searchInput.addEventListener('input', (e) => {
                 currentSearch = e.target.value.toLowerCase().trim();
-                actualizarVistaMaterias(); // Llama a la función central
+                actualizarVistaMaterias();
             });
         }
 
-        // NUEVA: Configuración de los botones de orden (simplificada)
         function configurarSort() {
             const sortSelect = document.getElementById('sortSelect');
 
-            // Asegurarnos de que el select muestre el estado inicial
             sortSelect.value = currentSort;
 
             sortSelect.addEventListener('change', (e) => {
@@ -1574,75 +1453,58 @@
             });
         }
 
-        // --- INICIO: NUEVA FUNCIÓN para los botones de categoría ---
         function configurarFiltrosCategoria() {
             const buttons = document.querySelectorAll('.category-btn');
             const titleElement = document.getElementById('materiasGridTitle');
             
             buttons.forEach(button => {
                 button.addEventListener('click', () => {
-                    // 1. Obtener la categoría y el texto del botón
                     const category = button.dataset.category;
                     const buttonText = button.textContent;
                     
-                    // 2. Actualizar el estado
                     appState.currentCategory = category;
                     
-                    // 3. Actualizar la clase 'active' de los botones
                     buttons.forEach(btn => btn.classList.remove('active'));
                     button.classList.add('active');
                     
-                    // 4. Actualizar el título h2
                     titleElement.textContent = buttonText;
                     
-                    // 5. Ocultar el formulario y las reseñas si estaban visibles
                     document.getElementById('reviewForm').classList.remove('active');
                     document.querySelector('.resenas-container').classList.remove('active');
                     appState.materiaSeleccionada = null;
 
-                    // 6. Volver a renderizar la lista de materias
                     actualizarVistaMaterias();
                 });
             });
         }
-        // --- FIN: NUEVA FUNCIÓN ---
 
-        // NUEVA: Función central para actualizar qué materias se ven
         function actualizarVistaMaterias() {
             let materiasParaRenderizar = [...appState.materias];
 
-            // --- INICIO: MODIFICACIÓN ---
-            // 1. Filtrar por CATEGORÍA
             materiasParaRenderizar = materiasParaRenderizar.filter(materia => 
                 materia.tipo === appState.currentCategory
             );
 
-            // 2. Aplicar filtro de búsqueda
             if (currentSearch.length > 0) {
                 materiasParaRenderizar = materiasParaRenderizar.filter(materia => 
                     (materia.nombre || '').toLowerCase().includes(currentSearch)
                 );
             }
 
-            // 3. Aplicar filtro de orden
-            // --- FIN: MODIFICACIÓN ---
-            
             switch (currentSort) {
                 case 'carrera':
                     materiasParaRenderizar.sort((a, b) => {
-                        // --- INICIO DE LA CORRECCIÓN ---
-                        const nombreA = a.nombre || ''; // Default a string vacío si es undefined
-                        const nombreB = b.nombre || ''; // Default a string vacío si es undefined
+                        const nombreA = a.nombre || '';
+                        const nombreB = b.nombre || '';
 
                         const indexA = materiasData.indexOf(nombreA);
                         const indexB = materiasData.indexOf(nombreB);
                         
-                        if (indexA === -1 && indexB === -1) return nombreA.localeCompare(nombreB); // Compara los strings (seguros)
-                        // --- FIN DE LA CORRECCIÓN ---
-                        if (indexA === -1) return 1; // A al final
-                        if (indexB === -1) return -1; // B al final
+                        if (indexA === -1 && indexB === -1) return nombreA.localeCompare(nombreB);
+                        if (indexA === -1) return 1;
+                        if (indexB === -1) return -1;
                         
-                        return indexA - indexB; // Ambas dentro, orden de lista
+                        return indexA - indexB;
                     });
                     break;
                 case 'reviews-desc':
@@ -1652,40 +1514,25 @@
                     materiasParaRenderizar.sort((a, b) => (a.numresenas || 0) - (b.numresenas || 0));
                     break;
                 case 'alpha-asc':
-                    // --- INICIO DE LA CORRECCIÓN ---
                     materiasParaRenderizar.sort((a, b) => (a.nombre || '').localeCompare(b.nombre || ''));
-                    // --- FIN DE LA CORRECCIÓN ---
                     break;
                 case 'alpha-desc':
-                    // --- INICIO DE LA CORRECCIÓN ---
                     materiasParaRenderizar.sort((a, b) => (b.nombre || '').localeCompare(a.nombre || ''));
-                    // --- FIN DE LA CORRECCIÓN ---
                     break;
             }
 
-            // 4. Renderizar en la UI
             cargarMateriasEnUI(materiasParaRenderizar);
         }
 
-        // Configurar filtros (una sola vez)
         function configurarFiltros() {
-            // -- CORRECCIÓN DE BUG LÓGICO --
-            // Separamos los listeners para que filterCatedra pueda recargar los prácticos
-            
             document.getElementById('filterCatedra').addEventListener('change', () => {
-                // 1. Cargar los prácticos correspondientes en el filtro de prácticos
                 const catedras = appState.materiaSeleccionada?.catedras || [];
-                // Obtenemos el valor actual del filtro de cátedra
                 const selectedCatedra = document.getElementById('filterCatedra').value;
                 
-                // Recargamos los prácticos usando una función modificada o la existente
-                // (Nota: cargarPracticosEnFormulario actualiza AMBOS selects, lo cual está bien por ahora)
                 cargarPracticosEnFormulario(selectedCatedra, catedras);
                 
-                // 2. Limpiar el filtro de práctico ya que la lista cambió
                 document.getElementById('filterPractico').value = "";
                 
-                // 3. Volver a cargar las reseñas
                 cargarresenasEnUI();
             });
             
@@ -1693,7 +1540,6 @@
             document.getElementById('filterRating').addEventListener('change', () => cargarresenasEnUI());
         }
 
-        // Configurar modales de autenticación
         function configurarModales() {
             const loginModal = document.getElementById('loginModal');
             const registerModal = document.getElementById('registerModal');
@@ -1706,21 +1552,17 @@
             const logoutBtn = document.getElementById('logoutBtn');
             const loginFromReviewBtn = document.getElementById('loginFromReviewBtn');
 
-            // Abrir modales
             [loginBtn, loginFromReviewBtn].forEach(btn => btn.addEventListener('click', () => loginModal.classList.add('active')));
             registerBtn.addEventListener('click', () => registerModal.classList.add('active'));
 
-            // Cerrar modales
             cancelLogin.addEventListener('click', () => loginModal.classList.remove('active'));
             cancelRegister.addEventListener('click', () => registerModal.classList.remove('active'));
 
-            // Cerrar al hacer clic afuera
             window.addEventListener('click', (e) => {
                 if (e.target === loginModal) loginModal.classList.remove('active');
                 if (e.target === registerModal) registerModal.classList.remove('active');
             });
 
-            // Login
             loginForm.addEventListener('submit', async (e) => {
                 e.preventDefault();
                 const email = document.getElementById('loginEmail').value;
@@ -1728,15 +1570,13 @@
                 const errorElement = document.getElementById('loginError');
 
                 try {
-                    // --- INICIO DE LA MODIFICACIÓN: Verificar email ---
                     const userCredential = await auth.signInWithEmailAndPassword(email, password);
                     
                     if (!userCredential.user.emailVerified) {
-                        await auth.signOut(); // Cerramos la sesión si no está verificado
+                        await auth.signOut();
                         errorElement.textContent = 'Email no verificado. Por favor, revisa tu bandeja de entrada.';
-                        return; // Detenemos el inicio de sesión
+                        return;
                     }
-                    // --- FIN DE LA MODIFICACIÓN ---
 
                     loginModal.classList.remove('active');
                     loginForm.reset();
@@ -1746,7 +1586,6 @@
                 }
             });
 
-            // Registro
             registerForm.addEventListener('submit', async (e) => {
                 e.preventDefault();
                 const name = document.getElementById('registerName').value;
@@ -1757,12 +1596,10 @@
                 try {
                     await auth.createUserWithEmailAndPassword(email, password);
 
-                    // --- INICIO DE LA MODIFICACIÓN: Enviar email y cerrar sesión ---
                     await auth.currentUser.sendEmailVerification();
-                    await auth.signOut(); // Forzamos al usuario a verificar antes de loguearse
+                    await auth.signOut();
                     
                     mostrarNotificacion('¡Registro exitoso! Revisa tu email para verificar tu cuenta.', 'success');
-                    // --- FIN DE LA MODIFICACIÓN ---
                     
                     registerModal.classList.remove('active');
                     registerForm.reset();
@@ -1772,11 +1609,9 @@
                 }
             });
 
-            // Logout
             logoutBtn.addEventListener('click', () => auth.signOut());
         }
 
-        // Obtener mensajes de error de autenticación
         function getAuthErrorMessage(errorCode) {
             const messages = {
                 'auth/invalid-email': 'El email no es válido.',
@@ -1791,7 +1626,6 @@
             return messages[errorCode] || 'Error desconocido. Intenta nuevamente.';
         }
 
-        // Función para mostrar notificaciones
         function mostrarNotificacion(mensaje, tipo = 'info') {
             const notification = document.createElement('div');
             notification.className = `notification ${tipo}`;
@@ -1806,9 +1640,7 @@
             }, 5000);
         }
 
-        // --- INICIO DE LA CORRECCIÓN: Revertir 'DOMContentLoaded' ---
         document.addEventListener('DOMContentLoaded', init);
-        // --- FIN DE LA CORRECCIÓN ---
     </script>
 </body>
 </html>
