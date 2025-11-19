@@ -63,18 +63,18 @@
         header {
             background: var(--primary-gradient);
             color: white;
-            padding: 4rem 1.5rem 3rem; /* Padding top extra para compensar la navbar fija */
+            padding: 5rem 1.5rem 3rem; 
             text-align: center;
             clip-path: polygon(0 0, 100% 0, 100% 90%, 0 100%); /* Corte diagonal estético abajo */
             margin-bottom: 2rem;
         }
         
         .header-title h1 {
-            font-size: 3.5rem;
+            font-size: 2.5rem;
             font-weight: 800;
             margin-bottom: 0.5rem;
             letter-spacing: -0.5px;
-            text-shadow: 0 0px 4px rgba(0,0,0,0.1);
+            text-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
 
         .header-title p {
@@ -648,9 +648,8 @@
         
         .review-aspect {
             display: flex;
-            justify-content: flex-start;
+            justify-content: space-between;
             align-items: center;
-            gap: 1rem
         }
         
         .aspect-name {
@@ -929,8 +928,8 @@
     <!-- HEADER (Título y Subtítulo) -->
     <header>
         <div class="header-title">
-            <h1>Gino Social</h1>
-            <p>Gestor de Información, Noticias y Opinión Social. Una herramienta del pueblo. Desarrollada por <a href="https://crisispuntocom.substack.com/">CrisisPuntoCom</a> y <a href="https://www.instagram.com/helecho.social">Helecho Social</a></p>
+            <h1>Sistema de reseña de materias</h1>
+            <p>Una herramienta del pueblo. Desarrollada por <a href="https://crisispuntocom.substack.com/">CrisisPuntoCom</a> y <a href="https://www.instagram.com/helecho.social">Helecho Social</a></p>
         </div>
     </header>
     
@@ -1740,49 +1739,32 @@
         }
 
         async function actualizarContadorresenas(materiaId) {
-            
-            let numresenas = 0;
-            
+            // OBTENEMOS LA COLECCIÓN DIRECTAMENTE DEL OBJETO EN MEMORIA
+            // (Ya no iteramos buscando en todas las colecciones)
+            const materia = appState.materias.find(m => m.id === materiaId);
+            if (!materia) return;
+
+            const coleccion = materia.tipo; // 'materias', 'especiales', etc.
+
             try {
-                const resenasSnapshot = await db.collection('resenas')
-                    .where('materiaId', '==', materiaId)
-                    .get();
-                
-                numresenas = resenasSnapshot.size;
-            
-            } catch (error) {
-                console.error("Error al calcular reseñas:", error);
-                return;
-            }
+                // INCREMENTO ATÓMICO:
+                // No lee el documento. Solo le dice a la DB "Súmale 1 al campo actual"
+                await db.collection(coleccion).doc(materiaId).update({
+                    numresenas: firebase.firestore.FieldValue.increment(1)
+                });
 
-            const coleccionesPosibles = ['materias', 'especiales', 'teorias', 'horasdeinv']; 
-            let actualizado = false;
-
-            for (const col of coleccionesPosibles) {
-                try {
-                    const docRef = db.collection(col).doc(materiaId);
-                    const docSnap = await docRef.get();
-
-                    if (docSnap.exists) {
-                        await docRef.update({
-                            numresenas: numresenas
-                        });
-                        actualizado = true;
-                        
-                        const materiaIndex = appState.materias.findIndex(m => m.id === materiaId);
-                        if (materiaIndex !== -1) {
-                            appState.materias[materiaIndex].numresenas = numresenas;
-                        }
-                        actualizarVistaMaterias();
-                        break;
-                    }
-                } catch (err) {
-                    
+                // Actualizamos el estado local para que se vea reflejado en la UI
+                // sin tener que volver a cargar las materias
+                if (materia.numresenas) {
+                    materia.numresenas++;
+                } else {
+                    materia.numresenas = 1;
                 }
-            }
+                
+                actualizarVistaMaterias();
 
-            if (!actualizado) {
-                console.error("Error: No se pudo actualizar el contador de reseñas en ninguna colección para el ID:", materiaId);
+            } catch (error) {
+                console.error("Error actualizando contador:", error);
             }
         }
 
@@ -1989,7 +1971,7 @@
                     const nombreMateria = (materia.nombre || '').toLowerCase();
                     const coincideNombre = nombreMateria.includes(currentSearch);
                     
-                        const coincideCatedra = Array.isArray(materia.catedras) && materia.catedras.some(c => 
+                    const coincideCatedra = Array.isArray(materia.catedras) && materia.catedras.some(c => 
                         (c.nombre || '').toLowerCase().includes(currentSearch)
                     );
 
@@ -2199,7 +2181,3 @@
     </script>
 </body>
 </html>
-
-
-
-
