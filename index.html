@@ -1228,7 +1228,7 @@
             "Psicología Social"
         ];
 
-        function init() {
+       function init() {
             configurarFirebaseAuth();
             cargarMaterias('materias'); 
             configurarFiltrosCategoria();
@@ -1241,6 +1241,31 @@
             configurarTogglePasswords();
             configurarScrollToTop();
             configurarNavScroll();
+            configurarEasterEgg(); // Iniciamos el easter egg
+        }
+        
+        function configurarEasterEgg() {
+            const title = document.querySelector('.header-title h1');
+            const easterEggContainer = document.getElementById('ginoEasterEgg');
+            let clickCount = 0;
+            // Removed: let timeoutId;
+
+            title.addEventListener('click', () => {
+                clickCount++;
+                
+                // Si llega a 15 clicks
+                if (clickCount === 15) {
+                    easterEggContainer.classList.add('active');
+                    clickCount = 0; // Reiniciamos el contador
+                    
+                    // Ocultar automáticamente después de 5 segundos
+                    setTimeout(() => {
+                        easterEggContainer.classList.remove('active');
+                    }, 5000);
+                }
+            });
+            
+            // REMOVED: Click to close listener
         }
         
         function configurarNavScroll() {
@@ -2113,4 +2138,5 @@
     </script>
 </body>
 </html>
+
 
