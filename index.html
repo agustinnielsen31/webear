@@ -36,7 +36,6 @@
             color: var(--dark-color);
         }
 
-        /* --- NAVBAR FLOTANTE --- */
         .navbar {
             position: fixed;
             top: 0;
@@ -44,37 +43,35 @@
             width: 100%;
             padding: 1rem 2rem;
             display: flex;
-            justify-content: flex-end; /* Botones a la derecha */
+            justify-content: flex-end; 
             align-items: center;
             z-index: 1000;
             transition: all 0.3s ease;
-            background-color: transparent; /* Transparente al inicio */
+            background-color: transparent; 
         }
 
-        /* Estado cuando se hace scroll */
         .navbar.scrolled {
-            background-color: rgba(255, 125, 41, 0.95); /* Naranja semi-transparente */
+            background-color: rgba(255, 125, 41, 0.95); 
             padding: 0.5rem 2rem;
             box-shadow: 0 4px 10px rgba(0,0,0,0.15);
-            backdrop-filter: blur(5px); /* Efecto borroso detrás */
+            backdrop-filter: blur(5px); 
         }
         
-        /* --- HEADER HERO --- */
         header {
             background: var(--primary-gradient);
             color: white;
             padding: 5rem 1.5rem 3rem; 
             text-align: center;
-            clip-path: polygon(0 0, 100% 0, 100% 90%, 0 100%); /* Corte diagonal estético abajo */
+            clip-path: polygon(0 0, 100% 0, 100% 90%, 0 100%); 
             margin-bottom: 2rem;
         }
         
         .header-title h1 {
-            font-size: 2.5rem;
+            font-size: 3.5rem;
             font-weight: 800;
             margin-bottom: 0.5rem;
             letter-spacing: -0.5px;
-            text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            text-shadow: 0 0px 4px rgba(0,0,0,0.1);
         }
 
         .header-title p {
@@ -95,7 +92,6 @@
             border-color: white;
         }
 
-        /* --- AUTH SECTION (Dentro del Navbar) --- */
         .auth-section {
             display: flex;
             align-items: center;
@@ -137,13 +133,12 @@
             font-size: 0.95rem;
         }
 
-        /* --- BUTTONS --- */
         .btn {
             background-color: white;
             color: var(--primary-color);
             border: none;
             padding: 0.6rem 1.2rem;
-            border-radius: 30px; /* Más redondeado */
+            border-radius: 30px; 
             cursor: pointer;
             font-size: 0.9rem;
             font-weight: 700;
@@ -157,7 +152,6 @@
             background-color: #f8f9fa;
         }
         
-        /* Estilos específicos para botones en la navbar cuando es transparente */
         .navbar .btn-outline {
             background-color: transparent;
             border: 2px solid rgba(255,255,255,0.8);
@@ -170,7 +164,6 @@
             border-color: white;
         }
 
-        /* Estilo del botón cerrar sesión en el user info */
         #logoutBtn {
             background: transparent;
             border: 1px solid rgba(255,255,255,0.5);
@@ -196,21 +189,19 @@
             color: white;
         }
 
-        /* --- LAYOUT --- */
         .container {
             max-width: 1200px;
             margin: 0 auto;
-            padding: 0 2rem 2rem; /* Ajustado padding top */
+            padding: 0 2rem 2rem; 
         }
 
-        /* --- FILTERS & SEARCH --- */
         .category-filters {
             display: flex;
             flex-wrap: wrap;
-            justify-content: center; /* Centrado para mejor estética */
+            justify-content: center; 
             gap: 0.75rem;
             margin-bottom: 2rem;
-            border-bottom: none; /* Quitamos borde duro */
+            border-bottom: none; 
             padding-bottom: 0;
         }
         
@@ -220,7 +211,7 @@
             border: 1px solid #e0e0e0;
             background-color: white;
             color: #555;
-            border-radius: 50px; /* Pill shape */
+            border-radius: 50px; 
             cursor: pointer;
             font-size: 0.95rem;
             font-weight: 600;
@@ -264,7 +255,7 @@
             padding: 0.75rem 1.25rem;
             font-size: 1rem;
             border: 1px solid #e0e0e0;
-            border-radius: 8px; /* Bordes uniformes */
+            border-radius: 8px; 
             transition: border-color 0.3s ease, box-shadow 0.3s ease;
             outline: none;
             background-color: #f9f9f9;
@@ -308,7 +299,6 @@
             min-width: 200px;
         }
 
-        /* --- MATERIAS GRID --- */
         .materias-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
@@ -332,7 +322,6 @@
         .materia-card:hover {
             transform: translateY(-5px);
             box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
-            /* Eliminado border-color naranja */
         }
         
         .materia-card h3 {
@@ -370,7 +359,6 @@
             color: white;
         }
 
-        /* --- FORMS --- */
         .review-form-container {
             background: white;
             border-radius: 16px;
@@ -474,9 +462,8 @@
             display: flex;
             align-items: center;
             gap: 0.5rem;
-            /* flex-grow: 1; Eliminado para achicar */
-            width: fit-content; /* Agregado para achicar */
-            padding: 0.5rem 1rem; /* Ajustado padding horizontal */
+            width: fit-content; 
+            padding: 0.5rem 1rem; 
             background: #f9f9f9;
             border-radius: 8px;
         }
@@ -508,7 +495,6 @@
             cursor: pointer;
         }
 
-        /* --- RATINGS --- */
         .rating {
             color: var(--warning-color);
             font-size: 1.2rem;
@@ -526,13 +512,6 @@
             align-items: center;
         }
         
-        /* Eliminado el emoji de comentario antes de reseñas */
-        /* .review-count::before {
-            content: '💬';
-            margin-right: 5px;
-            font-size: 0.9rem;
-        } */
-
         .rating-input {
             display: flex;
             gap: 0.5rem;
@@ -564,7 +543,6 @@
             border-bottom: none;
         }
 
-        /* --- REVIEWS LIST --- */
         .resenas-container {
             margin-top: 3rem;
             display: none;
@@ -580,14 +558,8 @@
             padding: 1.5rem;
             box-shadow: var(--shadow-sm);
             margin-bottom: 1.5rem;
-            /* Eliminado borde izquierdo transparente y hover */
         }
 
-        /* Eliminado hover effect del borde izquierdo */
-        /* .review-card:hover {
-            border-left-color: var(--primary-color);
-        } */
-        
         .review-header {
             display: flex;
             justify-content: space-between;
@@ -648,8 +620,9 @@
         
         .review-aspect {
             display: flex;
-            justify-content: space-between;
+            justify-content: flex-start;
             align-items: center;
+            gap: 1rem;
         }
         
         .aspect-name {
@@ -672,7 +645,6 @@
             box-shadow: var(--shadow-sm);
         }
 
-        /* --- VOTE STYLES (MODIFICADO) --- */
         .review-footer {
             display: flex;
             justify-content: flex-end;
@@ -683,7 +655,6 @@
             margin-top: 1.5rem;
         }
 
-        /* Ahora vote-control es el botón mismo */
         .vote-control {
             display: flex;
             align-items: center;
@@ -695,7 +666,7 @@
             border-radius: 20px;
             transition: all 0.2s;
             border: none;
-            cursor: pointer; /* Ahora es clickeable */
+            cursor: pointer; 
             font-family: inherit;
         }
         
@@ -704,15 +675,14 @@
             transform: translateY(-1px);
         }
 
-        /* Estados activos aplicados al contenedor */
         .vote-control.like-active {
-            background-color: rgba(46, 204, 113, 0.15); /* Verde claro */
+            background-color: rgba(46, 204, 113, 0.15); 
             color: var(--success-color);
             font-weight: 700;
         }
 
         .vote-control.dislike-active {
-            background-color: rgba(231, 76, 60, 0.15); /* Rojo claro */
+            background-color: rgba(231, 76, 60, 0.15); 
             color: var(--accent-color);
             font-weight: 700;
         }
@@ -726,7 +696,6 @@
             font-weight: 600;
         }
 
-        /* --- MODALS & NOTIFICATIONS --- */
         .modal {
             display: none;
             position: fixed;
@@ -792,7 +761,7 @@
             background: #fff0f0;
             padding: 0.5rem;
             border-radius: 4px;
-            display: none; /* Oculto si vacío */
+            display: none; 
         }
         .error-message:not(:empty) {
             display: block;
@@ -831,7 +800,6 @@
             to { transform: translateX(0); opacity: 1; }
         }
 
-        /* --- SCROLL TO TOP --- */
         #scrollToTopBtn {
             display: none;
             position: fixed;
@@ -860,10 +828,9 @@
             box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
         }
 
-        /* --- MEDIA QUERIES --- */
         @media (max-width: 768px) {
             .category-filters {
-                flex-direction: row; /* Mantener horizontal scroll si es necesario o wrap */
+                flex-direction: row; 
                 overflow-x: auto;
                 justify-content: flex-start;
                 padding-bottom: 0.5rem;
@@ -904,13 +871,12 @@
             }
             
             header {
-                padding: 6rem 1rem 3rem;
+                padding: 4rem 1rem 3rem;
             }
         }
     </style>
 </head>
 <body>
-    <!-- BARRA FLOTANTE (Solo botones) -->
     <nav id="mainNav" class="navbar">
         <div class="auth-section">
             <div id="userInfo" class="user-info" style="display: none;">
@@ -925,11 +891,10 @@
         </div>
     </nav>
 
-    <!-- HEADER (Título y Subtítulo) -->
     <header>
         <div class="header-title">
-            <h1>Sistema de reseña de materias</h1>
-            <p>Una herramienta del pueblo. Desarrollada por <a href="https://crisispuntocom.substack.com/">CrisisPuntoCom</a> y <a href="https://www.instagram.com/helecho.social">Helecho Social</a></p>
+            <h1>GINO Social</h1>
+            <p>Gestor de Información, Noticias y Opinión Social. Una herramienta del pueblo. Desarrollada por <a href="https://crisispuntocom.substack.com/">CrisisPuntoCom</a> y <a href="https://www.instagram.com/helecho.social">Helecho Social</a></p>
         </div>
     </header>
     
@@ -959,7 +924,15 @@
         
         <h2 id="materiasGridTitle" style="margin-bottom: 1.5rem; color: var(--dark-color);">Materias obligatorias</h2>
         <div class="materias-grid" id="materiasGrid">
+            <div style="grid-column: 1/-1; text-align: center; padding: 2rem; color: #666;">
+                <div style="display: inline-block; width: 30px; height: 30px; border: 3px solid #ddd; border-top-color: var(--primary-color); border-radius: 50%; animation: spin 1s linear infinite;"></div>
+                <p style="margin-top: 1rem;">Cargando materias...</p>
+            </div>
         </div>
+        
+        <style>
+            @keyframes spin { to { transform: rotate(360deg); } }
+        </style>
         
         <div class="review-form-container" id="reviewForm">
             <h2 id="formTitle">Dejar Reseña</h2>
@@ -1144,7 +1117,6 @@
         </div>
     </div>
 
-    <!-- Botón flotante para volver arriba -->
     <button id="scrollToTopBtn" title="Ir arriba">▲</button>
     
     <div class="modal" id="loginModal">
@@ -1226,6 +1198,13 @@
             user: null,
             currentCategory: 'materias',
         };
+        
+        let yaCargadas = {
+            materias: false,
+            especiales: false,
+            teorias: false,
+            horasdeinv: false
+        };
 
         let currentSort = 'carrera';
         let currentSearch = '';
@@ -1251,7 +1230,7 @@
 
         function init() {
             configurarFirebaseAuth();
-            cargarMaterias(); 
+            cargarMaterias('materias'); 
             configurarFiltrosCategoria();
             configurarSistemaEstrellas();
             configurarFormulario();
@@ -1264,7 +1243,6 @@
             configurarNavScroll();
         }
         
-        // --- NEW NAV SCROLL LOGIC ---
         function configurarNavScroll() {
             const nav = document.getElementById('mainNav');
             window.addEventListener('scroll', () => {
@@ -1275,7 +1253,6 @@
                 }
             });
         }
-        // --- END NEW NAV SCROLL LOGIC ---
 
         function configurarFirebaseAuth() {
             auth.onAuthStateChanged((user) => {
@@ -1297,7 +1274,7 @@
             const authButtons = document.getElementById('authButtons');
             
             const displayName = user.displayName || user.email;
-            userName.textContent = displayName.split(' ')[0]; // Solo primer nombre
+            userName.textContent = displayName.split(' ')[0]; 
             
             if (user.displayName) {
                 userAvatar.textContent = user.displayName.charAt(0).toUpperCase();
@@ -1331,58 +1308,33 @@
             }
         }
 
-        async function cargarMaterias() {
+        async function cargarMaterias(coleccionParaCargar) {
+            if (yaCargadas[coleccionParaCargar]) {
+                actualizarVistaMaterias();
+                return;
+            }
+
+            const grid = document.getElementById('materiasGrid');
+            grid.innerHTML = '<div style="grid-column: 1/-1; text-align: center; padding: 2rem; color: #666;">Cargando materias...</div>';
+
             try {
-                const collectionNames = ['materias', 'especiales', 'teorias', 'horasdeinv']; 
-                console.log("Iniciando carga de todas las colecciones...");
-
-                const collectionPromises = collectionNames.map(name => {
-                    return db.collection(name).get();
-                });
-
-                const snapshots = await Promise.all(collectionPromises);
-
-                const allMaterias = snapshots.reduce((acc, snapshot, index) => {
-                    const name = collectionNames[index];
-                    if (snapshot.empty) {
-                        return acc; 
-                    }
-                    const docsData = snapshot.docs.map(doc => ({ 
-                        id: doc.id, 
-                        ...doc.data(), 
-                        tipo: name
-                    }));
-                    return acc.concat(docsData);
-                }, []); 
-
-                if (allMaterias.length > 0) {
-                    appState.materias = allMaterias;
-                } else {
-                    appState.materias = []; 
-                }
+                const snapshot = await db.collection(coleccionParaCargar).get();
+                
+                const nuevasMaterias = snapshot.docs.map(doc => ({ 
+                    id: doc.id, 
+                    ...doc.data(), 
+                    tipo: coleccionParaCargar
+                }));
+                
+                appState.materias = [...appState.materias, ...nuevasMaterias];
+                
+                yaCargadas[coleccionParaCargar] = true;
                 
                 actualizarVistaMaterias(); 
             
             } catch (error) {
-                console.error('Error cargando una o más colecciones de materias (Promise.all):', error);
-                
-                try {
-                    const materiasSnapshot = await db.collection('materias').get();
-                    if (!materiasSnapshot.empty) {
-                        appState.materias = materiasSnapshot.docs.map(doc => ({ 
-                            id: doc.id, 
-                            ...doc.data(), 
-                            tipo: 'materias' 
-                        }));
-                    } else {
-                        appState.materias = [];
-                    }
-                } catch (materiasError) {
-                    console.error("Error en Plan B: No se pudo cargar ni siquiera 'materias':", materiasError);
-                    appState.materias = [];
-                }
-                
-                actualizarVistaMaterias();
+                console.error(`Error cargando colección ${coleccionParaCargar}:`, error);
+                grid.innerHTML = '<p style="grid-column: 1/-1; text-align: center; color: var(--accent-color);">Error al cargar las materias. Por favor, recarga la página.</p>';
             }
         }
 
@@ -1569,7 +1521,6 @@
             });
         }
 
-        // Nueva función para manejar el voto
         async function handleVote(reviewId, voteType) {
             if (!appState.user) {
                 mostrarNotificacion('Debes iniciar sesión para votar.', 'error');
@@ -1590,21 +1541,16 @@
                 const votes = data.votes || {};
                 const currentVote = votes[userId];
                 
-                let newVote = voteType; // 1 (Like) or -1 (Dislike)
+                let newVote = voteType; 
                 
-                // Lógica de voto
                 if (currentVote === voteType) {
-                    // El usuario hace clic en su voto actual -> Quitar voto
                     delete votes[userId];
                 } else if (currentVote !== undefined) {
-                    // El usuario ya votó diferente -> Cambiar voto
                     votes[userId] = newVote;
                 } else {
-                    // El usuario no ha votado -> Añadir voto
                     votes[userId] = newVote;
                 }
                 
-                // Calcular likes y dislikes
                 let likes = 0;
                 let dislikes = 0;
                 for (const uid in votes) {
@@ -1615,14 +1561,12 @@
                     }
                 }
 
-                // Guardar la actualización
                 await reviewRef.update({
                     votes: votes,
                     likes_count: likes,
                     dislikes_count: dislikes
                 });
 
-                // Recargar reseñas para actualizar la UI
                 await cargarresenas(appState.materiaSeleccionada.id);
                 
             } catch (error) {
@@ -1703,7 +1647,6 @@
                         usuarioEmail: appState.user.email,
                         usuarioNombre: nombreAutor,
                         fecha: firebase.firestore.FieldValue.serverTimestamp(),
-                        // Inicializar campos de votos
                         votes: {},
                         likes_count: 0,
                         dislikes_count: 0
@@ -1739,22 +1682,16 @@
         }
 
         async function actualizarContadorresenas(materiaId) {
-            // OBTENEMOS LA COLECCIÓN DIRECTAMENTE DEL OBJETO EN MEMORIA
-            // (Ya no iteramos buscando en todas las colecciones)
             const materia = appState.materias.find(m => m.id === materiaId);
             if (!materia) return;
 
-            const coleccion = materia.tipo; // 'materias', 'especiales', etc.
+            const coleccion = materia.tipo; 
 
             try {
-                // INCREMENTO ATÓMICO:
-                // No lee el documento. Solo le dice a la DB "Súmale 1 al campo actual"
                 await db.collection(coleccion).doc(materiaId).update({
                     numresenas: firebase.firestore.FieldValue.increment(1)
                 });
 
-                // Actualizamos el estado local para que se vea reflejado en la UI
-                // sin tener que volver a cargar las materias
                 if (materia.numresenas) {
                     materia.numresenas++;
                 } else {
@@ -1839,10 +1776,9 @@
                     anioDisplay += ' | Curso de verano';
                 }
 
-                // --- VOTE LOGIC START ---
                 const currentUserId = appState.user ? appState.user.uid : null;
                 const votes = reseña.votes || {};
-                const userVote = currentUserId ? votes[currentUserId] : 0; // 1, -1, or 0/undefined
+                const userVote = currentUserId ? votes[currentUserId] : 0; 
                 
                 const likesCount = reseña.likes_count || 0;
                 const dislikesCount = reseña.dislikes_count || 0;
@@ -1850,7 +1786,6 @@
                 const likeClass = userVote === 1 ? 'like-active' : '';
                 const dislikeClass = userVote === -1 ? 'dislike-active' : '';
 
-                // HTML actualizado: ahora son <button> en vez de <div> con botón dentro
                 const voteControlsHTML = `
                     <div class="review-footer">
                         <button class="vote-control vote-like ${likeClass}" data-review-id="${reseña.id}" title="Útil">
@@ -1863,7 +1798,6 @@
                         </button>
                     </div>
                 `;
-                // --- VOTE LOGIC END ---
 
                 reviewCard.innerHTML = `
                     <div class="review-header">
@@ -1894,7 +1828,6 @@
                     ${voteControlsHTML}
                 `;
                 
-                // Add event listeners for votes on the new button structure
                 reviewCard.querySelector('.vote-like').addEventListener('click', () => handleVote(reseña.id, 1));
                 reviewCard.querySelector('.vote-dislike').addEventListener('click', () => handleVote(reseña.id, -1));
                 
@@ -1954,7 +1887,7 @@
                     document.querySelector('.resenas-container').classList.remove('active');
                     appState.materiaSeleccionada = null;
 
-                    actualizarVistaMaterias();
+                    cargarMaterias(category);
                 });
             });
         }
@@ -2154,7 +2087,6 @@
             }, 5000);
         }
         
-        // --- SCROLL TO TOP LOGIC ---
         function scrollToTop() {
             window.scrollTo({
                 top: 0,
