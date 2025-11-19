@@ -8,57 +8,250 @@
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+    
     <style>
         :root {
             --primary-color: #ff7d29;
+            --primary-gradient: linear-gradient(135deg, #ff7d29 0%, #ff914d 100%);
             --secondary-color: #ecf0f1;
-            --light-color: #ecf0f1;
+            --light-color: #ffffff;
             --success-color: #2ecc71;
             --warning-color: #f39c12;
             --accent-color: #e74c3c;
             --dark-color: #2c3e50;
+            --shadow-sm: 0 2px 4px rgba(0,0,0,0.05);
+            --shadow-md: 0 4px 6px rgba(0,0,0,0.1);
         }
         
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background-color: #f5f7fa;
+            line-height: 1.6;
+            color: var(--dark-color);
+        }
+
+        /* --- NAVBAR FLOTANTE --- */
+        .navbar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: flex-end; /* Botones a la derecha */
+            align-items: center;
+            z-index: 1000;
+            transition: all 0.3s ease;
+            background-color: transparent; /* Transparente al inicio */
+        }
+
+        /* Estado cuando se hace scroll */
+        .navbar.scrolled {
+            background-color: rgba(255, 125, 41, 0.95); /* Naranja semi-transparente */
+            padding: 0.5rem 2rem;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+            backdrop-filter: blur(5px); /* Efecto borroso detrás */
+        }
+        
+        /* --- HEADER HERO --- */
+        header {
+            background: var(--primary-gradient);
+            color: white;
+            padding: 7rem 1.5rem 4rem; /* Padding top extra para compensar la navbar fija */
+            text-align: center;
+            clip-path: polygon(0 0, 100% 0, 100% 90%, 0 100%); /* Corte diagonal estético abajo */
+            margin-bottom: 2rem;
+        }
+        
+        .header-title h1 {
+            font-size: 2.5rem;
+            font-weight: 800;
+            margin-bottom: 0.5rem;
+            letter-spacing: -0.5px;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .header-title p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .header-title a {
+            color: white;
+            text-decoration: none;
+            border-bottom: 1px solid rgba(255,255,255,0.5);
+            transition: border-color 0.2s;
+        }
+        
+        .header-title a:hover {
+            border-color: white;
+        }
+
+        /* --- AUTH SECTION (Dentro del Navbar) --- */
+        .auth-section {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        #authButtons {
+            display: flex;
+            gap: 0.75rem;
+        }
+        
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            background: rgba(255, 255, 255, 0.2);
+            padding: 0.25rem 0.75rem 0.25rem 0.25rem;
+            border-radius: 30px;
+            backdrop-filter: blur(4px);
+        }
+        
+        .user-avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background-color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--primary-color);
+            font-weight: 800;
+            font-size: 1.1rem;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        #userName {
+            color: white;
+            font-weight: 600;
+            font-size: 0.95rem;
+        }
+
+        /* --- BUTTONS --- */
+        .btn {
+            background-color: white;
+            color: var(--primary-color);
+            border: none;
+            padding: 0.6rem 1.2rem;
+            border-radius: 30px; /* Más redondeado */
+            cursor: pointer;
+            font-size: 0.9rem;
+            font-weight: 700;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        
+        .btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+            background-color: #f8f9fa;
+        }
+        
+        /* Estilos específicos para botones en la navbar cuando es transparente */
+        .navbar .btn-outline {
+            background-color: transparent;
+            border: 2px solid rgba(255,255,255,0.8);
+            color: white;
+        }
+        
+        .navbar .btn-outline:hover {
+            background-color: white;
+            color: var(--primary-color);
+            border-color: white;
+        }
+
+        /* Estilo del botón cerrar sesión en el user info */
+        #logoutBtn {
+            background: transparent;
+            border: 1px solid rgba(255,255,255,0.5);
+            color: white;
+            padding: 0.25rem 0.75rem;
+            font-size: 0.8rem;
+            margin-left: 0.5rem;
+        }
+        
+        #logoutBtn:hover {
+            background: rgba(255,255,255,0.2);
+        }
+
+        .btn-block {
+            display: block;
+            width: 100%;
+            background-color: var(--primary-color);
+            color: white;
+            border-radius: 8px;
+        }
+        .btn-block:hover {
+            background-color: #ff7d19;
+            color: white;
+        }
+
+        /* --- LAYOUT --- */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 2rem 2rem; /* Ajustado padding top */
+        }
+
+        /* --- FILTERS & SEARCH --- */
         .category-filters {
             display: flex;
             flex-wrap: wrap;
+            justify-content: center; /* Centrado para mejor estética */
             gap: 0.75rem;
-            margin-bottom: 1.5rem;
-            border-bottom: 2px solid var(--secondary-color);
-            padding-bottom: 1.5rem;
+            margin-bottom: 2rem;
+            border-bottom: none; /* Quitamos borde duro */
+            padding-bottom: 0;
         }
         
         .category-btn {
-            flex: 1 1 auto;
-            padding: 0.75rem 1rem;
-            border: 2px solid var(--secondary-color);
-            background-color: #ffffff;
-            color: var(--dark-color);
-            border-radius: 8px;
+            flex: 0 1 auto;
+            padding: 0.75rem 1.5rem;
+            border: 1px solid #e0e0e0;
+            background-color: white;
+            color: #555;
+            border-radius: 50px; /* Pill shape */
             cursor: pointer;
-            font-size: 0.9rem;
+            font-size: 0.95rem;
             font-weight: 600;
             text-align: center;
-            transition: background-color 0.3s, color 0.3s, border-color 0.3s;
+            transition: all 0.2s ease;
+            box-shadow: var(--shadow-sm);
         }
         
         .category-btn:hover {
             background-color: #f8f9fa;
-            border-color: #ddd;
+            border-color: #d0d0d0;
+            transform: translateY(-1px);
         }
         
         .category-btn.active {
             background-color: var(--primary-color);
             color: white;
             border-color: var(--primary-color);
+            box-shadow: 0 4px 10px rgba(255, 125, 41, 0.3);
         }
 
         .controles-busqueda-container {
+            background: white;
+            padding: 1rem;
+            border-radius: 12px;
+            box-shadow: var(--shadow-sm);
             display: flex;
             align-items: center; 
             justify-content: space-between; 
             gap: 1rem;
-            margin-bottom: 1.5rem;
+            margin-bottom: 2rem;
         }
 
         .search-container {
@@ -70,15 +263,14 @@
             width: 100%;
             padding: 0.75rem 1.25rem;
             font-size: 1rem;
-            border: 2px solid #ecf0f1;
-            border-top-left-radius: 30px;
-            border-bottom-left-radius: 30px;
-            border-top-right-radius: 8px;
-            border-bottom-right-radius: 8px;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px; /* Bordes uniformes */
             transition: border-color 0.3s ease, box-shadow 0.3s ease;
             outline: none;
+            background-color: #f9f9f9;
         }
         .search-input:focus {
+            background-color: white;
             border-color: var(--primary-color);
             box-shadow: 0 0 0 3px rgba(255, 125, 41, 0.1);
         }
@@ -91,7 +283,7 @@
 
         .sort-select {
             padding: 0.75rem 1rem;
-            border: 2px solid var(--secondary-color);
+            border: 1px solid #e0e0e0;
             border-radius: 8px;
             background-color: white;
             color: var(--dark-color);
@@ -99,183 +291,104 @@
             font-size: 0.9rem;
             cursor: pointer;
         }
-             
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        }
-        
-        body {
-            background-color: #f5f7fa;
-            line-height: 1.6;
-        }
-        
-        header {
-            background: var(--primary-color);
-            color: white;
-            padding: 1rem 1.5rem;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+
+        .filter-container {
             display: flex;
-            justify-content: space-between;
-            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+            flex-wrap: wrap;
+            background: white;
+            padding: 1.5rem;
+            border-radius: 12px;
+            box-shadow: var(--shadow-sm);
         }
         
-        #authButtons {
-            display: flex;
-            gap: 0.5rem;
+        .filter-select {
+            flex: 1;
+            min-width: 200px;
         }
 
-        .auth-section {
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-        }
-        
-        .user-info {
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-        
-        .user-avatar {
-            width: 32px;
-            height: 32px;
-            border-radius: 50%;
-            background-color: var(--secondary-color);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-weight: bold;
-        }
-        
-        .btn {
-            background-color: var(--secondary-color);
-            color: black;
-            border: none;
-            padding: 0.5rem 1rem;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 0.9rem;
-            font-weight: 600;
-            transition: background-color 0.3s;
-        }
-        
-        .btn:hover {
-            background-color: #ff7d19;
-            border: 2px solid var(--secondary-color);
-            color: white;
-        }
-        
-        .btn-outline {
-            background-color: var(--secondary-color);
-            border: 2px solid var(--secondary-color);
-            color: black;
-        }
-        
-        .btn-outline:hover {
-            background-color: #ff7d19;
-            border: 2px solid var(--secondary-color);
-            color: white;
-        }
-        
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 2rem;
-        }
-        
+        /* --- MATERIAS GRID --- */
         .materias-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
             gap: 1.5rem;
-            margin-bottom: 2rem;
+            margin-bottom: 3rem;
         }
         
         .materia-card {
             background: white;
-            border-radius: 8px;
-            padding: 1rem;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: var(--shadow-sm);
             transition: transform 0.3s ease, box-shadow 0.3s ease;
             cursor: pointer;
             display: flex;
             flex-direction: column;
             justify-content: space-between;
+            border: 1px solid transparent;
         }
         
         .materia-card:hover {
             transform: translateY(-5px);
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.15);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+            /* Eliminado border-color naranja */
         }
         
         .materia-card h3 {
-            color: black;
+            color: var(--dark-color);
             margin-bottom: 0.75rem;
-            border-bottom: none;
-            padding-bottom: 0;
-            font-size: 1.15rem;
+            font-size: 1.2rem;
+            font-weight: 700;
         }
         
         .materia-catedras {
             font-size: 0.9rem;
-            color: #555;
-            margin-bottom: 0.75rem;
-            line-height: 1.4;
+            color: #666;
+            margin-bottom: 1rem;
+            line-height: 1.5;
             display: flex;
             flex-wrap: wrap;
-            gap: 6px;
+            gap: 8px;
             align-items: center;
         }
 
-        .materia-catedras strong {
-            color: var(--dark-color);
-        }
-        
         .catedra-link {
-            background-color: var(--secondary-color);
+            background-color: #f0f2f5;
             color: var(--dark-color);
-            padding: 4px 10px;
-            border-radius: 12px;
+            padding: 4px 12px;
+            border-radius: 20px;
             font-size: 0.8rem;
             font-weight: 600;
             text-decoration: none;
             cursor: pointer;
-            transition: background-color 0.2s, color 0.2s;
+            transition: all 0.2s;
         }
         
         .catedra-link:hover {
             background-color: var(--primary-color);
             color: white;
         }
-        
-        .rating {
-            color: var(--warning-color);
-            font-size: 1.2rem;
-            margin: 0.5rem 0;
-        }
-        
-        .review-count {
-            color: var(--dark-color);
-            font-size: 0.9rem;
-            margin-top: auto;
-            padding-top: 0.5rem;
-            border-top: 1px solid #f0f0f0;
-        }
-        
+
+        /* --- FORMS --- */
         .review-form-container {
             background: white;
-            border-radius: 8px;
-            padding: 2rem;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            border-radius: 16px;
+            padding: 2.5rem;
+            box-shadow: var(--shadow-md);
             margin-bottom: 2rem;
             display: none;
+            border-top: 4px solid var(--primary-color);
         }
         
         .review-form-container.active {
             display: block;
+            animation: slideUp 0.4s ease-out;
+        }
+
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
         }
         
         .auth-required {
@@ -284,6 +397,7 @@
             background-color: #fff8e1;
             border-radius: 8px;
             margin-bottom: 1rem;
+            border-left: 4px solid var(--warning-color);
         }
         
         .form-group {
@@ -295,14 +409,22 @@
             margin-bottom: 0.5rem;
             font-weight: 600;
             color: var(--dark-color);
+            font-size: 0.95rem;
         }
         
         select, textarea, input[type="text"], input[type="email"], input[type="password"], input[type="number"] {
             width: 100%;
-            padding: 0.75rem;
+            padding: 0.85rem;
             border: 1px solid #ddd;
-            border-radius: 4px;
+            border-radius: 8px;
             font-size: 1rem;
+            background-color: #fff;
+            transition: border-color 0.2s;
+        }
+
+        select:focus, textarea:focus, input:focus {
+            border-color: var(--primary-color);
+            outline: none;
         }
         
         textarea {
@@ -336,177 +458,6 @@
         .toggle-password-btn:hover {
             color: var(--primary-color);
         }
-        
-        .rating-input {
-            display: flex;
-            gap: 0.5rem;
-            margin-bottom: 1rem;
-        }
-        
-        .star {
-            font-size: 1.5rem;
-            color: #ddd;
-            cursor: pointer;
-            transition: color 0.2s;
-        }
-        
-        .star.active {
-            color: var(--warning-color);
-        }
-        
-        .aspect-rating {
-            margin-bottom: 1rem;
-            padding-bottom: 1rem;
-            border-bottom: 1px solid #eee;
-        }
-        
-        .aspect-rating:last-child {
-            border-bottom: none;
-        }
-        
-        .btn-block {
-            display: block;
-            width: 100%;
-        }
-        
-        .resenas-container {
-            margin-top: 2rem;
-            display: none;
-        }
-        
-        .resenas-container.active {
-            display: block;
-        }
-        
-        .review-card {
-            background: white;
-            border-radius: 8px;
-            padding: 1.5rem;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-            margin-bottom: 1.5rem;
-        }
-        
-        .review-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 1rem;
-        }
-        
-        .review-user {
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-
-        .review-user-info {
-            display: flex;
-            flex-direction: column;
-        }
-
-        .review-user-name {
-            font-weight: 700;
-            color: var(--dark-color);
-            font-size: 0.95rem;
-        }
-        
-        .review-catedra {
-            font-weight: 600;
-            color: var(--primary-color);
-            font-size: 0.9rem;
-        }
-        
-        .review-date {
-            color: #777;
-            font-size: 0.85rem;
-        }
-        
-        .review-content {
-            margin-bottom: 1rem;
-        }
-        
-        .review-aspects {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-            gap: 1rem;
-            margin-top: 1rem;
-        }
-        
-        .review-aspect {
-            display: flex;
-            justify-content: space-between;
-        }
-        
-        .aspect-name {
-            font-weight: 500;
-        }
-        
-        .aspect-value {
-            color: var(--warning-color);
-            font-weight: 600;
-        }
-
-        /* --- VOTE STYLES --- */
-        .review-footer {
-            display: flex;
-            justify-content: flex-end;
-            align-items: center;
-            gap: 1.5rem;
-            border-top: 1px solid #eee;
-            padding-top: 1rem;
-            margin-top: 1rem;
-        }
-
-        .vote-control {
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            font-size: 0.9rem;
-            color: var(--dark-color);
-        }
-
-        .vote-btn {
-            background: none;
-            border: none;
-            cursor: pointer;
-            font-size: 1.2rem;
-            transition: transform 0.1s;
-            padding: 0;
-            line-height: 1;
-        }
-
-        .vote-btn:hover {
-            transform: scale(1.15);
-        }
-
-        .vote-btn.like-active {
-            color: var(--success-color);
-            transform: scale(1.15);
-        }
-
-        .vote-btn.dislike-active {
-            color: var(--accent-color);
-            transform: scale(1.15);
-        }
-        /* --- END VOTE STYLES --- */
-        
-        .no-resenas {
-            text-align: center;
-            padding: 2rem;
-            color: #777;
-        }
-        
-        .filter-container {
-            display: flex;
-            gap: 1rem;
-            margin-bottom: 1.5rem;
-            flex-wrap: wrap;
-        }
-        
-        .filter-select {
-            flex: 1;
-            min-width: 200px;
-        }
 
         .year-input-group {
             display: flex;
@@ -516,111 +467,20 @@
         }
 
         .year-input-group select {
-            width: 120px;
-            padding: 0.75rem;
+            width: 150px;
         }
 
         .curso-verano-checkbox {
             display: flex;
             align-items: center;
             gap: 0.5rem;
-            flex-grow: 1;
-        }
-
-        /* --- SCROLL TO TOP BUTTON STYLES --- */
-        #scrollToTopBtn {
-            display: none; /* Oculto por defecto */
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            z-index: 99;
-            border: none;
-            outline: none;
-            background-color: var(--primary-color);
-            color: white;
-            cursor: pointer;
-            padding: 15px;
-            border-radius: 50%;
-            font-size: 1.5rem;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-            transition: opacity 0.3s, transform 0.3s;
-            line-height: 1;
-        }
-
-        #scrollToTopBtn:hover {
-            background-color: #ff7d19; /* Ligeramente más oscuro al pasar el ratón */
-            transform: scale(1.05);
-        }
-        /* --- END SCROLL TO TOP BUTTON STYLES --- */
-        
-        .modal {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.5);
-            z-index: 1000;
-            align-items: center;
-            justify-content: center;
-        }
-        
-        .modal.active {
-            display: flex;
-        }
-        
-        .modal-content {
-            background: white;
-            padding: 2rem;
+            /* flex-grow: 1; Eliminado para achicar */
+            width: fit-content; /* Agregado para achicar */
+            padding: 0.5rem 1rem; /* Ajustado padding horizontal */
+            background: #f9f9f9;
             border-radius: 8px;
-            width: 90%;
-            max-width: 400px;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
-        }
-        
-        .modal h2 {
-            margin-bottom: 1.5rem;
-            color: var(--primary-color);
-        }
-        
-        .modal-actions {
-            display: flex;
-            gap: 1rem;
-            margin-top: 1.5rem;
-        }
-        
-        .modal-actions .btn {
-            flex: 1;
-        }
-        
-        .error-message {
-            color: var(--accent-color);
-            font-size: 0.9rem;
-            margin-top: 0.5rem;
         }
 
-        .notification {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            padding: 15px 20px;
-            border-radius: 5px;
-            color: white;
-            z-index: 10000;
-            box-shadow: 0 3px 10px rgba(0,0,0,0.2);
-            max-width: 400px;
-            animation: slideIn 0.3s ease;
-        }
-        
-        .notification.success {
-            background-color: var(--success-color);
-        }
-        
-        .notification.error {
-            background-color: var(--accent-color);
-        }
-        
         .checkbox-group {
             display: flex;
             flex-wrap: wrap;
@@ -632,25 +492,386 @@
             display: flex;
             align-items: center;
             gap: 0.5rem;
+            background: #f9f9f9;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            border: 1px solid #eee;
+            cursor: pointer;
+        }
+        
+        .checkbox-option:hover {
+            background: #f0f0f0;
         }
         
         .checkbox-option input {
             width: auto;
+            cursor: pointer;
+        }
+
+        /* --- RATINGS --- */
+        .rating {
+            color: var(--warning-color);
+            font-size: 1.2rem;
+            margin: 0.5rem 0;
+            letter-spacing: 2px;
         }
         
+        .review-count {
+            color: #888;
+            font-size: 0.85rem;
+            margin-top: auto;
+            padding-top: 0.75rem;
+            border-top: 1px solid #f0f0f0;
+            display: flex;
+            align-items: center;
+        }
+        
+        /* Eliminado el emoji de comentario antes de reseñas */
+        /* .review-count::before {
+            content: '💬';
+            margin-right: 5px;
+            font-size: 0.9rem;
+        } */
+
+        .rating-input {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+        }
+        
+        .star {
+            font-size: 1.8rem;
+            color: #ddd;
+            cursor: pointer;
+            transition: color 0.2s, transform 0.1s;
+        }
+
+        .star:hover {
+            transform: scale(1.1);
+        }
+        
+        .star.active {
+            color: var(--warning-color);
+        }
+        
+        .aspect-rating {
+            margin-bottom: 1rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid #f0f0f0;
+        }
+        
+        .aspect-rating:last-child {
+            border-bottom: none;
+        }
+
+        /* --- REVIEWS LIST --- */
+        .resenas-container {
+            margin-top: 3rem;
+            display: none;
+        }
+        
+        .resenas-container.active {
+            display: block;
+        }
+        
+        .review-card {
+            background: white;
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: var(--shadow-sm);
+            margin-bottom: 1.5rem;
+            /* Eliminado borde izquierdo transparente y hover */
+        }
+
+        /* Eliminado hover effect del borde izquierdo */
+        /* .review-card:hover {
+            border-left-color: var(--primary-color);
+        } */
+        
+        .review-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 1rem;
+        }
+        
+        .review-user {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .review-user-info {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .review-user-name {
+            font-weight: 700;
+            color: var(--dark-color);
+            font-size: 1rem;
+        }
+        
+        .review-catedra {
+            font-weight: 600;
+            color: var(--primary-color);
+            font-size: 0.9rem;
+            background: rgba(255, 125, 41, 0.1);
+            padding: 2px 8px;
+            border-radius: 4px;
+            display: inline-block;
+            margin-top: 4px;
+        }
+        
+        .review-date {
+            color: #999;
+            font-size: 0.8rem;
+            margin-top: 2px;
+        }
+        
+        .review-content {
+            margin-bottom: 1.5rem;
+            color: #444;
+            line-height: 1.7;
+            font-size: 1.05rem;
+        }
+        
+        .review-aspects {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+            gap: 1rem;
+            margin-top: 1.5rem;
+            background: #f9f9f9;
+            padding: 1rem;
+            border-radius: 8px;
+        }
+        
+        .review-aspect {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .aspect-name {
+            font-weight: 500;
+            color: #666;
+            font-size: 0.9rem;
+        }
+        
+        .aspect-value {
+            color: var(--warning-color);
+            font-weight: 700;
+        }
+        
+        .no-resenas {
+            text-align: center;
+            padding: 3rem;
+            color: #888;
+            background: white;
+            border-radius: 12px;
+            box-shadow: var(--shadow-sm);
+        }
+
+        /* --- VOTE STYLES (MODIFICADO) --- */
+        .review-footer {
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+            gap: 1rem;
+            border-top: 1px solid #eee;
+            padding-top: 1rem;
+            margin-top: 1.5rem;
+        }
+
+        /* Ahora vote-control es el botón mismo */
+        .vote-control {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.9rem;
+            color: var(--dark-color);
+            background: #f5f5f5;
+            padding: 6px 14px;
+            border-radius: 20px;
+            transition: all 0.2s;
+            border: none;
+            cursor: pointer; /* Ahora es clickeable */
+            font-family: inherit;
+        }
+        
+        .vote-control:hover {
+            background: #ebebeb;
+            transform: translateY(-1px);
+        }
+
+        /* Estados activos aplicados al contenedor */
+        .vote-control.like-active {
+            background-color: rgba(46, 204, 113, 0.15); /* Verde claro */
+            color: var(--success-color);
+            font-weight: 700;
+        }
+
+        .vote-control.dislike-active {
+            background-color: rgba(231, 76, 60, 0.15); /* Rojo claro */
+            color: var(--accent-color);
+            font-weight: 700;
+        }
+
+        .vote-icon {
+            font-size: 1.2rem;
+            line-height: 1;
+        }
+        
+        .like-count, .dislike-count {
+            font-weight: 600;
+        }
+
+        /* --- MODALS & NOTIFICATIONS --- */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.6);
+            z-index: 2000;
+            align-items: center;
+            justify-content: center;
+            backdrop-filter: blur(3px);
+        }
+        
+        .modal.active {
+            display: flex;
+            animation: fadeIn 0.3s ease;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        .modal-content {
+            background: white;
+            padding: 2.5rem;
+            border-radius: 16px;
+            width: 90%;
+            max-width: 400px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+            transform: scale(0.95);
+            animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+        }
+        
+        @keyframes popIn {
+            to { transform: scale(1); }
+        }
+        
+        .modal h2 {
+            margin-bottom: 1.5rem;
+            color: var(--primary-color);
+            text-align: center;
+        }
+        
+        .modal-actions {
+            display: flex;
+            gap: 1rem;
+            margin-top: 2rem;
+        }
+        
+        .modal-actions .btn {
+            flex: 1;
+            justify-content: center;
+            display: flex;
+        }
+        
+        .error-message {
+            color: var(--accent-color);
+            font-size: 0.9rem;
+            margin-top: 1rem;
+            text-align: center;
+            background: #fff0f0;
+            padding: 0.5rem;
+            border-radius: 4px;
+            display: none; /* Oculto si vacío */
+        }
+        .error-message:not(:empty) {
+            display: block;
+        }
+
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 15px 25px;
+            border-radius: 8px;
+            color: white;
+            z-index: 10000;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            max-width: 400px;
+            animation: slideIn 0.3s ease;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+        }
+        
+        .notification.success {
+            background-color: var(--success-color);
+        }
+        
+        .notification.error {
+            background-color: var(--accent-color);
+        }
+        
+        .notification.info {
+            background-color: var(--dark-color);
+        }
+
         @keyframes slideIn {
             from { transform: translateX(100%); opacity: 0; }
             to { transform: translateX(0); opacity: 1; }
         }
-        
+
+        /* --- SCROLL TO TOP --- */
+        #scrollToTopBtn {
+            display: none;
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            z-index: 99;
+            border: none;
+            outline: none;
+            background-color: var(--primary-color);
+            color: white;
+            cursor: pointer;
+            padding: 0;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            font-size: 1.5rem;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+            transition: all 0.3s;
+            line-height: 50px;
+            text-align: center;
+        }
+
+        #scrollToTopBtn:hover {
+            background-color: #ff7d19;
+            transform: translateY(-5px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
+        }
+
+        /* --- MEDIA QUERIES --- */
         @media (max-width: 768px) {
             .category-filters {
-                flex-direction: column;
-                gap: 0.5rem;
+                flex-direction: row; /* Mantener horizontal scroll si es necesario o wrap */
+                overflow-x: auto;
+                justify-content: flex-start;
+                padding-bottom: 0.5rem;
             }
             
             .category-btn {
-                width: 100%;
+                flex: 0 0 auto;
+                white-space: nowrap;
             }
 
             .materias-grid {
@@ -665,12 +886,6 @@
                 grid-template-columns: 1fr;
             }
             
-            header {
-                flex-direction: column;
-                gap: 1rem;
-                text-align: center;
-            }
-            
             .controles-busqueda-container {
                 flex-direction: column;
                 align-items: stretch; 
@@ -683,25 +898,38 @@
             .review-footer {
                 justify-content: center;
             }
+            
+            .navbar {
+                padding: 0.5rem 1rem;
+            }
+            
+            header {
+                padding: 6rem 1rem 3rem;
+            }
         }
     </style>
 </head>
 <body>
-    <header>
-        <div class="header-title">
-            <h1>Sistema de reseña de materias</h1>
-            <p>Una herramienta del pueblo. Desarrollada por <a href="https://crisispuntocom.substack.com/">CrisisPuntoCom</a> y <a href="https://www.instagram.com/helecho.social">Helecho Social</a></p>
-        </div>
+    <!-- BARRA FLOTANTE (Solo botones) -->
+    <nav id="mainNav" class="navbar">
         <div class="auth-section">
             <div id="userInfo" class="user-info" style="display: none;">
                 <div class="user-avatar" id="userAvatar">U</div>
                 <span id="userName">Usuario</span>
-                <button id="logoutBtn" class="btn btn-outline">Cerrar Sesión</button>
+                <button id="logoutBtn" class="btn btn-sm" title="Cerrar Sesión">✕</button>
             </div>
             <div id="authButtons">
                 <button id="loginBtn" class="btn">Iniciar Sesión</button>
                 <button id="registerBtn" class="btn btn-outline">Registrarse</button>
             </div>
+        </div>
+    </nav>
+
+    <!-- HEADER (Título y Subtítulo) -->
+    <header>
+        <div class="header-title">
+            <h1>Sistema de reseña de materias</h1>
+            <p>Una herramienta del pueblo. Desarrollada por <a href="https://crisispuntocom.substack.com/">CrisisPuntoCom</a> y <a href="https://www.instagram.com/helecho.social">Helecho Social</a></p>
         </div>
     </header>
     
@@ -715,7 +943,7 @@
         
         <div class="controles-busqueda-container">
             <div class="search-container">
-                <input type="text" id="searchMaterias" placeholder="🔍 Buscar materia por nombre..." class="search-input">
+                <input type="text" id="searchMaterias" placeholder="🔍 Buscar por materia o cátedra..." class="search-input">
             </div>
             
             <div class="sort-controls">
@@ -729,8 +957,7 @@
             </div>
         </div>
         
-        <h2 id="materiasGridTitle">Materias obligatorias</h2>
-        <br>
+        <h2 id="materiasGridTitle" style="margin-bottom: 1.5rem; color: var(--dark-color);">Materias obligatorias</h2>
         <div class="materias-grid" id="materiasGrid">
         </div>
         
@@ -740,7 +967,7 @@
             <div id="authRequiredMessage" class="auth-required" style="display: none;">
                 <h3>Inicia sesión para dejar una reseña</h3>
                 <p>Debes tener una cuenta y estar logueado para compartir tu experiencia.</p>
-                <button id="loginFromReviewBtn" class="btn">Iniciar Sesión</button>
+                <button id="loginFromReviewBtn" class="btn btn-block">Iniciar Sesión</button>
             </div>
             
             <form id="reviewFormElement" style="display: none;">
@@ -781,7 +1008,7 @@
                     <div class="checkbox-group" id="tiposEvaluacionCheckboxes"> 
                         <div class="checkbox-option">
                             <input type="checkbox" id="evalParciales" value="Parciales">
-                            <label for="evalParcialChes">Parciales</label>
+                            <label for="evalParciales">Parciales</label>
                         </div>
                         <div class="checkbox-option">
                             <input type="checkbox" id="evalMonografia" value="Monografía">
@@ -880,7 +1107,8 @@
         </div>
         
         <div class="resenas-container">
-            <h2>Reseñas de la Materia</h2>
+            <h2 style="color: var(--primary-color);">Reseñas de la Materia</h2>
+            <br>
             
             <div class="filter-container">
                 <div class="form-group filter-select">
@@ -936,8 +1164,8 @@
                 </div>
                 <div id="loginError" class="error-message"></div>
                 <div class="modal-actions">
-                    <button type="button" id="cancelLogin" class="btn btn-outline">Cancelar</button>
-                    <button type="submit" class="btn">Iniciar Sesión</button>
+                    <button type="button" id="cancelLogin" class="btn btn-outline" style="background:transparent; border:1px solid #ddd; color: #666;">Cancelar</button>
+                    <button type="submit" class="btn btn-block">Iniciar Sesión</button>
                 </div>
             </form>
         </div>
@@ -969,8 +1197,8 @@
                 </div>
                 <div id="registerError" class="error-message"></div>
                 <div class="modal-actions">
-                    <button type="button" id="cancelRegister" class="btn btn-outline">Cancelar</button>
-                    <button type="submit" class="btn">Registrarse</button>
+                    <button type="button" id="cancelRegister" class="btn btn-outline" style="background:transparent; border:1px solid #ddd; color: #666;">Cancelar</button>
+                    <button type="submit" class="btn btn-block">Registrarse</button>
                 </div>
             </form>
         </div>
@@ -1033,7 +1261,21 @@
             configurarSort(); 
             configurarTogglePasswords();
             configurarScrollToTop();
+            configurarNavScroll();
         }
+        
+        // --- NEW NAV SCROLL LOGIC ---
+        function configurarNavScroll() {
+            const nav = document.getElementById('mainNav');
+            window.addEventListener('scroll', () => {
+                if (window.scrollY > 50) {
+                    nav.classList.add('scrolled');
+                } else {
+                    nav.classList.remove('scrolled');
+                }
+            });
+        }
+        // --- END NEW NAV SCROLL LOGIC ---
 
         function configurarFirebaseAuth() {
             auth.onAuthStateChanged((user) => {
@@ -1055,7 +1297,7 @@
             const authButtons = document.getElementById('authButtons');
             
             const displayName = user.displayName || user.email;
-            userName.textContent = displayName;
+            userName.textContent = displayName.split(' ')[0]; // Solo primer nombre
             
             if (user.displayName) {
                 userAvatar.textContent = user.displayName.charAt(0).toUpperCase();
@@ -1499,9 +1741,6 @@
         async function actualizarContadorresenas(materiaId) {
             
             let numresenas = 0;
-            let sumaCalificaciones = 0;
-            let totalresenas = 0;
-            let promedio = "0.0";
             
             try {
                 const resenasSnapshot = await db.collection('resenas')
@@ -1509,16 +1748,6 @@
                     .get();
                 
                 numresenas = resenasSnapshot.size;
-                
-                resenasSnapshot.forEach(doc => {
-                    const reseña = doc.data();
-                    if (reseña.calificacionGeneral) {
-                        sumaCalificaciones += reseña.calificacionGeneral;
-                        totalresenas++;
-                    }
-                });
-                
-                promedio = totalresenas > 0 ? (sumaCalificaciones / totalresenas).toFixed(1) : "0.0";
             
             } catch (error) {
                 console.error("Error al calcular reseñas:", error);
@@ -1535,15 +1764,13 @@
 
                     if (docSnap.exists) {
                         await docRef.update({
-                            numresenas: numresenas,
-                            promedio: promedio
+                            numresenas: numresenas
                         });
                         actualizado = true;
                         
                         const materiaIndex = appState.materias.findIndex(m => m.id === materiaId);
                         if (materiaIndex !== -1) {
                             appState.materias[materiaIndex].numresenas = numresenas;
-                            appState.materias[materiaIndex].promedio = promedio;
                         }
                         actualizarVistaMaterias();
                         break;
@@ -1640,16 +1867,17 @@
                 const likeClass = userVote === 1 ? 'like-active' : '';
                 const dislikeClass = userVote === -1 ? 'dislike-active' : '';
 
+                // HTML actualizado: ahora son <button> en vez de <div> con botón dentro
                 const voteControlsHTML = `
                     <div class="review-footer">
-                        <div class="vote-control">
-                            <button class="vote-btn vote-like ${likeClass}" data-review-id="${reseña.id}" data-vote-type="1" title="Útil">👍</button>
+                        <button class="vote-control vote-like ${likeClass}" data-review-id="${reseña.id}" title="Útil">
+                            <span class="vote-icon">👍</span>
                             <span class="like-count">${likesCount}</span>
-                        </div>
-                        <div class="vote-control">
-                            <button class="vote-btn vote-dislike ${dislikeClass}" data-review-id="${reseña.id}" data-vote-type="-1" title="No útil">👎</button>
+                        </button>
+                        <button class="vote-control vote-dislike ${dislikeClass}" data-review-id="${reseña.id}" title="No útil">
+                            <span class="vote-icon">👎</span>
                             <span class="dislike-count">${dislikesCount}</span>
-                        </div>
+                        </button>
                     </div>
                 `;
                 // --- VOTE LOGIC END ---
@@ -1683,7 +1911,7 @@
                     ${voteControlsHTML}
                 `;
                 
-                // Add event listeners for votes
+                // Add event listeners for votes on the new button structure
                 reviewCard.querySelector('.vote-like').addEventListener('click', () => handleVote(reseña.id, 1));
                 reviewCard.querySelector('.vote-dislike').addEventListener('click', () => handleVote(reseña.id, -1));
                 
@@ -1756,9 +1984,16 @@
             );
 
             if (currentSearch.length > 0) {
-                materiasParaRenderizar = materiasParaRenderizar.filter(materia => 
-                    (materia.nombre || '').toLowerCase().includes(currentSearch)
-                );
+                materiasParaRenderizar = materiasParaRenderizar.filter(materia => {
+                    const nombreMateria = (materia.nombre || '').toLowerCase();
+                    const coincideNombre = nombreMateria.includes(currentSearch);
+                    
+                        const coincideCatedra = Array.isArray(materia.catedras) && materia.catedras.some(c => 
+                        (c.nombre || '').toLowerCase().includes(currentSearch)
+                    );
+
+                    return coincideNombre || coincideCatedra;
+                });
             }
 
             switch (currentSort) {
@@ -1958,8 +2193,7 @@
             window.addEventListener('scroll', toggleScrollButton);
             btn.addEventListener('click', scrollToTop);
         }
-        // --- END SCROLL TO TOP LOGIC ---
-
+        
         document.addEventListener('DOMContentLoaded', init);
     </script>
 </body>
