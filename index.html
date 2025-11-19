@@ -72,6 +72,8 @@
             margin-bottom: 0.5rem;
             letter-spacing: -0.5px;
             text-shadow: 0 0px 4px rgba(0,0,0,0.1);
+            cursor: pointer; /* Indica que es clickeable */
+            user-select: none; /* Evita que se seleccione el texto al hacer muchos clicks */
         }
 
         .header-title p {
@@ -828,6 +830,49 @@
             box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
         }
 
+        /* Estilos para el Easter Egg de Gino */
+        .gino-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.95);
+            z-index: 10001; /* Higher than modal and navbar */
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            color: white;
+            text-align: center;
+        }
+
+        .gino-overlay.active {
+            display: flex;
+            animation: fadeIn 0.5s ease;
+        }
+
+        .gino-overlay img {
+            display: block;
+            max-width: 90%;
+            max-height: 80%;
+            border-radius: 12px;
+            box-shadow: 0 0 30px rgba(255, 125, 41, 0.6);
+            border: 4px solid var(--primary-color);
+            object-fit: contain;
+            /* Styling for alt text if image fails */
+            color: white;
+            font-size: 1.2rem;
+        }
+
+        .gino-overlay p {
+            color: white;
+            margin-top: 1rem;
+            font-size: 2rem;
+            font-weight: bold;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+        }
+
         @media (max-width: 768px) {
             .category-filters {
                 flex-direction: row; 
@@ -893,7 +938,8 @@
 
     <header>
         <div class="header-title">
-            <h1>Gino Social</h1>
+            <!-- Se agregó un ID al H1 para facilitar la selección en JS -->
+            <h1 id="ginoTitle">Gino Social</h1>
             <p>Gestor de Información, Noticias y Opinión Social. Una herramienta del pueblo. Desarrollada por <a href="https://crisispuntocom.substack.com/">CrisisPuntoCom</a> y <a href="https://www.instagram.com/helecho.social">Helecho Social</a></p>
         </div>
     </header>
@@ -1176,6 +1222,12 @@
         </div>
     </div>
 
+    <!-- Easter Egg Container -->
+    <div id="ginoEasterEgg" class="gino-overlay">
+        <img src="168358-gino.jpeg" alt="Gino Germani" onerror="this.style.display='none'; this.nextElementSibling.innerText = '¡Gino vive! (Imagen no encontrada: asegura que 168358-gino.jpeg esté en la carpeta)'">
+        <p>¡Gino vive!</p>
+    </div>
+
     <script>
         const firebaseConfig = {
             apiKey: "AIzaSyBnpshX3I7ZY3EUoraDZPdb2W6B6HZOYR0",
@@ -1228,7 +1280,7 @@
             "Psicología Social"
         ];
 
-       function init() {
+        function init() {
             configurarFirebaseAuth();
             cargarMaterias('materias'); 
             configurarFiltrosCategoria();
@@ -2138,5 +2190,3 @@
     </script>
 </body>
 </html>
-
-
