@@ -36,6 +36,7 @@
             color: var(--dark-color);
         }
 
+        /* --- NAVBAR MODIFICADO --- */
         .navbar {
             position: fixed;
             top: 0;
@@ -43,7 +44,8 @@
             width: 100%;
             padding: 1rem 2rem;
             display: flex;
-            justify-content: flex-end; 
+            /* Space-between para separar Colaborar (izq) y Auth (der) */
+            justify-content: space-between; 
             align-items: center;
             z-index: 1000;
             transition: all 0.3s ease;
@@ -57,35 +59,82 @@
             backdrop-filter: blur(5px); 
         }
 
-        /* --- ESTILOS DE LOS OJOS (MODIFICADOS) --- */
+        /* --- NUEVOS ESTILOS BOTONES COLABORAR/DONAR --- */
+        .btn-colaborar {
+            background: rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(4px);
+            border: 1px solid rgba(255, 255, 255, 0.6);
+            color: white;
+            font-weight: 700;
+            padding: 0.5rem 1.2rem;
+            border-radius: 20px;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            font-size: 0.9rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .btn-colaborar:hover {
+            background: white;
+            color: var(--primary-color);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+
+        /* Botón Donar Vistoso para el Modal */
+        .btn-donate {
+            background: linear-gradient(45deg, #FF416C, #FF4B2B);
+            color: white;
+            border: none;
+            padding: 0.8rem 1.5rem;
+            font-size: 1.1rem;
+            border-radius: 50px;
+            font-weight: 800;
+            letter-spacing: 0.5px;
+            box-shadow: 0 4px 15px rgba(255, 75, 43, 0.4);
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            width: 100%;
+            margin-top: 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            text-decoration: none;
+        }
+
+        .btn-donate:hover {
+            transform: scale(1.03) translateY(-2px);
+            box-shadow: 0 8px 25px rgba(255, 75, 43, 0.6);
+        }
+      
         .eyes-container {
             position: absolute;
             left: 50%;
             transform: translateX(-50%);
             display: flex;
             gap: 15px;
-            pointer-events: none; /* No interferir con clics */
-            opacity: 0; /* Totalmente invisibles al inicio */
-            transition: opacity 0.2s ease; /* Transición suave para aparecer/desaparecer el contenedor */
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.2s ease;
         }
 
-        /* Cuando están activos, el contenedor se hace visible */
         .eyes-container.active {
             opacity: 1;
         }
         
-        /* Ojo (la parte blanca) - Sin bordes ni sombras */
         .eye {
             width: 50px;
-            height: 34px; /* Ovalado */
+            height: 34px;
             background: white;
             border-radius: 50%;
             position: relative;
             overflow: hidden;
-            /* Eliminados border y box-shadow para aspecto plano y limpio */
         }
 
-        /* Pupila (la parte negra) */
         .pupil {
             width: 18px;
             height: 18px;
@@ -95,10 +144,8 @@
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            /* El movimiento se controla con JS */
         }
         
-        /* Brillo en la pupila */
         .pupil::after {
             content: '';
             width: 6px;
@@ -111,20 +158,17 @@
             opacity: 0.8;
         }
 
-        /* Párpados (para la animación de abrir/cerrar) */
         .eyelid {
             position: absolute;
             top: 0;
             left: 0;
             width: 100%;
-            height: 100%; /* Empiezan cerrados (ocupan todo el ojo) */
-            background: #ff914d; /* Color piel/naranja del tema (o el color del fondo donde estén) */
-            /* IMPORTANTE: Transición rápida para el parpadeo/apertura */
+            height: 100%;
+            background: #ff914d;
             transition: height 0.25s cubic-bezier(0.4, 0, 0.2, 1); 
             z-index: 2;
         }
         
-        /* Cuando el contenedor tiene la clase 'open', los párpados se levantan (height 0) */
         .eyes-container.open .eyelid {
             height: 0%;
         }
@@ -139,7 +183,7 @@
         }
         
         .header-title h1 {
-            font-size: 2.5rem;
+            font-size: 4.5rem;
             font-weight: 800;
             margin-bottom: 0.5rem;
             letter-spacing: -0.5px;
@@ -175,21 +219,18 @@
             gap: 0.75rem;
         }
         
-        /* --- REEMPLAZA TODO EL BLOQUE DE .user-info CON ESTO --- */
-
-.user-info {
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-    background: rgba(255, 255, 255, 0.2);
-    padding: 0.25rem 0.75rem 0.25rem 0.25rem;
-    border-radius: 30px;
-    backdrop-filter: blur(4px);
-    /* Transición suave para el contenedor */
-    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-    max-width: 300px; /* Ancho máximo inicial */
-    overflow: hidden;
-}
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            background: rgba(255, 255, 255, 0.2);
+            padding: 0.25rem 0.75rem 0.25rem 0.25rem;
+            border-radius: 30px;
+            backdrop-filter: blur(4px);
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            max-width: 300px;
+            overflow: hidden;
+        }
         
         .user-avatar {
             width: 36px;
@@ -203,57 +244,49 @@
             font-weight: 800;
             font-size: 1.1rem;
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            
-            /* La corrección para que no se aplaste */
             flex-shrink: 0;
             min-width: 36px;
             min-height: 36px;
-}
-        /* ESTADO COMPRIMIDO: Se activa con JS cuando aparecen los ojos */
+        }
+
         .user-info.compressed {
             background: transparent; 
             box-shadow: none;
             padding-right: 0;
-            gap: 0; /* Elimina espacio entre elementos para que se junten */
+            gap: 0; 
             backdrop-filter: none;
         }
         
-        /* ESTILOS DEL NOMBRE DE USUARIO */
         .user-info #userName {
             color: white;
             font-weight: 600;
             font-size: 0.95rem;
-            /* Transición para aparecer/desaparecer */
             transition: all 0.3s ease;
             opacity: 1;
-            
-            /* Lógica para cortar el texto (Truncar) */
-            max-width: 150px;        /* Límite de ancho cuando está visible */
+            max-width: 150px;
             white-space: nowrap;
             overflow: hidden;
-            text-overflow: ellipsis; /* Agrega los '...' si es muy largo */
+            text-overflow: ellipsis;
             display: block;
         }
         
-        /* ESTILOS DEL BOTÓN DE LOGOUT */
         .user-info #logoutBtn {
             transition: all 0.3s ease;
             opacity: 1;
-            max-width: 100px; /* Ancho suficiente para ver el botón */
+            max-width: 100px;
             margin-left: 0.5rem;
-            flex-shrink: 0;   /* IMPORTANTE: Evita que el botón se aplaste */
+            flex-shrink: 0;
         }
         
-        /* OCULTAR ELEMENTOS: Cuando la clase .compressed está activa */
         .user-info.compressed #userName,
         .user-info.compressed #logoutBtn {
             opacity: 0;
-            max-width: 0; /* Se reduce a 0 para desaparecer */
+            max-width: 0;
             margin: 0;
             padding: 0;
-            border: none; /* Quita el borde del botón para que no se vea una línea */
+            border: none;
             pointer-events: none;
-}
+        }
 
         .btn {
             background-color: white;
@@ -1046,17 +1079,31 @@
             header {
                 padding: 6rem 1rem 3rem;
             }
+            /* En móvil, el botón colaborar podría ser más compacto */
+            .btn-colaborar {
+                padding: 0.4rem 0.8rem;
+                font-size: 0.8rem;
+            }
         }
     </style>
 </head>
 <body>
+    <!-- NAVBAR ACTUALIZADA CON EL BOTÓN COLABORAR A LA IZQUIERDA -->
     <nav id="mainNav" class="navbar">
-        <!-- OJOS AGREGADOS AQUÍ -->
+        <!-- IZQUIERDA: Botón Colaborar -->
+        <div>
+            <button id="collaborateBtn" class="btn-colaborar">
+                <span>🤝</span> <span style="display: inline-block;">Colaborar</span>
+            </button>
+        </div>
+
+        <!-- CENTRO: Ojos (posicionamiento absoluto, se mantienen centrados) -->
         <div class="eyes-container" id="navEyes">
             <div class="eye"><div class="pupil"></div><div class="eyelid"></div></div>
             <div class="eye"><div class="pupil"></div><div class="eyelid"></div></div>
         </div>
 
+        <!-- DERECHA: Autenticación -->
         <div class="auth-section">
             <div id="userInfo" class="user-info" style="display: none;">
                 <div class="user-avatar" id="userAvatar">U</div>
@@ -1251,7 +1298,7 @@
                 </div>
                                 <div class="form-group">
                     <label for="reviewText">Reseña:</label>
-                    <textarea id="reviewText" placeholder="Comparte tu experiencia con esta materia..." required></textarea>
+                    <textarea id="reviewText" placeholder="Se respestuoso... de lo que no se puede hablar es mejor callar." required></textarea>
                 </div>
                 
                 <button type="submit" class="btn btn-block">Enviar Reseña</button>
@@ -1322,12 +1369,10 @@
         </div>
     </div>
 
-    <!-- Modal de Registro (Modificado con la nota de spam) -->
     <div class="modal" id="registerModal">
         <div class="modal-content">
             <h2>Registrarse</h2>
             <form id="registerForm">
-                <!-- NUEVA ESTRUCTURA: Fila para Nombre y Apellido -->
                 <div class="form-row">
                     <div class="form-group">
                         <label for="registerFirstName">Nombre:</label>
@@ -1342,7 +1387,6 @@
                 <div class="form-group">
                     <label for="registerEmail">Email:</label>
                     <input type="email" id="registerEmail" required>
-                    <!-- Aclaración de SPAM agregada -->
                     <small style="display: block; margin-top: 0.5rem; color: #e67e22; font-size: 0.85rem;">
                         Revisa tu casilla de spam para confirmar tu cuenta.
                     </small>
@@ -1363,7 +1407,6 @@
         </div>
     </div>
 
-    <!-- Nuevo Modal de Términos y Condiciones Sociales -->
     <div class="modal" id="termsModal">
         <div class="modal-content">
             <h2>Compromiso Social</h2>
@@ -1375,6 +1418,42 @@
             <div class="modal-actions">
                 <button type="button" id="cancelTerms" class="btn btn-outline" style="background:transparent; border:1px solid #ddd; color: #666;">Cancelar</button>
                 <button type="button" id="acceptTerms" class="btn btn-block">Acepto</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- NUEVO MODAL DE COLABORACIÓN -->
+    <div class="modal" id="collaborateModal">
+        <div class="modal-content" style="max-width: 500px;">
+            <h2 style="color: var(--primary-color); margin-bottom: 1rem;">🤝 Colaborar</h2>
+            
+            <div style="text-align: left; color: #444; font-size: 1rem; line-height: 1.7;">
+                <p style="margin-bottom: 1rem;">
+                    Este proyecto está llevado a cabo por <strong>Helecho Social</strong> y <strong>CrisisPuntoCom</strong>, 
+                    dos revistas partes de un colectivo conformado por estudiantes de la carrera de Sociología de la UBA.
+                </p>
+                <p style="margin-bottom: 1rem;">
+                    Porque alguien tiene que hacerle la vida más fácil al pueblo. Para hacerlo no tuvimos que pedirle permiso a nadie, 
+                    pero por la misma razón necesitamos tu colaboración.
+                </p>
+                <p style="margin-bottom: 1rem; background: #f9f9f9; padding: 10px; border-radius: 8px; border-left: 4px solid var(--primary-color);">
+                    Podés contactarnos ante cualquier duda a: <br>
+                    <a href="mailto:hola@helechosocial.com" style="color: var(--primary-color); font-weight: bold; text-decoration: none;">hola@helechosocial.com</a><br>
+                    <span style="font-size: 0.9rem; color: #666;">(Comentanos errores, sugerencias, críticas o reseñas).</span>
+                </p>
+                <p>Siempre estamos abiertos al diálogo.</p>
+                <p style="margin-top: 1rem;">También aceptamos donaciones, porque lamentablemente alojar todo esto no es gratis y nos vendría muy bien una ayuda.</p>
+            </div>
+
+            <!-- LINK GENÉRICO A DONACIONES (Reemplazar con el link real) -->
+            <a href="https://cafecito.app/" target="_blank" style="text-decoration: none;">
+                <button class="btn-donate">
+                    <span>☕</span> Donar una ayuda
+                </button>
+            </a>
+
+            <div class="modal-actions" style="margin-top: 1.5rem;">
+                <button type="button" id="closeCollaborate" class="btn btn-outline" style="background:transparent; border:1px solid #ddd; color: #666; width: 100%;">Cerrar</button>
             </div>
         </div>
     </div>
@@ -1450,32 +1529,27 @@
             configurarScrollToTop();
             configurarNavScroll();
             configurarEasterEgg(); 
-            configurarOjosGino(); // Nueva función para los ojos
+            configurarOjosGino(); 
         }
         
-        // --- FUNCIÓN PARA LOS OJOS DE GINO ---
         function configurarOjosGino() {
             const eyesContainer = document.getElementById('navEyes');
             const pupils = document.querySelectorAll('.pupil');
             const reviewTextarea = document.getElementById('reviewText');
-            const userInfo = document.getElementById('userInfo'); // Capturamos el elemento de usuario
+            const userInfo = document.getElementById('userInfo'); 
         
-            // Mostrar ojos y comprimir usuario cuando el textarea recibe foco
             reviewTextarea.addEventListener('focus', () => {
                 eyesContainer.classList.add('active');
                 eyesContainer.classList.add('open');
                 
-                // Animación del usuario
                 if (userInfo) {
                     userInfo.classList.add('compressed');
                 }
             });
             
-            // Ocultar ojos y restaurar usuario cuando el textarea pierde foco
             reviewTextarea.addEventListener('blur', () => {
                 eyesContainer.classList.remove('open');
                 
-                // Restaurar usuario a la normalidad
                 if (userInfo) {
                     userInfo.classList.remove('compressed');
                 }
@@ -1485,7 +1559,6 @@
                 }, 300);
             });
             
-            // Seguir el cursor con las pupilas (se mantiene igual)
             document.addEventListener('mousemove', (e) => {
                 if (!eyesContainer.classList.contains('active')) return;
                 
@@ -1995,7 +2068,7 @@
             const resenasList = document.getElementById('resenasList');
             
             if (!appState.resenas || appState.resenas.length === 0) {
-                resenasList.innerHTML = '<div class="no-resenas">No hay resenas para esta materia aún.</div>';
+                resenasList.innerHTML = '<div class="no-resenas">No hay reseñas para esta materia aún.</div>';
                 return;
             }
             
@@ -2274,22 +2347,33 @@
             const logoutBtn = document.getElementById('logoutBtn');
             const loginFromReviewBtn = document.getElementById('loginFromReviewBtn');
 
-            // Elementos del nuevo modal de términos
             const termsModal = document.getElementById('termsModal');
             const acceptTerms = document.getElementById('acceptTerms');
             const cancelTerms = document.getElementById('cancelTerms');
 
+            /* NUEVOS SELECTORES PARA MODAL DE COLABORAR */
+            const collaborateModal = document.getElementById('collaborateModal');
+            const collaborateBtn = document.getElementById('collaborateBtn');
+            const closeCollaborate = document.getElementById('closeCollaborate');
+
             [loginBtn, loginFromReviewBtn].forEach(btn => btn.addEventListener('click', () => loginModal.classList.add('active')));
             registerBtn.addEventListener('click', () => registerModal.classList.add('active'));
+
+            /* EVENTO PARA ABRIR MODAL DE COLABORAR */
+            collaborateBtn.addEventListener('click', () => collaborateModal.classList.add('active'));
 
             cancelLogin.addEventListener('click', () => loginModal.classList.remove('active'));
             cancelRegister.addEventListener('click', () => registerModal.classList.remove('active'));
             cancelTerms.addEventListener('click', () => termsModal.classList.remove('active'));
+            
+            /* EVENTO PARA CERRAR MODAL DE COLABORAR */
+            closeCollaborate.addEventListener('click', () => collaborateModal.classList.remove('active'));
 
             window.addEventListener('click', (e) => {
                 if (e.target === loginModal) loginModal.classList.remove('active');
                 if (e.target === registerModal) registerModal.classList.remove('active');
                 if (e.target === termsModal) termsModal.classList.remove('active');
+                if (e.target === collaborateModal) collaborateModal.classList.remove('active');
             });
 
             loginForm.addEventListener('submit', async (e) => {
@@ -2315,11 +2399,9 @@
                 }
             });
 
-            // 1. INTERCEPTAR EL EVENTO SUBMIT DEL FORMULARIO DE REGISTRO
             registerForm.addEventListener('submit', (e) => {
-                e.preventDefault(); // Prevenir envío automático
+                e.preventDefault(); 
 
-                // Validaciones básicas
                 const firstName = document.getElementById('registerFirstName').value.trim();
                 const lastName = document.getElementById('registerLastName').value.trim();
                 const errorElement = document.getElementById('registerError');
@@ -2329,19 +2411,15 @@
                     return;
                 }
                 
-                // Si todo está OK, mostrar el modal de Términos (Compromiso Social)
-                errorElement.textContent = ''; // Limpiar errores previos
+                errorElement.textContent = ''; 
                 termsModal.classList.add('active');
             });
 
-            // 2. LÓGICA REAL DE REGISTRO AL ACEPTAR TÉRMINOS
             acceptTerms.addEventListener('click', async () => {
-                // Deshabilitar botón para evitar doble clic
                 const originalText = acceptTerms.textContent;
                 acceptTerms.disabled = true;
                 acceptTerms.textContent = 'Procesando...';
 
-                // Recuperar los datos del formulario (que sigue abierto debajo)
                 const firstName = document.getElementById('registerFirstName').value.trim();
                 const lastName = document.getElementById('registerLastName').value.trim();
                 const email = document.getElementById('registerEmail').value;
@@ -2361,13 +2439,11 @@
                     
                     mostrarNotificacion('¡Registro exitoso! Revisa tu email para verificar tu cuenta.', 'success');
                     
-                    // Cerrar ambos modales y limpiar
                     termsModal.classList.remove('active');
                     registerModal.classList.remove('active');
                     registerForm.reset();
                     errorElement.textContent = '';
                 } catch (error) {
-                    // Si falla, cerramos el modal de términos para mostrar el error en el de registro
                     termsModal.classList.remove('active');
                     errorElement.textContent = getAuthErrorMessage(error.code);
                 } finally {
@@ -2407,7 +2483,6 @@
             }, 5000);
         }
         
-        // --- SCROLL TO TOP LOGIC ---
         function scrollToTop() {
             window.scrollTo({
                 top: 0,
@@ -2434,7 +2509,3 @@
     </script>
 </body>
 </html>
-
-
-
-
