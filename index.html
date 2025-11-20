@@ -175,75 +175,67 @@
             gap: 0.75rem;
         }
         
-        .user-info {
-            display: flex;
-            align-items: center;
-            gap: 0.75rem;
-            background: rgba(255, 255, 255, 0.2);
-            padding: 0.25rem 0.75rem 0.25rem 0.25rem;
-            border-radius: 30px;
-            backdrop-filter: blur(4px);
-            /* AGREGADO: Transiciones suaves para la animación */
-            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-            max-width: 300px; /* Necesario para animar el ancho */
-            overflow: hidden; /* Para ocultar el contenido que se encoge */
-        }
-        
-        /* ESTILO NUEVO: Estado comprimido (cuando aparecen los ojos) */
+        /* --- REEMPLAZA TODO EL BLOQUE DE .user-info CON ESTO --- */
+
+.user-info {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    background: rgba(255, 255, 255, 0.2);
+    padding: 0.25rem 0.75rem 0.25rem 0.25rem;
+    border-radius: 30px;
+    backdrop-filter: blur(4px);
+    /* Transición suave para el contenedor */
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    max-width: 300px; /* Ancho máximo inicial */
+    overflow: hidden;
+}
+
+        /* ESTADO COMPRIMIDO: Se activa con JS cuando aparecen los ojos */
         .user-info.compressed {
-            background: transparent; /* Quita el fondo */
-            box-shadow: none;        /* Quita la sombra */
-            padding-right: 0;        /* Ajusta el padding */
-            gap: 0;                  /* Elimina el espacio entre elementos */
+            background: transparent; 
+            box-shadow: none;
+            padding-right: 0;
+            gap: 0; /* Elimina espacio entre elementos para que se junten */
             backdrop-filter: none;
         }
         
-        /* AGREGADO: Controlar la visibilidad del nombre y el botón */
-        .user-info #userName,
-        .user-info #logoutBtn {
-            transition: all 0.3s ease;
-            opacity: 1;
-            max-width: 150px; /* Ancho máximo arbitrario para permitir animación */
-            white-space: nowrap;
-        }
-        
-        /* --- BUSCA Y REEMPLAZA ESTE BLOQUE EN TU CSS --- */
-
+        /* ESTILOS DEL NOMBRE DE USUARIO */
         .user-info #userName {
-            transition: all 0.3s ease;
-            opacity: 1;
-            max-width: 150px;     /* Límite de ancho */
-            white-space: nowrap;  /* Que no baje de línea */
-            
-            /* AGREGADO: Para evitar que el texto tape la cruz */
-            overflow: hidden;        /* Oculta lo que sobra */
-            text-overflow: ellipsis; /* Pone '...' si es muy largo */
-            display: block;          /* Ayuda a que el navegador respete el ancho */
-        }
-        
-        /* Asegúrate también de que el botón no se aplaste */
-        .user-info #logoutBtn {
-            flex-shrink: 0; /* Evita que el botón se encoja */
-        }
-        .user-avatar {
-            width: 36px;
-            height: 36px;
-            border-radius: 50%;
-            background-color: white;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: var(--primary-color);
-            font-weight: 800;
-            font-size: 1.1rem;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        }
-        
-        #userName {
             color: white;
             font-weight: 600;
             font-size: 0.95rem;
+            /* Transición para aparecer/desaparecer */
+            transition: all 0.3s ease;
+            opacity: 1;
+            
+            /* Lógica para cortar el texto (Truncar) */
+            max-width: 150px;        /* Límite de ancho cuando está visible */
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis; /* Agrega los '...' si es muy largo */
+            display: block;
         }
+        
+        /* ESTILOS DEL BOTÓN DE LOGOUT */
+        .user-info #logoutBtn {
+            transition: all 0.3s ease;
+            opacity: 1;
+            max-width: 100px; /* Ancho suficiente para ver el botón */
+            margin-left: 0.5rem;
+            flex-shrink: 0;   /* IMPORTANTE: Evita que el botón se aplaste */
+        }
+        
+        /* OCULTAR ELEMENTOS: Cuando la clase .compressed está activa */
+        .user-info.compressed #userName,
+        .user-info.compressed #logoutBtn {
+            opacity: 0;
+            max-width: 0; /* Se reduce a 0 para desaparecer */
+            margin: 0;
+            padding: 0;
+            border: none; /* Quita el borde del botón para que no se vea una línea */
+            pointer-events: none;
+}
 
         .btn {
             background-color: white;
@@ -2424,5 +2416,6 @@
     </script>
 </body>
 </html>
+
 
 
