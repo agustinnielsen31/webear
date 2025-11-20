@@ -190,7 +190,25 @@
     max-width: 300px; /* Ancho máximo inicial */
     overflow: hidden;
 }
-
+        
+        .user-avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background-color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--primary-color);
+            font-weight: 800;
+            font-size: 1.1rem;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            
+            /* La corrección para que no se aplaste */
+            flex-shrink: 0;
+            min-width: 36px;
+            min-height: 36px;
+}
         /* ESTADO COMPRIMIDO: Se activa con JS cuando aparecen los ojos */
         .user-info.compressed {
             background: transparent; 
@@ -2416,6 +2434,7 @@
     </script>
 </body>
 </html>
+
 
 
 
