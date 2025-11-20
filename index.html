@@ -207,17 +207,24 @@
             white-space: nowrap;
         }
         
-        /* ESTILO NUEVO: Ocultar elementos cuando está comprimido */
-        .user-info.compressed #userName,
-        .user-info.compressed #logoutBtn {
-            opacity: 0;
-            max-width: 0;
-            margin: 0;
-            padding: 0;
-            border: none;
-            pointer-events: none; /* Evita clics accidentales */
+        /* --- BUSCA Y REEMPLAZA ESTE BLOQUE EN TU CSS --- */
+
+        .user-info #userName {
+            transition: all 0.3s ease;
+            opacity: 1;
+            max-width: 150px;     /* Límite de ancho */
+            white-space: nowrap;  /* Que no baje de línea */
+            
+            /* AGREGADO: Para evitar que el texto tape la cruz */
+            overflow: hidden;        /* Oculta lo que sobra */
+            text-overflow: ellipsis; /* Pone '...' si es muy largo */
+            display: block;          /* Ayuda a que el navegador respete el ancho */
         }
         
+        /* Asegúrate también de que el botón no se aplaste */
+        .user-info #logoutBtn {
+            flex-shrink: 0; /* Evita que el botón se encoja */
+        }
         .user-avatar {
             width: 36px;
             height: 36px;
@@ -2417,4 +2424,5 @@
     </script>
 </body>
 </html>
+
 
