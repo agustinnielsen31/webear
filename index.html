@@ -56,6 +56,78 @@
             box-shadow: 0 4px 10px rgba(0,0,0,0.15);
             backdrop-filter: blur(5px); 
         }
+
+        /* --- ESTILOS DE LOS OJOS (MODIFICADOS) --- */
+        .eyes-container {
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 15px;
+            pointer-events: none; /* No interferir con clics */
+            opacity: 0; /* Totalmente invisibles al inicio */
+            transition: opacity 0.2s ease; /* Transición suave para aparecer/desaparecer el contenedor */
+        }
+
+        /* Cuando están activos, el contenedor se hace visible */
+        .eyes-container.active {
+            opacity: 1;
+        }
+        
+        /* Ojo (la parte blanca) - Sin bordes ni sombras */
+        .eye {
+            width: 50px;
+            height: 34px; /* Ovalado */
+            background: white;
+            border-radius: 50%;
+            position: relative;
+            overflow: hidden;
+            /* Eliminados border y box-shadow para aspecto plano y limpio */
+        }
+
+        /* Pupila (la parte negra) */
+        .pupil {
+            width: 18px;
+            height: 18px;
+            background: #2c3e50;
+            border-radius: 50%;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            /* El movimiento se controla con JS */
+        }
+        
+        /* Brillo en la pupila */
+        .pupil::after {
+            content: '';
+            width: 6px;
+            height: 6px;
+            background: white;
+            border-radius: 50%;
+            position: absolute;
+            top: 3px;
+            left: 4px;
+            opacity: 0.8;
+        }
+
+        /* Párpados (para la animación de abrir/cerrar) */
+        .eyelid {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%; /* Empiezan cerrados (ocupan todo el ojo) */
+            background: #ff914d; /* Color piel/naranja del tema (o el color del fondo donde estén) */
+            /* IMPORTANTE: Transición rápida para el parpadeo/apertura */
+            transition: height 0.25s cubic-bezier(0.4, 0, 0.2, 1); 
+            z-index: 2;
+        }
+        
+        /* Cuando el contenedor tiene la clase 'open', los párpados se levantan (height 0) */
+        .eyes-container.open .eyelid {
+            height: 0%;
+        }
         
         header {
             background: var(--primary-gradient);
@@ -67,7 +139,7 @@
         }
         
         .header-title h1 {
-            font-size: 4.5rem;
+            font-size: 2.5rem;
             font-weight: 800;
             margin-bottom: 0.5rem;
             letter-spacing: -0.5px;
@@ -392,7 +464,6 @@
             margin-bottom: 1.5rem;
         }
 
-        /* NUEVO: Estilos para la fila del formulario */
         .form-row {
             display: flex;
             gap: 1rem;
@@ -731,16 +802,15 @@
         
         .modal-content {
             background: white;
-            padding: 2rem; /* Reduje el padding de 2.5rem a 2rem */
+            padding: 2rem; 
             border-radius: 16px;
             width: 90%;
             max-width: 400px;
             box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
             transform: scale(0.95);
             animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
-            /* NUEVO: Lógica de scroll y altura máxima */
-            max-height: 85vh; /* Máxima altura: 85% de la pantalla */
-            overflow-y: auto; /* Scroll vertical si se pasa */
+            max-height: 85vh; 
+            overflow-y: auto; 
         }
         
         @keyframes popIn {
@@ -840,7 +910,6 @@
             box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
         }
 
-        /* Estilos para el Easter Egg de Gino */
         .gino-overlay {
             display: none;
             position: fixed;
@@ -932,6 +1001,12 @@
 </head>
 <body>
     <nav id="mainNav" class="navbar">
+        <!-- OJOS AGREGADOS AQUÍ -->
+        <div class="eyes-container" id="navEyes">
+            <div class="eye"><div class="pupil"></div><div class="eyelid"></div></div>
+            <div class="eye"><div class="pupil"></div><div class="eyelid"></div></div>
+        </div>
+
         <div class="auth-section">
             <div id="userInfo" class="user-info" style="display: none;">
                 <div class="user-avatar" id="userAvatar">U</div>
@@ -1241,9 +1316,9 @@
     <!-- Nuevo Modal de Términos y Condiciones Sociales -->
     <div class="modal" id="termsModal">
         <div class="modal-content">
-            <h2>Contrato Social</h2>
+            <h2>Compromiso Social</h2>
             <p style="margin-bottom: 1.5rem; line-height: 1.6;">
-                Gino Social es una herramienta de creada por estudiantes de Sociología. 
+                Gino Social es una herramienta de estudiantes de Sociología. 
                 Al registrarte, aceptas mantener el respeto y la cordialidad. 
                 Cualquier comentario ofensivo será reprimido mediante un hecho social.
             </p>
@@ -1325,8 +1400,62 @@
             configurarScrollToTop();
             configurarNavScroll();
             configurarEasterEgg(); 
+            configurarOjosGino(); // Nueva función para los ojos
         }
         
+        // --- FUNCIÓN PARA LOS OJOS DE GINO ---
+        function configurarOjosGino() {
+            const eyesContainer = document.getElementById('navEyes');
+            const pupils = document.querySelectorAll('.pupil');
+            const eyelids = document.querySelectorAll('.eyelid');
+            const reviewTextarea = document.getElementById('reviewText');
+            
+            // Mostrar ojos cuando el textarea recibe foco
+            reviewTextarea.addEventListener('focus', () => {
+                eyesContainer.classList.add('active');
+                eyesContainer.classList.add('open'); // Nueva clase para abrir párpados
+            });
+            
+            // Ocultar ojos cuando el textarea pierde foco
+            reviewTextarea.addEventListener('blur', () => {
+                eyesContainer.classList.remove('open'); // Cierra párpados primero
+                
+                setTimeout(() => {
+                    eyesContainer.classList.remove('active');
+                }, 300);
+            });
+            
+            // Seguir el cursor con las pupilas
+            document.addEventListener('mousemove', (e) => {
+                // Solo calcular si los ojos están visibles para ahorrar recursos
+                if (!eyesContainer.classList.contains('active')) return;
+                
+                const x = e.clientX;
+                const y = e.clientY;
+                
+                pupils.forEach(pupil => {
+                    // Obtener posición del ojo
+                    const rect = pupil.parentElement.getBoundingClientRect();
+                    const eyeCenterX = rect.left + rect.width / 2;
+                    const eyeCenterY = rect.top + rect.height / 2;
+                    
+                    // Calcular ángulo y distancia
+                    const angle = Math.atan2(y - eyeCenterY, x - eyeCenterX);
+                    // Limitar el movimiento de la pupila para que no se salga del ojo
+                    const distance = Math.min(
+                        // Radio del ojo menos radio de la pupila aprox
+                        10, 
+                        Math.hypot(x - eyeCenterX, y - eyeCenterY) / 15 
+                    );
+                    
+                    const pupilX = Math.cos(angle) * distance;
+                    const pupilY = Math.sin(angle) * distance;
+                    
+                    pupil.style.transform = `translate(calc(-50% + ${pupilX}px), calc(-50% + ${pupilY}px))`;
+                });
+            });
+        }
+
         function configurarEasterEgg() {
             const title = document.querySelector('.header-title h1');
             const easterEggContainer = document.getElementById('ginoEasterEgg');
@@ -2224,6 +2353,7 @@
             }, 5000);
         }
         
+        // --- SCROLL TO TOP LOGIC ---
         function scrollToTop() {
             window.scrollTo({
                 top: 0,
