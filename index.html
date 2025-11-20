@@ -183,6 +183,39 @@
             padding: 0.25rem 0.75rem 0.25rem 0.25rem;
             border-radius: 30px;
             backdrop-filter: blur(4px);
+            /* AGREGADO: Transiciones suaves para la animación */
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            max-width: 300px; /* Necesario para animar el ancho */
+            overflow: hidden; /* Para ocultar el contenido que se encoge */
+        }
+        
+        /* ESTILO NUEVO: Estado comprimido (cuando aparecen los ojos) */
+        .user-info.compressed {
+            background: transparent; /* Quita el fondo */
+            box-shadow: none;        /* Quita la sombra */
+            padding-right: 0;        /* Ajusta el padding */
+            gap: 0;                  /* Elimina el espacio entre elementos */
+            backdrop-filter: none;
+        }
+        
+        /* AGREGADO: Controlar la visibilidad del nombre y el botón */
+        .user-info #userName,
+        .user-info #logoutBtn {
+            transition: all 0.3s ease;
+            opacity: 1;
+            max-width: 150px; /* Ancho máximo arbitrario para permitir animación */
+            white-space: nowrap;
+        }
+        
+        /* ESTILO NUEVO: Ocultar elementos cuando está comprimido */
+        .user-info.compressed #userName,
+        .user-info.compressed #logoutBtn {
+            opacity: 0;
+            max-width: 0;
+            margin: 0;
+            padding: 0;
+            border: none;
+            pointer-events: none; /* Evita clics accidentales */
         }
         
         .user-avatar {
@@ -1407,43 +1440,48 @@
         function configurarOjosGino() {
             const eyesContainer = document.getElementById('navEyes');
             const pupils = document.querySelectorAll('.pupil');
-            const eyelids = document.querySelectorAll('.eyelid');
             const reviewTextarea = document.getElementById('reviewText');
-            
-            // Mostrar ojos cuando el textarea recibe foco
+            const userInfo = document.getElementById('userInfo'); // Capturamos el elemento de usuario
+        
+            // Mostrar ojos y comprimir usuario cuando el textarea recibe foco
             reviewTextarea.addEventListener('focus', () => {
                 eyesContainer.classList.add('active');
-                eyesContainer.classList.add('open'); // Nueva clase para abrir párpados
+                eyesContainer.classList.add('open');
+                
+                // Animación del usuario
+                if (userInfo) {
+                    userInfo.classList.add('compressed');
+                }
             });
             
-            // Ocultar ojos cuando el textarea pierde foco
+            // Ocultar ojos y restaurar usuario cuando el textarea pierde foco
             reviewTextarea.addEventListener('blur', () => {
-                eyesContainer.classList.remove('open'); // Cierra párpados primero
+                eyesContainer.classList.remove('open');
+                
+                // Restaurar usuario a la normalidad
+                if (userInfo) {
+                    userInfo.classList.remove('compressed');
+                }
                 
                 setTimeout(() => {
                     eyesContainer.classList.remove('active');
                 }, 300);
             });
             
-            // Seguir el cursor con las pupilas
+            // Seguir el cursor con las pupilas (se mantiene igual)
             document.addEventListener('mousemove', (e) => {
-                // Solo calcular si los ojos están visibles para ahorrar recursos
                 if (!eyesContainer.classList.contains('active')) return;
                 
                 const x = e.clientX;
                 const y = e.clientY;
                 
                 pupils.forEach(pupil => {
-                    // Obtener posición del ojo
                     const rect = pupil.parentElement.getBoundingClientRect();
                     const eyeCenterX = rect.left + rect.width / 2;
                     const eyeCenterY = rect.top + rect.height / 2;
                     
-                    // Calcular ángulo y distancia
                     const angle = Math.atan2(y - eyeCenterY, x - eyeCenterX);
-                    // Limitar el movimiento de la pupila para que no se salga del ojo
                     const distance = Math.min(
-                        // Radio del ojo menos radio de la pupila aprox
                         10, 
                         Math.hypot(x - eyeCenterX, y - eyeCenterY) / 15 
                     );
@@ -1455,7 +1493,6 @@
                 });
             });
         }
-
         function configurarEasterEgg() {
             const title = document.querySelector('.header-title h1');
             const easterEggContainer = document.getElementById('ginoEasterEgg');
@@ -2380,3 +2417,4 @@
     </script>
 </body>
 </html>
+
