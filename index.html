@@ -391,6 +391,16 @@
         .form-group {
             margin-bottom: 1.5rem;
         }
+
+        /* NUEVO: Estilos para la fila del formulario */
+        .form-row {
+            display: flex;
+            gap: 1rem;
+        }
+        
+        .form-row .form-group {
+            flex: 1;
+        }
         
         label {
             display: block;
@@ -721,13 +731,16 @@
         
         .modal-content {
             background: white;
-            padding: 2.5rem;
+            padding: 2rem; /* Reduje el padding de 2.5rem a 2rem */
             border-radius: 16px;
             width: 90%;
             max-width: 400px;
             box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
             transform: scale(0.95);
             animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+            /* NUEVO: Lógica de scroll y altura máxima */
+            max-height: 85vh; /* Máxima altura: 85% de la pantalla */
+            overflow-y: auto; /* Scroll vertical si se pasa */
         }
         
         @keyframes popIn {
@@ -1189,14 +1202,18 @@
         <div class="modal-content">
             <h2>Registrarse</h2>
             <form id="registerForm">
-                <div class="form-group">
-                    <label for="registerFirstName">Nombre:</label>
-                    <input type="text" id="registerFirstName" required>
+                <!-- NUEVA ESTRUCTURA: Fila para Nombre y Apellido -->
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="registerFirstName">Nombre:</label>
+                        <input type="text" id="registerFirstName" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="registerLastName">Apellido:</label>
+                        <input type="text" id="registerLastName" required>
+                    </div>
                 </div>
-                <div class="form-group">
-                    <label for="registerLastName">Apellido:</label>
-                    <input type="text" id="registerLastName" required>
-                </div>
+                
                 <div class="form-group">
                     <label for="registerEmail">Email:</label>
                     <input type="email" id="registerEmail" required>
@@ -1226,9 +1243,9 @@
         <div class="modal-content">
             <h2>Contrato Social</h2>
             <p style="margin-bottom: 1.5rem; line-height: 1.6;">
-                Gino Social es una herramienta creada por estudiantes de Sociología. 
-                Al crear tu cuenta aceptas mantener el respeto y la cordialidad en las reseñas. 
-                Cualquier comentario que dañe la moral social será reprimido mediante un hecho social.
+                Gino Social es una herramienta de creada por estudiantes de Sociología. 
+                Al registrarte, aceptas mantener el respeto y la cordialidad. 
+                Cualquier comentario ofensivo será reprimido mediante un hecho social.
             </p>
             <div class="modal-actions">
                 <button type="button" id="cancelTerms" class="btn btn-outline" style="background:transparent; border:1px solid #ddd; color: #666;">Cancelar</button>
