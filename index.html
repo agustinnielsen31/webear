@@ -1035,6 +1035,53 @@
             text-shadow: 0 2px 4px rgba(0,0,0,0.5);
         }
 
+        /* --- NUEVOS ESTILOS PARA EL MODAL DE REGISTRO ANCHO --- */
+        .modal-content-wide {
+            max-width: 900px !important;
+            width: 95%;
+        }
+
+        .register-layout {
+            display: flex;
+            gap: 2rem;
+        }
+
+        .register-form-container {
+            flex: 1;
+        }
+
+        .register-info-sidebar {
+            flex: 1;
+            background: #fff8e1; /* Fondo suave para el mensaje importante */
+            padding: 1.5rem;
+            border-radius: 12px;
+            border-left: 4px solid var(--primary-color);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            font-size: 0.95rem;
+            color: #444;
+        }
+
+        .register-info-sidebar h3 {
+            color: var(--primary-color);
+            margin-bottom: 1rem;
+            font-size: 1.2rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .register-info-sidebar p {
+            margin-bottom: 0.8rem;
+            line-height: 1.6;
+        }
+        
+        .register-info-sidebar .highlight-text {
+            color: var(--accent-color);
+            font-weight: 700;
+        }
+
         @media (max-width: 768px) {
             .category-filters {
                 flex-direction: row; 
@@ -1084,6 +1131,15 @@
             .btn-colaborar {
                 padding: 0.4rem 0.8rem;
                 font-size: 0.8rem;
+            }
+
+            /* Stackear columnas en móvil para el modal de registro */
+            .register-layout {
+                flex-direction: column;
+                gap: 1.5rem;
+            }
+            .register-info-sidebar {
+                order: -1; /* Poner el mensaje importante arriba si se desea, o quitar para que quede abajo */
             }
         }
     </style>
@@ -1383,41 +1439,56 @@
         </div>
     </div>
 
+    <!-- MODAL DE REGISTRO MODIFICADO Y EXTENDIDO -->
     <div class="modal" id="registerModal">
-        <div class="modal-content">
-            <h2>Registrarse</h2>
-            <form id="registerForm">
-                <div class="form-row">
-                    <div class="form-group">
-                        <label for="registerFirstName">Nombre:</label>
-                        <input type="text" id="registerFirstName" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="registerLastName">Apellido:</label>
-                        <input type="text" id="registerLastName" required>
-                    </div>
+        <div class="modal-content modal-content-wide">
+            <div class="register-layout">
+                <!-- Columna Izquierda: Formulario -->
+                <div class="register-form-container">
+                    <h2>Registrarse</h2>
+                    <form id="registerForm">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="registerFirstName">Nombre:</label>
+                                <input type="text" id="registerFirstName" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="registerLastName">Apellido:</label>
+                                <input type="text" id="registerLastName" required>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="registerEmail">Email:</label>
+                            <input type="email" id="registerEmail" required>
+                            <small style="display: block; margin-top: 0.5rem; color: #e67e22; font-size: 0.85rem;">
+                                Revisa tu casilla de spam para confirmar tu cuenta.
+                            </small>
+                        </div>
+                        <div class="form-group">
+                            <label for="registerPassword">Contraseña:</label>
+                            <div class="password-wrapper">
+                                <input type="password" id="registerPassword" required minlength="6">
+                                <button type="button" class="toggle-password-btn" data-target="registerPassword">👁️</button>
+                            </div>
+                        </div>
+                        <div id="registerError" class="error-message"></div>
+                        <div class="modal-actions">
+                            <button type="button" id="cancelRegister" class="btn btn-outline" style="background:transparent; border:1px solid #ddd; color: #666;">Cancelar</button>
+                            <button type="submit" class="btn btn-block">Registrarse</button>
+                        </div>
+                    </form>
                 </div>
-                
-                <div class="form-group">
-                    <label for="registerEmail">Email:</label>
-                    <input type="email" id="registerEmail" required>
-                    <small style="display: block; margin-top: 0.5rem; color: #e67e22; font-size: 0.85rem;">
-                        Revisa tu casilla de spam para confirmar tu cuenta.
-                    </small>
+
+                <!-- Columna Derecha: Mensaje Importante -->
+                <div class="register-info-sidebar">
+                    <h3>⚠️ Importante</h3>
+                    <p>Es importante cuidar a la comunidad de nuestra carrera. A la hora de hacer reseñas se está opinando sobre profesores y su trabajo. Personas con vidas, sentimientos y cuerpos, que muy probablemente lean tu reseña.</p>
+                    <p>Contamos con tu buena fe para que Gino Social sea un herramienta útil y no genere incomodidad.</p>
+                    <p>Por esta misma razón no alentamos la anonimidad y pedimos <span class="highlight-text">que tus reseñas sean con nombre y apellidos reales</span>.</p>
+                    <p>Siempre es posible, e incentivamos, criticar sin hacer uso de insultos.</p>
                 </div>
-                <div class="form-group">
-                    <label for="registerPassword">Contraseña:</label>
-                    <div class="password-wrapper">
-                        <input type="password" id="registerPassword" required minlength="6">
-                        <button type="button" class="toggle-password-btn" data-target="registerPassword">👁️</button>
-                    </div>
-                </div>
-                <div id="registerError" class="error-message"></div>
-                <div class="modal-actions">
-                    <button type="button" id="cancelRegister" class="btn btn-outline" style="background:transparent; border:1px solid #ddd; color: #666;">Cancelar</button>
-                    <button type="submit" class="btn btn-block">Registrarse</button>
-                </div>
-            </form>
+            </div>
         </div>
     </div>
 
@@ -2524,7 +2595,3 @@
     </script>
 </body>
 </html>
-
-
-
-
