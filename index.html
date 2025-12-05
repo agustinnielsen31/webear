@@ -1435,6 +1435,12 @@
                     <button type="button" id="cancelLogin" class="btn btn-outline" style="background:transparent; border:1px solid #ddd; color: #666;">Cancelar</button>
                     <button type="submit" class="btn btn-block">Iniciar Sesión</button>
                 </div>
+                
+                <!-- NUEVO: SWITCH PARA IR A REGISTRO -->
+                <div style="margin-top: 1.5rem; padding-top: 1rem; border-top: 1px solid #eee; text-align: center;">
+                    <p style="color: #666; margin-bottom: 0.5rem; font-size: 0.95rem;">¿No tienes cuenta?</p>
+                    <a href="#" id="switchToRegister" style="color: var(--primary-color); font-weight: 700; text-decoration: none;">Regístrate aquí</a>
+                </div>
             </form>
         </div>
     </div>
@@ -2442,6 +2448,9 @@
             const collaborateBtn = document.getElementById('collaborateBtn');
             const closeCollaborate = document.getElementById('closeCollaborate');
 
+            /* NUEVO SELECTOR PARA SWITCH A REGISTRO */
+            const switchToRegister = document.getElementById('switchToRegister');
+
             [loginBtn, loginFromReviewBtn].forEach(btn => btn.addEventListener('click', () => loginModal.classList.add('active')));
             registerBtn.addEventListener('click', () => registerModal.classList.add('active'));
 
@@ -2454,6 +2463,15 @@
             
             /* EVENTO PARA CERRAR MODAL DE COLABORAR */
             closeCollaborate.addEventListener('click', () => collaborateModal.classList.remove('active'));
+
+            /* EVENTO PARA CAMBIAR DE LOGIN A REGISTRO */
+            if(switchToRegister) {
+                switchToRegister.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    loginModal.classList.remove('active');
+                    registerModal.classList.add('active');
+                });
+            }
 
             window.addEventListener('click', (e) => {
                 if (e.target === loginModal) loginModal.classList.remove('active');
