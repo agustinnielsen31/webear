@@ -37,7 +37,6 @@
             color: var(--dark-color);
         }
 
-        /* --- NAVBAR MODIFICADO --- */
         .navbar {
             position: fixed;
             top: 0;
@@ -45,7 +44,6 @@
             width: 100%;
             padding: 1rem 2rem;
             display: flex;
-            /* Space-between para separar Colaborar (izq) y Auth (der) */
             justify-content: space-between; 
             align-items: center;
             z-index: 1000;
@@ -60,7 +58,6 @@
             backdrop-filter: blur(5px); 
         }
 
-        /* --- NUEVOS ESTILOS BOTONES COLABORAR/DONAR --- */
         .btn-colaborar {
             background: rgba(255, 255, 255, 0.2);
             backdrop-filter: blur(4px);
@@ -85,7 +82,6 @@
             box-shadow: 0 4px 10px rgba(0,0,0,0.1);
         }
 
-        /* Botón Donar Vistoso para el Modal */
         .btn-donate {
             background: linear-gradient(45deg, #FF416C, #FF4B2B);
             color: white;
@@ -528,6 +524,60 @@
         .review-form-container.active {
             display: block;
             animation: slideUp 0.4s ease-out;
+        }
+
+        .form-header-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+            padding-bottom: 1rem;
+            margin-bottom: 0.5rem;
+            border-bottom: 1px solid #f0f0f0;
+            transition: background-color 0.2s;
+        }
+
+        .form-header-row:hover {
+            opacity: 0.8;
+        }
+
+        .form-header-row h2 {
+            margin: 0;
+            font-size: 1.6rem;
+            color: var(--primary-color);
+        }
+
+        .form-toggle-icon {
+            font-size: 1.2rem;
+            color: var(--primary-color);
+            transition: transform 0.3s ease;
+            font-weight: bold;
+            background: #fff3e0;
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+        }
+
+        .form-toggle-icon.rotated {
+            transform: rotate(180deg);
+        }
+
+        .form-collapsible-content {
+            display: block;
+            overflow: hidden;
+            transition: max-height 0.4s ease-out, opacity 0.4s ease-out, padding 0.4s ease;
+            max-height: 2000px; 
+            opacity: 1;
+        }
+
+        .form-collapsible-content.collapsed {
+            max-height: 0;
+            opacity: 0;
+            margin: 0;
+            padding: 0;
         }
 
         @keyframes slideUp {
@@ -1035,7 +1085,6 @@
             text-shadow: 0 2px 4px rgba(0,0,0,0.5);
         }
 
-        /* --- NUEVOS ESTILOS PARA EL MODAL DE REGISTRO ANCHO --- */
         .modal-content-wide {
             max-width: 900px !important;
             width: 95%;
@@ -1052,7 +1101,7 @@
 
         .register-info-sidebar {
             flex: 1;
-            background: #fff8e1; /* Fondo suave para el mensaje importante */
+            background: #fff8e1; 
             padding: 1.5rem;
             border-radius: 12px;
             border-left: 4px solid var(--primary-color);
@@ -1127,19 +1176,17 @@
             header {
                 padding: 6rem 1rem 3rem;
             }
-            /* En móvil, el botón colaborar podría ser más compacto */
             .btn-colaborar {
                 padding: 0.4rem 0.8rem;
                 font-size: 0.8rem;
             }
 
-            /* Stackear columnas en móvil para el modal de registro */
             .register-layout {
                 flex-direction: column;
                 gap: 1.5rem;
             }
             .register-info-sidebar {
-                order: -1; /* Poner el mensaje importante arriba si se desea, o quitar para que quede abajo */
+                order: -1; 
             }
         }
     </style>
@@ -1153,22 +1200,18 @@
   gtag('config', 'G-8BZFCJBMY6');
 </script>
 <body>
-    <!-- NAVBAR ACTUALIZADA CON EL BOTÓN COLABORAR A LA IZQUIERDA -->
     <nav id="mainNav" class="navbar">
-        <!-- IZQUIERDA: Botón Colaborar -->
         <div>
             <button id="collaborateBtn" class="btn-colaborar">
                 <span>🤝</span> <span style="display: inline-block;">Colaborar</span>
             </button>
         </div>
 
-        <!-- CENTRO: Ojos (posicionamiento absoluto, se mantienen centrados) -->
         <div class="eyes-container" id="navEyes">
             <div class="eye"><div class="pupil"></div><div class="eyelid"></div></div>
             <div class="eye"><div class="pupil"></div><div class="eyelid"></div></div>
         </div>
 
-        <!-- DERECHA: Autenticación -->
         <div class="auth-section">
             <div id="userInfo" class="user-info" style="display: none;">
                 <div class="user-avatar" id="userAvatar">U</div>
@@ -1227,104 +1270,94 @@
         </style>
         
         <div class="review-form-container" id="reviewForm">
-            <h2 id="formTitle">Dejar Reseña</h2>
-             <br>
-            <div id="authRequiredMessage" class="auth-required" style="display: none;">
-                <h3>Inicia sesión para dejar una reseña</h3>
-                <p>Debes tener una cuenta y estar logueado para compartir tu experiencia.</p>
-                <button id="loginFromReviewBtn" class="btn btn-block">Iniciar Sesión</button>
+            <div class="form-header-row" onclick="toggleFormVisibility()">
+                <h2 id="formTitle">Dejar Reseña</h2>
+                <span class="form-toggle-icon" id="formToggleIcon">▼</span>
             </div>
             
-            <form id="reviewFormElement" style="display: none;">
-                <div class="form-group">
-                    <label for="catedra">Cátedra:</label>
-                    <select id="catedra" required>
-                        <option value="">Selecciona una cátedra</option>
-                    </select>
+            <div id="reviewFormContent" class="form-collapsible-content collapsed">
+                <br>
+                <div id="authRequiredMessage" class="auth-required" style="display: none;">
+                    <h3>Inicia sesión para dejar una reseña</h3>
+                    <p>Debes tener una cuenta y estar logueado para compartir tu experiencia.</p>
+                    <button id="loginFromReviewBtn" class="btn btn-block">Iniciar Sesión</button>
                 </div>
                 
-                <div class="form-group" id="practico-form-group">
-                    <label for="practico">Práctico:</label>
-                    <select id="practico" required>
-                        <option value="">Selecciona un práctico</option>
-                    </select>
-                </div>
-                
-                <div class="form-group">
-                    <label for="anioCursada">Año de cursada:</label>
-                    <div class="year-input-group">
-                        <select id="anioCursada" required>
-                            <option value="">Selecciona el año</option>
-                            <option value="2021">2021</option>
-                            <option value="2022">2022</option>
-                            <option value="2023">2023</option>
-                            <option value="2024">2024</option>
-                            <option value="2025">2025</option>
+                <form id="reviewFormElement" style="display: none;">
+                    <div class="form-group">
+                        <label for="catedra">Cátedra:</label>
+                        <select id="catedra" required>
+                            <option value="">Selecciona una cátedra</option>
                         </select>
-                        <div class="curso-verano-checkbox">
-                            <input type="checkbox" id="cursoVerano">
-                            <label for="cursoVerano">Curso de verano</label>
+                    </div>
+                    
+                    <div class="form-group" id="practico-form-group">
+                        <label for="practico">Práctico:</label>
+                        <select id="practico" required>
+                            <option value="">Selecciona un práctico</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="anioCursada">Año de cursada:</label>
+                        <div class="year-input-group">
+                            <select id="anioCursada" required>
+                                <option value="">Selecciona el año</option>
+                                <option value="2021">2021</option>
+                                <option value="2022">2022</option>
+                                <option value="2023">2023</option>
+                                <option value="2024">2024</option>
+                                <option value="2025">2025</option>
+                            </select>
+                            <div class="curso-verano-checkbox">
+                                <input type="checkbox" id="cursoVerano">
+                                <label for="cursoVerano">Curso de verano</label>
+                            </div>
                         </div>
                     </div>
-                </div>
-                
-                <div class="form-group">
-                    <label>Tipo de evaluación:</label>
-                    <div class="checkbox-group" id="tiposEvaluacionCheckboxes"> 
-                        <div class="checkbox-option">
-                            <input type="checkbox" id="evalParciales" value="Parcial presencial">
-                            <label for="evalParciales">Parcial presencial</label>
-                        </div>
-                        <div class="checkbox-option">
-                            <input type="checkbox" id="evalDomiciliario" value="Parcial domiciliario">
-                            <label for="evalDomiciliario">Parcial domiciliario</label>
-                        </div>
-                        <div class="checkbox-option">
-                            <input type="checkbox" id="evalMonografia" value="Monografía">
-                            <label for="evalMonografia">Monografía</label>
-                        </div>
-                        <div class="checkbox-option">
-                            <input type="checkbox" id="evalInvestigacion" value="Investigación">
-                            <label for="evalInvestigacion">Investigación</label>
-                        </div>
-                        <div class="checkbox-option">
-                            <input type="checkbox" id="evalEnsayo" value="Ensayo">
-                            <label for="evalEnsayo">Ensayo</label>
-                        </div>
-                        <div class="checkbox-option">
-                            <input type="checkbox" id="evalColoquio" value="Coloquio/Oral">
-                            <label for="evalColoquio">Coloquio/Oral</label>
+                    
+                    <div class="form-group">
+                        <label>Tipo de evaluación:</label>
+                        <div class="checkbox-group" id="tiposEvaluacionCheckboxes"> 
+                            <div class="checkbox-option">
+                                <input type="checkbox" id="evalParciales" value="Parcial presencial">
+                                <label for="evalParciales">Parcial presencial</label>
+                            </div>
+                            <div class="checkbox-option">
+                                <input type="checkbox" id="evalDomiciliario" value="Parcial domiciliario">
+                                <label for="evalDomiciliario">Parcial domiciliario</label>
+                            </div>
+                            <div class="checkbox-option">
+                                <input type="checkbox" id="evalMonografia" value="Monografía">
+                                <label for="evalMonografia">Monografía</label>
+                            </div>
+                            <div class="checkbox-option">
+                                <input type="checkbox" id="evalInvestigacion" value="Investigación">
+                                <label for="evalInvestigacion">Investigación</label>
+                            </div>
+                            <div class="checkbox-option">
+                                <input type="checkbox" id="evalEnsayo" value="Ensayo">
+                                <label for="evalEnsayo">Ensayo</label>
+                            </div>
+                            <div class="checkbox-option">
+                                <input type="checkbox" id="evalColoquio" value="Coloquio/Oral">
+                                <label for="evalColoquio">Coloquio/Oral</label>
+                            </div>
                         </div>
                     </div>
-                </div>
-                
-                <div class="form-group">
-                    <label for="tomanAsistencia">Toman asistencia:</label>
-                    <select id="tomanAsistencia" required>
-                        <option value="">Selecciona una opción</option>
-                        <option value="Si">Sí</option>
-                        <option value="No">No</option>
-                    </select>
-                </div>
-                
-                <div class="form-group">
-                    <label>Calificación General:</label>
-                    <div class="rating-input" id="generalRating">
-                        <span class="star" data-value="1">★</span>
-                        <span class="star" data-value="2">★</span>
-                        <span class="star" data-value="3">★</span>
-                        <span class="star" data-value="4">★</span>
-                        <span class="star" data-value="5">★</span>
+                    
+                    <div class="form-group">
+                        <label for="tomanAsistencia">Toman asistencia:</label>
+                        <select id="tomanAsistencia" required>
+                            <option value="">Selecciona una opción</option>
+                            <option value="Si">Sí</option>
+                            <option value="No">No</option>
+                        </select>
                     </div>
-                </div>
-                
-
-                <div class="form-group">
-                    <h3>Calificación por Aspectos</h3>
-                     <br>
-                    <div class="aspect-rating">
-                        <label>Claridad de la explicación (Pedagogía):</label>
-                        <div class="rating-input" id="claridadRating">
+                    
+                    <div class="form-group">
+                        <label>Calificación General:</label>
+                        <div class="rating-input" id="generalRating">
                             <span class="star" data-value="1">★</span>
                             <span class="star" data-value="2">★</span>
                             <span class="star" data-value="3">★</span>
@@ -1333,46 +1366,62 @@
                         </div>
                     </div>
                     
-                    <div class="aspect-rating">
-                        <label>Programa y contenidos:</label>
-                        <div class="rating-input" id="programaRating">
-                            <span class="star" data-value="1">★</span>
-                            <span class="star" data-value="2">★</span>
-                            <span class="star" data-value="3">★</span>
-                            <span class="star" data-value="4">★</span>
-                            <span class="star" data-value="5">★</span>
+
+                    <div class="form-group">
+                        <h3>Calificación por Aspectos</h3>
+                        <br>
+                        <div class="aspect-rating">
+                            <label>Claridad de la explicación (Pedagogía):</label>
+                            <div class="rating-input" id="claridadRating">
+                                <span class="star" data-value="1">★</span>
+                                <span class="star" data-value="2">★</span>
+                                <span class="star" data-value="3">★</span>
+                                <span class="star" data-value="4">★</span>
+                                <span class="star" data-value="5">★</span>
+                            </div>
+                        </div>
+                        
+                        <div class="aspect-rating">
+                            <label>Programa y contenidos:</label>
+                            <div class="rating-input" id="programaRating">
+                                <span class="star" data-value="1">★</span>
+                                <span class="star" data-value="2">★</span>
+                                <span class="star" data-value="3">★</span>
+                                <span class="star" data-value="4">★</span>
+                                <span class="star" data-value="5">★</span>
+                            </div>
+                        </div>
+
+                        <div class="aspect-rating">
+                            <label>Dificultad: <span id="dificultadLabel" style="color: var(--primary-color); font-weight: bold; margin-left: 5px;"></span></label>
+                            <div class="rating-input" id="dificultadRating">
+                                <span class="star" data-value="1">★</span>
+                                <span class="star" data-value="2">★</span>
+                                <span class="star" data-value="3">★</span>
+                                <span class="star" data-value="4">★</span>
+                                <span class="star" data-value="5">★</span>
+                            </div>
+                        </div>
+                        
+                        <div class="aspect-rating">
+                            <label>Oferta horaria:</label>
+                            <div class="rating-input" id="ofertaRating">
+                                <span class="star" data-value="1">★</span>
+                                <span class="star" data-value="2">★</span>
+                                <span class="star" data-value="3">★</span>
+                                <span class="star" data-value="4">★</span>
+                                <span class="star" data-value="5">★</span>
+                            </div>
                         </div>
                     </div>
-
-                    <div class="aspect-rating">
-                        <label>Dificultad:</label>
-                        <div class="rating-input" id="dificultadRating">
-                            <span class="star" data-value="1">★</span>
-                            <span class="star" data-value="2">★</span>
-                            <span class="star" data-value="3">★</span>
-                            <span class="star" data-value="4">★</span>
-                            <span class="star" data-value="5">★</span>
-                        </div>
+                                    <div class="form-group">
+                        <label for="reviewText">Reseña:</label>
+                        <textarea id="reviewText" placeholder="Sé respetuoso... de lo que no se puede hablar es mejor callar." required></textarea>
                     </div>
                     
-                    <div class="aspect-rating">
-                        <label>Oferta horaria:</label>
-                        <div class="rating-input" id="ofertaRating">
-                            <span class="star" data-value="1">★</span>
-                            <span class="star" data-value="2">★</span>
-                            <span class="star" data-value="3">★</span>
-                            <span class="star" data-value="4">★</span>
-                            <span class="star" data-value="5">★</span>
-                        </div>
-                    </div>
-                </div>
-                                <div class="form-group">
-                    <label for="reviewText">Reseña:</label>
-                    <textarea id="reviewText" placeholder="Sé respetuoso... de lo que no se puede hablar es mejor callar." required></textarea>
-                </div>
-                
-                <button type="submit" class="btn btn-block">Enviar Reseña</button>
-            </form>
+                    <button type="submit" class="btn btn-block">Enviar Reseña</button>
+                </form>
+            </div>
         </div>
         
         <div class="resenas-container">
@@ -1436,20 +1485,17 @@
                     <button type="submit" class="btn btn-block">Iniciar Sesión</button>
                 </div>
                 
-                <!-- NUEVO: SWITCH PARA IR A REGISTRO -->
                 <div style="margin-top: 1.5rem; padding-top: 1rem; border-top: 1px solid #eee; text-align: center;">
-                    <p style="color: #666; margin-bottom: 0.5rem; font-size: 0.95rem;">¿No tenés cuenta?</p>
+                    <p style="color: #666; margin-bottom: 0.5rem; font-size: 0.95rem;">¿No tienes cuenta?</p>
                     <a href="#" id="switchToRegister" style="color: var(--primary-color); font-weight: 700; text-decoration: none;">Regístrate aquí</a>
                 </div>
             </form>
         </div>
     </div>
 
-    <!-- MODAL DE REGISTRO MODIFICADO Y EXTENDIDO -->
     <div class="modal" id="registerModal">
         <div class="modal-content modal-content-wide">
             <div class="register-layout">
-                <!-- Columna Izquierda: Formulario -->
                 <div class="register-form-container">
                     <h2>Registrarse</h2>
                     <form id="registerForm">
@@ -1486,7 +1532,6 @@
                     </form>
                 </div>
 
-                <!-- Columna Derecha: Mensaje Importante -->
                 <div class="register-info-sidebar">
                     <h3>⚠️ Importante</h3>
                     <p>Es importante cuidar a la comunidad de nuestra carrera. A la hora de hacer reseñas se está opinando sobre profesores y su trabajo. Personas con vidas, sentimientos y cuerpos, que muy probablemente lean tu reseña.</p>
@@ -1513,7 +1558,6 @@
         </div>
     </div>
 
-    <!-- NUEVO MODAL DE COLABORACIÓN -->
     <div class="modal" id="collaborateModal">
         <div class="modal-content" style="max-width: 500px;">
             <h2 style="color: var(--primary-color); margin-bottom: 1rem;">🤝 Colaborar</h2>
@@ -1536,7 +1580,6 @@
                 <p style="margin-top: 1rem;">También aceptamos donaciones, porque lamentablemente alojar todo esto no es gratis y nos vendría muy bien una ayuda.</p>
             </div>
 
-            <!-- LINK GENÉRICO A DONACIONES (Reemplazar con el link real) -->
             <a href="https://link.mercadopago.com.ar/ginosocio" target="_blank" style="text-decoration: none;">
                 <button class="btn-donate">
                     <span>☕</span> Donar una ayuda
@@ -1622,6 +1665,19 @@
             configurarNavScroll();
             configurarEasterEgg(); 
             configurarOjosGino(); 
+        }
+        
+        function toggleFormVisibility() {
+            const content = document.getElementById('reviewFormContent');
+            const icon = document.getElementById('formToggleIcon');
+            
+            if (content.classList.contains('collapsed')) {
+                content.classList.remove('collapsed');
+                icon.classList.add('rotated'); 
+            } else {
+                content.classList.add('collapsed');
+                icon.classList.remove('rotated'); 
+            }
         }
         
         function configurarOjosGino() {
@@ -1953,6 +2009,17 @@
             }
         }
 
+        function getDifficultyLabel(value) {
+            switch(parseInt(value)) {
+                case 1: return "Muy Fácil";
+                case 2: return "Fácil";
+                case 3: return "Media";
+                case 4: return "Difícil";
+                case 5: return "Muy Difícil";
+                default: return "";
+            }
+        }
+
         function configurarSistemaEstrellas() {
             document.querySelectorAll('.rating-input').forEach(input => {
                 const stars = input.querySelectorAll('.star');
@@ -1967,6 +2034,11 @@
                         });
                         
                         parent.dataset.rating = value;
+
+                        if (parent.id === 'dificultadRating') {
+                            const label = document.getElementById('dificultadLabel');
+                            if (label) label.textContent = getDifficultyLabel(value);
+                        }
                     });
                 });
             });
@@ -2443,28 +2515,23 @@
             const acceptTerms = document.getElementById('acceptTerms');
             const cancelTerms = document.getElementById('cancelTerms');
 
-            /* NUEVOS SELECTORES PARA MODAL DE COLABORAR */
             const collaborateModal = document.getElementById('collaborateModal');
             const collaborateBtn = document.getElementById('collaborateBtn');
             const closeCollaborate = document.getElementById('closeCollaborate');
 
-            /* NUEVO SELECTOR PARA SWITCH A REGISTRO */
             const switchToRegister = document.getElementById('switchToRegister');
 
             [loginBtn, loginFromReviewBtn].forEach(btn => btn.addEventListener('click', () => loginModal.classList.add('active')));
             registerBtn.addEventListener('click', () => registerModal.classList.add('active'));
 
-            /* EVENTO PARA ABRIR MODAL DE COLABORAR */
             collaborateBtn.addEventListener('click', () => collaborateModal.classList.add('active'));
 
             cancelLogin.addEventListener('click', () => loginModal.classList.remove('active'));
             cancelRegister.addEventListener('click', () => registerModal.classList.remove('active'));
             cancelTerms.addEventListener('click', () => termsModal.classList.remove('active'));
             
-            /* EVENTO PARA CERRAR MODAL DE COLABORAR */
             closeCollaborate.addEventListener('click', () => collaborateModal.classList.remove('active'));
 
-            /* EVENTO PARA CAMBIAR DE LOGIN A REGISTRO */
             if(switchToRegister) {
                 switchToRegister.addEventListener('click', (e) => {
                     e.preventDefault();
@@ -2613,4 +2680,3 @@
     </script>
 </body>
 </html>
-
