@@ -527,13 +527,13 @@
         }
 
         .review-form-container {
-            background: white;
-            border-radius: 16px;
-            padding: 2.5rem;
-            box-shadow: var(--shadow-md);
+            background: transparent;
+            border-radius: 0;
+            padding: 0;
+            box-shadow: none;
             margin-bottom: 2rem;
             display: none;
-            border-top: 4px solid var(--primary-color);
+            border-top: none;
         }
         
         .review-form-container.active {
@@ -543,33 +543,43 @@
 
         .form-header-row {
             display: flex;
-            justify-content: space-between;
+            justify-content: center;
             align-items: center;
             cursor: pointer;
-            padding-bottom: 1rem;
-            margin-bottom: 0.5rem;
-            border-bottom: 1px solid #f0f0f0;
-            transition: background-color 0.2s;
+            padding: 1rem 2rem;
+            margin: 0 auto 1rem auto;
+            border-bottom: none;
+            background: var(--primary-color);
+            border-radius: 50px;
+            width: fit-content;
+            color: white;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            transition: transform 0.2s, box-shadow 0.2s, background-color 0.2s;
+            gap: 10px;
         }
 
         .form-header-row:hover {
-            opacity: 0.8;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0,0,0,0.15);
+            opacity: 1;
+            background-color: #ff6b10;
         }
 
         .form-header-row h2 {
             margin: 0;
-            font-size: 1.6rem;
-            color: var(--primary-color);
+            font-size: 1.2rem;
+            color: white;
+            font-weight: 700;
         }
 
         .form-toggle-icon {
-            font-size: 1.2rem;
-            color: var(--primary-color);
+            font-size: 1rem;
+            color: white;
             transition: transform 0.3s ease;
             font-weight: bold;
-            background: #fff3e0;
-            width: 32px;
-            height: 32px;
+            background: rgba(255, 255, 255, 0.2);
+            width: 24px;
+            height: 24px;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -583,16 +593,22 @@
         .form-collapsible-content {
             display: block;
             overflow: hidden;
-            transition: max-height 0.4s ease-out, opacity 0.4s ease-out, padding 0.4s ease;
+            background: white;
+            border-radius: 16px;
+            box-shadow: var(--shadow-md);
+            transition: max-height 0.4s ease-out, opacity 0.4s ease-out, padding 0.4s ease, margin-top 0.4s ease;
             max-height: 2000px; 
             opacity: 1;
+            padding: 2.5rem;
+            margin-top: 1rem;
         }
 
         .form-collapsible-content.collapsed {
             max-height: 0;
             opacity: 0;
-            margin: 0;
+            margin-top: 0;
             padding: 0;
+            box-shadow: none;
         }
 
         @keyframes slideUp {
@@ -925,7 +941,6 @@
             font-weight: 600;
         }
 
-        /* Estilos para Respuestas */
         .btn-reply {
             background: transparent;
             border: 1px solid #ddd;
@@ -1826,19 +1841,18 @@
 
         function cargarRespuestas(reviewId) {
             const listContainer = document.getElementById(`replies-list-${reviewId}`);
-            listContainer.textContent = ''; // Limpiar usando textContent por seguridad
+            listContainer.textContent = ''; 
             const loadingMsg = crearElemento('div', [], 'Cargando respuestas...');
             loadingMsg.style.textAlign = 'center';
             loadingMsg.style.color = '#999';
             loadingMsg.style.padding = '10px';
             listContainer.appendChild(loadingMsg);
             
-            // Usar onSnapshot para tiempo real
             respuestasListeners[reviewId] = db.collection('resenas').doc(reviewId).collection('respuestas')
                 .orderBy('fecha', 'asc')
                 .onSnapshot(snapshot => {
                     if (snapshot.empty) {
-                        listContainer.innerHTML = ''; // Limpiar mensaje de carga
+                        listContainer.innerHTML = ''; 
                         return;
                     }
                     
@@ -1854,7 +1868,6 @@
                         
                         const nombreMostrar = reply.usuarioNombre || 'Anónimo';
                         
-                        // Construcción segura del DOM para respuestas
                         const headerDiv = crearElemento('div', 'reply-header');
                         const authorSpan = crearElemento('span', 'reply-author', nombreMostrar);
                         const dateSpan = crearElemento('span', [], fechaFormateada);
@@ -1862,7 +1875,7 @@
                         headerDiv.appendChild(authorSpan);
                         headerDiv.appendChild(dateSpan);
                         
-                        const textDiv = crearElemento('div', [], reply.texto); // Seguro contra XSS
+                        const textDiv = crearElemento('div', [], reply.texto); 
                         
                         replyElement.appendChild(headerDiv);
                         replyElement.appendChild(textDiv);
@@ -2408,7 +2421,6 @@
                         oferta: parseInt(ofertaRating) || 0,
                         texto: reviewText,
                         usuarioId: appState.user.uid,
-                        // usuarioEmail: appState.user.email,  <-- REMOVIDO POR PRIVACIDAD
                         usuarioNombre: nombreAutor,
                         fecha: firebase.firestore.FieldValue.serverTimestamp(),
                         votes: {},
@@ -2472,13 +2484,12 @@
         function cargarresenasEnUI() {
             const resenasList = document.getElementById('resenasList');
             
-            // CLEANUP: Unsubscribe from old listeners before wiping the DOM
             Object.keys(respuestasListeners).forEach(key => {
                 if (typeof respuestasListeners[key] === 'function') {
-                    respuestasListeners[key](); // Call unsubscribe
+                    respuestasListeners[key](); 
                 }
             });
-            respuestasListeners = {}; // Reset map
+            respuestasListeners = {}; 
             
             if (!appState.resenas || appState.resenas.length === 0) {
                 resenasList.innerHTML = '<div class="no-resenas">No hay reseñas para esta materia aún.</div>';
@@ -2495,10 +2506,8 @@
             resenasList.innerHTML = '';
             
             resenasFiltradas.forEach(reseña => {
-                // 1. Crear el contenedor principal de la tarjeta
                 const reviewCard = crearElemento('div', 'review-card');
 
-                // --- PREPARAR DATOS ---
                 const nombreMostrar = reseña.usuarioNombre || (reseña.usuarioEmail ? reseña.usuarioEmail.split('@')[0] : 'Anónimo');
                 const inicial = nombreMostrar.charAt(0).toUpperCase();
                 
@@ -2521,7 +2530,7 @@
                 const avatar = crearElemento('div', 'user-avatar', inicial);
                 
                 const infoDiv = crearElemento('div', 'review-user-info');
-                const nameDiv = crearElemento('div', 'review-user-name', nombreMostrar); // SEGURIDAD AQUI
+                const nameDiv = crearElemento('div', 'review-user-name', nombreMostrar); 
                 const catedraDiv = crearElemento('div', 'review-catedra', catedraTexto);
                 const dateDiv = crearElemento('div', 'review-date', `${fechaFormateada} | Cursada en ${anioDisplay}`);
                 
@@ -2591,7 +2600,7 @@
 
                 const repliesCount = reseña.replies_count || 0;
                 const btnReply = crearElemento('button', ['vote-control', 'btn-reply']);
-                btnReply.textContent = repliesCount > 0 ? `💬 Responder (${repliesCount})` : `💬 Responder`;
+                btnReply.textContent = repliesCount > 0 ? `💬 Respuestas (${repliesCount})` : `💬 Respuestas`;
                 btnReply.onclick = () => toggleRespuestas(reseña.id);
 
                 footer.appendChild(btnLike);
