@@ -225,7 +225,7 @@
             border-radius: 30px;
             backdrop-filter: blur(4px);
             transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-            max-width: 300px;
+            max-width: 350px; 
             overflow: hidden;
         }
         
@@ -267,16 +267,16 @@
             display: block;
         }
         
-        .user-info #logoutBtn {
+        .user-info #logoutBtn, .user-info #myReviewsBtn {
             transition: all 0.3s ease;
             opacity: 1;
-            max-width: 100px;
-            margin-left: 0.5rem;
+            margin-left: 0.3rem;
             flex-shrink: 0;
         }
         
         .user-info.compressed #userName,
-        .user-info.compressed #logoutBtn {
+        .user-info.compressed #logoutBtn,
+        .user-info.compressed #myReviewsBtn {
             opacity: 0;
             max-width: 0;
             margin: 0;
@@ -327,6 +327,21 @@
         
         #logoutBtn:hover {
             background: rgba(255,255,255,0.2);
+        }
+        
+        #myReviewsBtn {
+            background: transparent;
+            border: 1px solid rgba(255,255,255,0.5);
+            color: white;
+            padding: 0.25rem 0.5rem;
+            font-size: 0.9rem;
+            cursor: pointer;
+            border-radius: 8px;
+        }
+        
+        #myReviewsBtn:hover {
+            background: rgba(255,255,255,0.2);
+            transform: scale(1.05);
         }
 
         .btn-block {
@@ -910,6 +925,90 @@
             font-weight: 600;
         }
 
+        /* Estilos para Respuestas */
+        .btn-reply {
+            background: transparent;
+            border: 1px solid #ddd;
+            color: #666;
+        }
+        .btn-reply:hover {
+            background: #f0f0f0;
+            color: var(--primary-color);
+            border-color: var(--primary-color);
+        }
+
+        .replies-container {
+            display: none;
+            margin-top: 1.5rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid #eee;
+            background-color: #fafafa;
+            border-radius: 8px;
+            padding: 1rem;
+        }
+
+        .replies-container.active {
+            display: block;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .reply-card {
+            background: white;
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 0.8rem;
+            border-left: 3px solid var(--primary-color);
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+            font-size: 0.95rem;
+        }
+
+        .reply-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 0.5rem;
+            font-size: 0.85rem;
+            color: #888;
+        }
+
+        .reply-author {
+            font-weight: 700;
+            color: var(--dark-color);
+        }
+
+        .reply-form-container {
+            margin-top: 1.5rem;
+            display: flex;
+            gap: 0.5rem;
+            flex-direction: column;
+        }
+
+        .reply-input {
+            width: 100%;
+            padding: 0.8rem;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            resize: vertical;
+            min-height: 80px;
+            font-family: inherit;
+        }
+
+        .btn-submit-reply {
+            align-self: flex-end;
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 0.5rem 1.2rem;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            cursor: pointer;
+            font-weight: 600;
+            transition: background 0.2s;
+        }
+
+        .btn-submit-reply:hover {
+            background-color: #e67e22;
+        }
+
         .modal {
             display: none;
             position: fixed;
@@ -1216,6 +1315,7 @@
             <div id="userInfo" class="user-info" style="display: none;">
                 <div class="user-avatar" id="userAvatar">U</div>
                 <span id="userName">Usuario</span>
+                <button id="myReviewsBtn" title="Mis Reseñas">📋</button>
                 <button id="logoutBtn" class="btn btn-sm" title="Cerrar Sesión">✕</button>
             </div>
             <div id="authButtons">
@@ -1592,6 +1692,20 @@
         </div>
     </div>
 
+    <!-- Nuevo Modal de Mis Reseñas -->
+    <div class="modal" id="myReviewsModal">
+        <div class="modal-content modal-content-wide">
+            <h2 style="color: var(--primary-color);">Mis Reseñas</h2>
+            <div id="myReviewsList" style="max-height: 60vh; overflow-y: auto; padding-right: 10px;">
+                <!-- Aquí se cargarán las reseñas -->
+                <div style="text-align: center; padding: 2rem; color: #666;">Cargando tus reseñas...</div>
+            </div>
+            <div class="modal-actions" style="margin-top: 1.5rem;">
+                <button type="button" id="closeMyReviews" class="btn btn-outline" style="background:transparent; border:1px solid #ddd; color: #666; width: 100%;">Cerrar</button>
+            </div>
+        </div>
+    </div>
+
     <div id="ginoEasterEgg" class="gino-overlay">
         <img src="168358-gino.jpeg" alt="Gino Germani" onerror="this.style.display='none'; this.nextElementSibling.innerText = '¡Gino vive! (Imagen no encontrada: asegura que 168358-gino.jpeg esté en la carpeta)'">
         <p>¡Gino vive!</p>
@@ -1619,6 +1733,9 @@
             user: null,
             currentCategory: 'materias',
         };
+        
+        // Objeto para trackear qué reseñas han cargado sus respuestas
+        let respuestasListeners = {}; 
         
         let yaCargadas = {
             materias: false,
@@ -1665,6 +1782,7 @@
             configurarNavScroll();
             configurarEasterEgg(); 
             configurarOjosGino(); 
+            configurarMisResenas(); 
         }
         
         function toggleFormVisibility() {
@@ -1677,6 +1795,109 @@
             } else {
                 content.classList.add('collapsed');
                 icon.classList.remove('rotated'); 
+            }
+        }
+
+        // Nueva función para gestionar las respuestas
+        function toggleRespuestas(reviewId) {
+            const container = document.getElementById(`replies-container-${reviewId}`);
+            const isActive = container.classList.contains('active');
+            
+            if (isActive) {
+                container.classList.remove('active');
+            } else {
+                container.classList.add('active');
+                
+                // Cargar respuestas si aún no se han escuchado
+                // IMPORTANTE: Gracias al cleanup en cargarresenasEnUI, esto siempre será falso
+                // si el DOM fue recreado, forzando una nueva carga correcta.
+                if (!respuestasListeners[reviewId]) {
+                    cargarRespuestas(reviewId);
+                }
+            }
+        }
+
+        function cargarRespuestas(reviewId) {
+            const listContainer = document.getElementById(`replies-list-${reviewId}`);
+            listContainer.innerHTML = '<div style="text-align:center; color:#999; padding:10px;">Cargando respuestas...</div>';
+            
+            // Usar onSnapshot para tiempo real
+            respuestasListeners[reviewId] = db.collection('resenas').doc(reviewId).collection('respuestas')
+                .orderBy('fecha', 'asc')
+                .onSnapshot(snapshot => {
+                    if (snapshot.empty) {
+                        listContainer.innerHTML = ''; // Limpiar mensaje de carga
+                        return;
+                    }
+                    
+                    listContainer.innerHTML = '';
+                    snapshot.docs.forEach(doc => {
+                        const reply = doc.data();
+                        const replyElement = document.createElement('div');
+                        replyElement.className = 'reply-card';
+                        
+                        let fechaFormateada = "Reciente";
+                        if (reply.fecha && reply.fecha.toDate) {
+                            fechaFormateada = reply.fecha.toDate().toLocaleDateString();
+                        }
+                        
+                        const nombreMostrar = reply.usuarioNombre || 'Anónimo';
+                        
+                        replyElement.innerHTML = `
+                            <div class="reply-header">
+                                <span class="reply-author">${nombreMostrar}</span>
+                                <span>${fechaFormateada}</span>
+                            </div>
+                            <div>${reply.texto}</div>
+                        `;
+                        listContainer.appendChild(replyElement);
+                    });
+                }, error => {
+                    console.error("Error cargando respuestas:", error);
+                    listContainer.innerHTML = '<div style="color:var(--accent-color); text-align:center;">Error al cargar respuestas.</div>';
+                });
+        }
+
+        async function enviarRespuesta(reviewId) {
+            if (!appState.user) {
+                mostrarNotificacion('Debes iniciar sesión para responder.', 'error');
+                return;
+            }
+            
+            const input = document.getElementById(`reply-input-${reviewId}`);
+            const texto = input.value.trim();
+            
+            if (!texto) return;
+            
+            const btn = document.querySelector(`#replies-container-${reviewId} .btn-submit-reply`);
+            const originalText = btn.textContent;
+            btn.disabled = true;
+            btn.textContent = 'Enviando...';
+            
+            try {
+                const nombreAutor = appState.user.displayName || (appState.user.email ? appState.user.email.split('@')[0] : "Usuario");
+                
+                await db.collection('resenas').doc(reviewId).collection('respuestas').add({
+                    texto: texto,
+                    usuarioId: appState.user.uid,
+                    usuarioNombre: nombreAutor,
+                    fecha: firebase.firestore.FieldValue.serverTimestamp()
+                });
+
+                // Actualizar contador en la reseña padre para que se vea bonito en el botón
+                await db.collection('resenas').doc(reviewId).update({
+                    replies_count: firebase.firestore.FieldValue.increment(1)
+                });
+                
+                input.value = '';
+                mostrarNotificacion('Respuesta enviada', 'success');
+                
+            } catch (error) {
+                console.error("Error al enviar respuesta:", error);
+                mostrarNotificacion('Error al enviar la respuesta', 'error');
+            } finally {
+                btn.disabled = false;
+                btn.textContent = originalText;
             }
         }
         
@@ -2231,6 +2452,15 @@
         function cargarresenasEnUI() {
             const resenasList = document.getElementById('resenasList');
             
+            // CLEANUP: Unsubscribe from old listeners before wiping the DOM
+            // Esto es crucial para que al volver a crear los botones, los listeners se conecten a los elementos nuevos
+            Object.keys(respuestasListeners).forEach(key => {
+                if (typeof respuestasListeners[key] === 'function') {
+                    respuestasListeners[key](); // Call unsubscribe
+                }
+            });
+            respuestasListeners = {}; // Reset map
+            
             if (!appState.resenas || appState.resenas.length === 0) {
                 resenasList.innerHTML = '<div class="no-resenas">No hay reseñas para esta materia aún.</div>';
                 return;
@@ -2309,6 +2539,10 @@
                 const likeClass = userVote === 1 ? 'like-active' : '';
                 const dislikeClass = userVote === -1 ? 'dislike-active' : '';
 
+                // Botón de respuesta con contador
+                const repliesCount = reseña.replies_count || 0;
+                const replyButtonText = repliesCount > 0 ? `💬 Responder (${repliesCount})` : `💬 Responder`;
+
                 const voteControlsHTML = `
                     <div class="review-footer">
                         <button class="vote-control vote-like ${likeClass}" data-review-id="${reseña.id}" title="Útil">
@@ -2319,6 +2553,22 @@
                             <span class="vote-icon">👎</span>
                             <span class="dislike-count">${dislikesCount}</span>
                         </button>
+                        <button class="vote-control btn-reply" data-review-id="${reseña.id}">
+                            ${replyButtonText}
+                        </button>
+                    </div>
+                `;
+
+                // HTML para las respuestas
+                const repliesHTML = `
+                    <div id="replies-container-${reseña.id}" class="replies-container">
+                        <div id="replies-list-${reseña.id}">
+                            <!-- Las respuestas se cargarán aquí -->
+                        </div>
+                        <div class="reply-form-container">
+                            <textarea id="reply-input-${reseña.id}" class="reply-input" placeholder="Escribe una respuesta..."></textarea>
+                            <button class="btn-submit-reply" onclick="enviarRespuesta('${reseña.id}')">Enviar respuesta</button>
+                        </div>
                     </div>
                 `;
 
@@ -2349,10 +2599,13 @@
                         </div>
                     </div>
                     ${voteControlsHTML}
+                    ${repliesHTML}
                 `;
                 
+                // Event Listeners
                 reviewCard.querySelector('.vote-like').addEventListener('click', () => handleVote(reseña.id, 1));
                 reviewCard.querySelector('.vote-dislike').addEventListener('click', () => handleVote(reseña.id, -1));
+                reviewCard.querySelector('.btn-reply').addEventListener('click', () => toggleRespuestas(reseña.id));
                 
                 resenasList.appendChild(reviewCard);
             });
@@ -2496,6 +2749,84 @@
                         input.type = 'password';
                     }
                 });
+            });
+        }
+
+        // Nueva función para configurar el modal de "Mis Reseñas"
+        function configurarMisResenas() {
+            const myReviewsBtn = document.getElementById('myReviewsBtn');
+            const myReviewsModal = document.getElementById('myReviewsModal');
+            const closeMyReviews = document.getElementById('closeMyReviews');
+            const listContainer = document.getElementById('myReviewsList');
+
+            myReviewsBtn.addEventListener('click', async () => {
+                if (!appState.user) return; // Si no hay usuario, no hacer nada (o mostrar alerta)
+                
+                myReviewsModal.classList.add('active');
+                listContainer.innerHTML = '<div style="text-align: center; padding: 2rem; color: #666;">Cargando tus reseñas...</div>';
+
+                try {
+                    // Consultar Firestore
+                    const snapshot = await db.collection('resenas')
+                        .where('usuarioId', '==', appState.user.uid)
+                        .get();
+
+                    if (snapshot.empty) {
+                        listContainer.innerHTML = '<div style="text-align: center; padding: 2rem; color: #888;">Aún no has escrito ninguna reseña.</div>';
+                        return;
+                    }
+
+                    // Convertir a array y ordenar por fecha en memoria (para evitar requerir índice compuesto)
+                    let misResenas = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                    misResenas.sort((a, b) => {
+                        const fa = a.fecha?.toMillis?.() || 0;
+                        const fb = b.fecha?.toMillis?.() || 0;
+                        return fb - fa; // Más recientes primero
+                    });
+
+                    // Renderizar
+                    listContainer.innerHTML = '';
+                    misResenas.forEach(reseña => {
+                        const card = document.createElement('div');
+                        card.className = 'review-card';
+                        
+                        // Nombre de la Materia (Importante aquí porque es una lista mixta)
+                        const materiaNombre = reseña.materiaNombre || 'Materia Desconocida';
+                        
+                        let estrellasHTML = '';
+                        for (let i = 1; i <= 5; i++) {
+                            estrellasHTML += i <= reseña.calificacionGeneral ? '★' : '☆';
+                        }
+
+                        let fecha = "Fecha desconocida";
+                        if (reseña.fecha && reseña.fecha.toDate) {
+                            fecha = reseña.fecha.toDate().toLocaleDateString();
+                        }
+
+                        card.innerHTML = `
+                            <div style="border-bottom: 1px solid #eee; padding-bottom: 0.5rem; margin-bottom: 0.5rem;">
+                                <h3 style="color: var(--primary-color); font-size: 1.1rem; margin:0;">${materiaNombre}</h3>
+                                <div style="font-size: 0.85rem; color: #888;">${reseña.catedra} - ${fecha}</div>
+                            </div>
+                            <div class="rating" style="font-size: 1rem;">${estrellasHTML}</div>
+                            <div style="font-size: 0.95rem; color: #444; margin-top: 0.5rem;">${reseña.texto}</div>
+                        `;
+                        listContainer.appendChild(card);
+                    });
+
+                } catch (error) {
+                    console.error("Error al cargar mis reseñas:", error);
+                    listContainer.innerHTML = '<div style="color:var(--accent-color); text-align: center;">Error al cargar las reseñas.</div>';
+                }
+            });
+
+            closeMyReviews.addEventListener('click', () => {
+                myReviewsModal.classList.remove('active');
+            });
+            
+            // Cerrar al hacer clic fuera
+            window.addEventListener('click', (e) => {
+                if (e.target === myReviewsModal) myReviewsModal.classList.remove('active');
             });
         }
 
