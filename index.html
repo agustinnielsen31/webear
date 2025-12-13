@@ -1692,12 +1692,10 @@
         </div>
     </div>
 
-    <!-- Nuevo Modal de Mis Reseñas -->
     <div class="modal" id="myReviewsModal">
         <div class="modal-content modal-content-wide">
             <h2 style="color: var(--primary-color);">Mis Reseñas</h2>
             <div id="myReviewsList" style="max-height: 60vh; overflow-y: auto; padding-right: 10px;">
-                <!-- Aquí se cargarán las reseñas -->
                 <div style="text-align: center; padding: 2rem; color: #666;">Cargando tus reseñas...</div>
             </div>
             <div class="modal-actions" style="margin-top: 1.5rem;">
@@ -1734,7 +1732,6 @@
             currentCategory: 'materias',
         };
         
-        // Objeto para trackear qué reseñas han cargado sus respuestas
         let respuestasListeners = {}; 
         
         let yaCargadas = {
@@ -1767,18 +1764,15 @@
             "Psicología Social"
         ];
 
-        // Función para crear elementos DOM de forma segura (Previene XSS)
         function crearElemento(tag, clases = [], texto = '') {
             const el = document.createElement(tag);
             
-            // Si clases es un string ('mi-clase'), lo convertimos a array
             if (typeof clases === 'string' && clases.length > 0) {
                 el.className = clases;
             } else if (Array.isArray(clases) && clases.length > 0) {
                 el.classList.add(...clases);
             }
             
-            // Aquí está la magia de seguridad: usamos textContent en lugar de innerHTML
             if (texto) el.textContent = texto; 
             
             return el;
@@ -1815,7 +1809,6 @@
             }
         }
 
-        // Nueva función para gestionar las respuestas
         function toggleRespuestas(reviewId) {
             const container = document.getElementById(`replies-container-${reviewId}`);
             const isActive = container.classList.contains('active');
@@ -1825,9 +1818,6 @@
             } else {
                 container.classList.add('active');
                 
-                // Cargar respuestas si aún no se han escuchado
-                // IMPORTANTE: Gracias al cleanup en cargarresenasEnUI, esto siempre será falso
-                // si el DOM fue recreado, forzando una nueva carga correcta.
                 if (!respuestasListeners[reviewId]) {
                     cargarRespuestas(reviewId);
                 }
@@ -1915,7 +1905,6 @@
                     fecha: firebase.firestore.FieldValue.serverTimestamp()
                 });
 
-                // Actualizar contador en la reseña padre para que se vea bonito en el botón
                 await db.collection('resenas').doc(reviewId).update({
                     replies_count: firebase.firestore.FieldValue.increment(1)
                 });
@@ -2525,10 +2514,7 @@
                 
                 let anioDisplay = reseña.anioCursada || 'No especificado';
                 if (reseña.cursoVerano) anioDisplay += ' | Curso de verano';
-
-                // --- CONSTRUCCIÓN DEL DOM (BLOQUE POR BLOQUE) ---
-
-                // A. HEADER (Avatar + Info)
+                
                 const header = crearElemento('div', 'review-header');
                 
                 const userContainer = crearElemento('div', 'review-user');
@@ -2538,8 +2524,7 @@
                 const nameDiv = crearElemento('div', 'review-user-name', nombreMostrar); // SEGURIDAD AQUI
                 const catedraDiv = crearElemento('div', 'review-catedra', catedraTexto);
                 const dateDiv = crearElemento('div', 'review-date', `${fechaFormateada} | Cursada en ${anioDisplay}`);
-
-                // Ensamblar Header
+                
                 infoDiv.appendChild(nameDiv);
                 infoDiv.appendChild(catedraDiv);
                 infoDiv.appendChild(dateDiv);
@@ -2547,7 +2532,6 @@
                 userContainer.appendChild(infoDiv);
                 header.appendChild(userContainer);
 
-                // B. ESTRELLAS (Rating)
                 const ratingDiv = crearElemento('div', 'rating');
                 for (let i = 1; i <= 5; i++) {
                     const star = document.createElement('span');
@@ -2555,14 +2539,10 @@
                     ratingDiv.appendChild(star);
                 }
 
-                // C. CONTENIDO (La parte más peligrosa)
-                const contentDiv = crearElemento('div', 'review-content', reseña.texto); // ¡SEGURIDAD TOTAL AQUÍ!
-                // Al usar crearElemento con textContent, si alguien pone <script>, se verá el texto escrito, no se ejecutará.
+                const contentDiv = crearElemento('div', 'review-content', reseña.texto);
 
-                // D. ASPECTOS (Las notas específicas)
                 const aspectsContainer = crearElemento('div', 'review-aspects');
                 
-                // Función pequeña para no repetir código de aspectos
                 const agregarAspecto = (titulo, valor) => {
                     const row = crearElemento('div', 'review-aspect');
                     row.appendChild(crearElemento('span', 'aspect-name', titulo));
@@ -2575,10 +2555,8 @@
                 agregarAspecto('Dificultad:', reseña.dificultad);
                 agregarAspecto('Oferta horaria:', reseña.oferta);
 
-                // E. OTROS DATOS (Evaluación y asistencia)
                 const extraInfoContainer = crearElemento('div', 'review-aspects');
                 
-                // Tipos de evaluación
                 let tiposArr = reseña.tiposEvaluacion || [];
                 if (Array.isArray(tiposArr)) tiposArr = tiposArr.filter(t => t && t.toLowerCase() !== 'on');
                 const evalTxt = tiposArr.length > 0 ? tiposArr.join(', ') : 'No especificado';
@@ -2594,28 +2572,23 @@
                 extraInfoContainer.appendChild(evalRow);
                 extraInfoContainer.appendChild(asistRow);
 
-                // F. FOOTER (Botones de Voto y Respuesta)
                 const footer = crearElemento('div', 'review-footer');
                 
-                // Calculamos clases de votos
                 const currentUserId = appState.user ? appState.user.uid : null;
                 const userVote = reseña.votes && currentUserId ? reseña.votes[currentUserId] : 0;
-                
-                // Botón Like
+
                 const btnLike = crearElemento('button', ['vote-control', 'vote-like']);
                 if(userVote === 1) btnLike.classList.add('like-active');
                 btnLike.title = "Útil";
                 btnLike.innerHTML = `<span class="vote-icon">👍</span> <span class="like-count">${reseña.likes_count || 0}</span>`;
-                btnLike.onclick = () => handleVote(reseña.id, 1); // Evento directo, más limpio
+                btnLike.onclick = () => handleVote(reseña.id, 1);
 
-                // Botón Dislike
                 const btnDislike = crearElemento('button', ['vote-control', 'vote-dislike']);
                 if(userVote === -1) btnDislike.classList.add('dislike-active');
                 btnDislike.title = "No útil";
                 btnDislike.innerHTML = `<span class="vote-icon">👎</span> <span class="dislike-count">${reseña.dislikes_count || 0}</span>`;
                 btnDislike.onclick = () => handleVote(reseña.id, -1);
 
-                // Botón Responder
                 const repliesCount = reseña.replies_count || 0;
                 const btnReply = crearElemento('button', ['vote-control', 'btn-reply']);
                 btnReply.textContent = repliesCount > 0 ? `💬 Responder (${repliesCount})` : `💬 Responder`;
@@ -2625,7 +2598,6 @@
                 footer.appendChild(btnDislike);
                 footer.appendChild(btnReply);
 
-                // G. CONTENEDOR DE RESPUESTAS (Oculto por defecto)
                 const repliesContainer = crearElemento('div', 'replies-container');
                 repliesContainer.id = `replies-container-${reseña.id}`;
                 
@@ -2645,16 +2617,14 @@
                 repliesContainer.appendChild(repliesList);
                 repliesContainer.appendChild(formContainer);
 
-                // --- ENSAMBLAJE FINAL ---
                 reviewCard.appendChild(header);
                 reviewCard.appendChild(ratingDiv);
-                reviewCard.appendChild(contentDiv); // Agregamos el contenido seguro
+                reviewCard.appendChild(contentDiv);
                 reviewCard.appendChild(aspectsContainer);
                 reviewCard.appendChild(extraInfoContainer);
                 reviewCard.appendChild(footer);
                 reviewCard.appendChild(repliesContainer);
 
-                // Insertar en el DOM
                 resenasList.appendChild(reviewCard);
             });
         }
@@ -2800,7 +2770,6 @@
             });
         }
 
-        // Nueva función para configurar el modal de "Mis Reseñas"
         function configurarMisResenas() {
             const myReviewsBtn = document.getElementById('myReviewsBtn');
             const myReviewsModal = document.getElementById('myReviewsModal');
@@ -2808,13 +2777,13 @@
             const listContainer = document.getElementById('myReviewsList');
 
             myReviewsBtn.addEventListener('click', async () => {
-                if (!appState.user) return; // Si no hay usuario, no hacer nada (o mostrar alerta)
+                if (!appState.user) return;
                 
                 myReviewsModal.classList.add('active');
                 listContainer.innerHTML = '<div style="text-align: center; padding: 2rem; color: #666;">Cargando tus reseñas...</div>';
 
                 try {
-                    // Consultar Firestore
+
                     const snapshot = await db.collection('resenas')
                         .where('usuarioId', '==', appState.user.uid)
                         .get();
@@ -2824,21 +2793,18 @@
                         return;
                     }
 
-                    // Convertir a array y ordenar por fecha en memoria (para evitar requerir índice compuesto)
                     let misResenas = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
                     misResenas.sort((a, b) => {
                         const fa = a.fecha?.toMillis?.() || 0;
                         const fb = b.fecha?.toMillis?.() || 0;
-                        return fb - fa; // Más recientes primero
+                        return fb - fa;
                     });
 
-                    // Renderizar
                     listContainer.innerHTML = '';
                     misResenas.forEach(reseña => {
                         const card = document.createElement('div');
                         card.className = 'review-card';
                         
-                        // Nombre de la Materia (Importante aquí porque es una lista mixta)
                         const materiaNombre = reseña.materiaNombre || 'Materia Desconocida';
                         
                         let estrellasHTML = '';
@@ -2850,8 +2816,6 @@
                         if (reseña.fecha && reseña.fecha.toDate) {
                             fecha = reseña.fecha.toDate().toLocaleDateString();
                         }
-
-                        // Uso seguro de textContent para la parte dinámica
                         card.innerHTML = `
                             <div style="border-bottom: 1px solid #eee; padding-bottom: 0.5rem; margin-bottom: 0.5rem;">
                                 <h3 style="color: var(--primary-color); font-size: 1.1rem; margin:0;">${materiaNombre}</h3>
@@ -2879,7 +2843,6 @@
                 myReviewsModal.classList.remove('active');
             });
             
-            // Cerrar al hacer clic fuera
             window.addEventListener('click', (e) => {
                 if (e.target === myReviewsModal) myReviewsModal.classList.remove('active');
             });
