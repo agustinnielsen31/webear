@@ -2191,9 +2191,25 @@
                 
                 cargarresenasEnUI();
                 
-                document.getElementById('resenasList').scrollIntoView({ behavior: 'smooth' });
+                const element = document.getElementById('resenasList');
+                const headerOffset = 100;
+                const elementPosition = element.getBoundingClientRect().top;
+                const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
+                
+                window.scrollTo({
+                    top: offsetPosition,
+                    behavior: "smooth"
+                });
             } else {
-                document.getElementById('reviewForm').scrollIntoView({ behavior: 'smooth' });
+                const element = document.getElementById('reviewForm');
+                const headerOffset = 120; // Un poco más de margen para que quede centrado lindo
+                const elementPosition = element.getBoundingClientRect().top;
+                const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
+                
+                window.scrollTo({
+                    top: offsetPosition,
+                    behavior: "smooth"
+                });
             }
         }
 
