@@ -1,0 +1,674 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Datos - Gino Social</title>
+    
+    <!-- Firebase SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+    
+    <style>
+        :root {
+            --primary-color: #ff7d29;
+            --primary-gradient: linear-gradient(135deg, #ff7d29 0%, #ff914d 100%);
+            --secondary-color: #ecf0f1;
+            --light-color: #ffffff;
+            --success-color: #2ecc71;
+            --warning-color: #f39c12;
+            --accent-color: #e74c3c;
+            --dark-color: #2c3e50;
+            --shadow-sm: 0 2px 4px rgba(0,0,0,0.05);
+            --shadow-md: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background-color: #f5f7fa;
+            line-height: 1.6;
+            color: var(--dark-color);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Navbar */
+        .navbar {
+            background: white;
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between; 
+            align-items: center;
+            box-shadow: var(--shadow-sm);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .brand-logo {
+            font-weight: 800;
+            font-size: 1.5rem;
+            color: var(--primary-color);
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .btn-back {
+            background: transparent;
+            border: 1px solid var(--primary-color);
+            color: var(--primary-color);
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .btn-back:hover {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        /* Header */
+        .page-header {
+            background: var(--primary-gradient);
+            color: white;
+            padding: 3rem 1.5rem;
+            text-align: center;
+            margin-bottom: 2rem;
+            clip-path: polygon(0 0, 100% 0, 100% 90%, 0 100%);
+        }
+
+        .page-header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .page-header p {
+            opacity: 0.9;
+            font-size: 1.1rem;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 0 2rem 2rem;
+            flex: 1;
+        }
+
+        /* Controles de Filtro */
+        .filter-controls {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+            justify-content: center;
+            flex-wrap: wrap;
+            align-items: flex-start;
+        }
+
+        .filter-select {
+            padding: 0.8rem 1.2rem;
+            border: 1px solid #ddd;
+            border-radius: 50px;
+            background: white;
+            font-size: 1rem;
+            color: var(--dark-color);
+            cursor: pointer;
+            box-shadow: var(--shadow-sm);
+            outline: none;
+            min-width: 200px;
+            transition: all 0.3s ease;
+        }
+
+        .filter-select:hover, .search-input:hover {
+            border-color: var(--primary-color);
+        }
+
+        .filter-select:disabled {
+            background: #f0f0f0;
+            color: #999;
+            cursor: not-allowed;
+            border-color: #eee;
+        }
+
+        /* Buscador */
+        .search-wrapper {
+            position: relative;
+            min-width: 300px;
+        }
+        
+        .search-input {
+            width: 100%;
+            padding: 0.8rem 1.2rem;
+            border: 1px solid #ddd;
+            border-radius: 50px;
+            font-size: 1rem;
+            box-shadow: var(--shadow-sm);
+            outline: none;
+            transition: all 0.3s ease;
+        }
+
+        .search-dropdown {
+            position: absolute;
+            top: 110%;
+            left: 0;
+            width: 100%;
+            background: white;
+            border: 1px solid #eee;
+            border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            max-height: 300px;
+            overflow-y: auto;
+            z-index: 1000;
+            display: none;
+        }
+        
+        .search-dropdown.active {
+            display: block;
+            animation: fadeIn 0.2s ease;
+        }
+
+        .dropdown-item {
+            padding: 12px 20px;
+            cursor: pointer;
+            border-bottom: 1px solid #f9f9f9;
+            transition: background 0.2s;
+            font-size: 0.95rem;
+            color: #555;
+        }
+        
+        .dropdown-item:last-child {
+            border-bottom: none;
+        }
+
+        .dropdown-item:hover {
+            background-color: #f0f7ff;
+            color: var(--primary-color);
+        }
+        
+        .dropdown-item.selected {
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Tarjeta de Nube */
+        .data-card {
+            background: white;
+            border-radius: 16px;
+            padding: 2rem;
+            box-shadow: var(--shadow-md);
+            margin-bottom: 2rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .data-card h2 {
+            color: var(--primary-color);
+            margin-bottom: 0.5rem; /* Reducido para dar espacio al subtítulo */
+            font-size: 1.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        
+        .cloud-subtitle {
+            font-size: 0.95rem;
+            color: #666;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 2px solid #f0f0f0;
+            font-weight: 500;
+        }
+
+        .last-update {
+            font-size: 0.8rem;
+            color: #999;
+            font-weight: normal;
+        }
+
+        /* Estilos de la Nube */
+        .word-cloud-container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            align-items: center;
+            gap: 12px;
+            min-height: 300px;
+            padding: 1rem;
+            transition: opacity 0.3s ease;
+        }
+
+        .word-tag {
+            display: inline-block;
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            cursor: default;
+            color: var(--dark-color);
+            line-height: 1;
+            padding: 5px;
+            border-radius: 8px;
+            position: relative;
+        }
+
+        .word-tag:hover {
+            transform: scale(1.2);
+            z-index: 10;
+            color: var(--primary-color);
+            text-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        .word-tag::after {
+            content: attr(data-count);
+            position: absolute;
+            top: -25px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--dark-color);
+            color: white;
+            font-size: 0.7rem;
+            padding: 4px 8px;
+            border-radius: 4px;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.2s;
+            white-space: nowrap;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            z-index: 20;
+        }
+
+        .word-tag:hover::after {
+            opacity: 1;
+        }
+
+        /* Loading */
+        .loader {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: #666;
+            width: 100%;
+            padding: 2rem;
+        }
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid var(--primary-color);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 1rem;
+        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+        /* Stats Grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-box {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 12px;
+            text-align: center;
+            box-shadow: var(--shadow-sm);
+            border-bottom: 4px solid var(--primary-color);
+        }
+
+        .stat-number {
+            font-size: 2rem;
+            font-weight: 800;
+            color: var(--primary-color);
+            line-height: 1.2;
+        }
+
+        .stat-label {
+            color: #666;
+            font-size: 0.9rem;
+            font-weight: 600;
+        }
+        
+        @media (max-width: 768px) {
+            .page-header h1 { font-size: 2rem; }
+            .word-cloud-container { gap: 8px; }
+            .filter-controls { flex-direction: column; align-items: stretch; }
+        }
+    </style>
+</head>
+<body>
+
+    <nav class="navbar">
+        <a href="index.html" class="brand-logo">
+            <span>Gino</span> <span style="color: var(--dark-color); font-weight: 400;">Datos</span>
+        </a>
+        <a href="index.html" class="btn-back">
+            <span>←</span> Volver
+        </a>
+    </nav>
+
+    <header class="page-header">
+        <h1>Lo que se dice</h1>
+        <p>Un análisis cualitativo de las palabras más repetidas en los pasillos de Gino.</p>
+    </header>
+
+    <div class="container">
+        
+        <!-- Tarjetas de Estadísticas Simples -->
+        <div class="stats-grid" id="statsGrid">
+            <div class="stat-box">
+                <div class="stat-number" id="totalWords">--</div>
+                <div class="stat-label">Palabras Analizadas</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-number" id="topWord">--</div>
+                <div class="stat-label">Palabra #1</div>
+            </div>
+             <div class="stat-box">
+                <div class="stat-number" id="totalReviewsAnalyzed">--</div>
+                <div class="stat-label">Reseñas Procesadas (Total)</div>
+            </div>
+        </div>
+
+        <!-- Filtros (Con Buscador) -->
+        <div class="filter-controls">
+            <div class="search-wrapper">
+                <input type="text" id="filterMateriaInput" class="search-input" placeholder="🔍 Buscar materia..." autocomplete="off">
+                <div id="materiaDropdown" class="search-dropdown"></div>
+            </div>
+            
+            <select id="filterCatedra" class="filter-select" disabled>
+                <option value="all">Todas las cátedras</option>
+            </select>
+        </div>
+
+        <!-- Tarjeta Principal: Nube de Palabras -->
+        <div class="data-card">
+            <h2>
+                <span id="cloudTitle">Vocabulario Social</span>
+                <span class="last-update" id="lastUpdateDate">Cargando...</span>
+            </h2>
+            <!-- NUEVO: Subtítulo para mostrar la base de reseñas -->
+            <div id="cloudSubtitle" class="cloud-subtitle">En base a -- reseñas</div>
+            
+            <div id="wordCloud" class="word-cloud-container">
+                <div class="loader">
+                    <div class="spinner"></div>
+                    <p>Consultando los archivos...</p>
+                </div>
+            </div>
+        </div>
+        
+    </div>
+
+    <script>
+        // --- 1. CONFIGURACIÓN FIREBASE ---
+        const firebaseConfig = {
+            apiKey: "AIzaSyBnpshX3I7ZY3EUoraDZPdb2W6B6HZOYR0",
+            authDomain: "social-sociales.firebaseapp.com",
+            projectId: "social-sociales",
+            storageBucket: "social-sociales.firebasestorage.app",
+            messagingSenderId: "18764420760",
+            appId: "1:18764420760:web:92e33662d4e0b050cfa2ed",
+            measurementId: "G-8BZFCJBMY6"
+        };
+
+        if (!firebase.apps.length) {
+            firebase.initializeApp(firebaseConfig);
+        }
+        const db = firebase.firestore();
+        
+        // Estado global
+        let datosGlobales = null;
+        let selectedMateriaKey = 'global'; 
+
+        // --- 2. LÓGICA DE VISUALIZACIÓN ---
+
+        async function cargarDatos() {
+            const container = document.getElementById('wordCloud');
+            const dateLabel = document.getElementById('lastUpdateDate');
+            
+            try {
+                // Leemos SOLO el documento de estadísticas
+                const doc = await db.collection('datos').doc('palabras_clave').get();
+
+                if (!doc.exists) {
+                    container.innerHTML = `
+                        <div style="text-align:center; color: #888; padding: 2rem;">
+                            <p>Aún no se han generado datos.</p>
+                            <p style="font-size:0.9rem">Contacta al administrador para actualizar las estadísticas.</p>
+                        </div>
+                    `;
+                    dateLabel.textContent = "Sin datos";
+                    return;
+                }
+
+                datosGlobales = doc.data();
+                
+                // Actualizar Stats Simples (Siempre muestra el total global)
+                const globalStats = datosGlobales.stats || {};
+                document.getElementById('totalWords').textContent = formateaNumero(globalStats.totalPalabras || datosGlobales.totalPalabrasProcesadas || 0);
+                document.getElementById('totalReviewsAnalyzed').textContent = globalStats.totalResenas || datosGlobales.totalResenas || '-';
+                
+                // Top Word global
+                const topWordsGlobal = datosGlobales.topPalabras || [];
+                document.getElementById('topWord').textContent = topWordsGlobal.length > 0 ? topWordsGlobal[0].text : '-';
+
+                // Fecha
+                if (datosGlobales.ultimaActualizacion) {
+                    const fecha = datosGlobales.ultimaActualizacion.toDate();
+                    dateLabel.textContent = `Actualizado: ${fecha.toLocaleDateString()} ${fecha.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}`;
+                }
+                
+                inicializarFiltros();
+                
+                // Renderizar Nube Inicial (Global)
+                document.getElementById('cloudSubtitle').textContent = `En base a ${globalStats.totalResenas || '-'} reseñas de toda la carrera`;
+                renderizarNube(topWordsGlobal, container);
+
+            } catch (error) {
+                console.error("Error cargando datos:", error);
+                container.innerHTML = `<p style="color:red">Error visualizando datos: ${error.message}</p>`;
+            }
+        }
+
+        function inicializarFiltros() {
+            const materiaInput = document.getElementById('filterMateriaInput');
+            const materiaDropdown = document.getElementById('materiaDropdown');
+            const catedraSelect = document.getElementById('filterCatedra');
+            
+            const renderDropdown = (filterText = '') => {
+                materiaDropdown.innerHTML = '';
+                
+                if ('todas las materias'.includes(filterText.toLowerCase()) || filterText === '') {
+                    const globalItem = document.createElement('div');
+                    globalItem.className = 'dropdown-item';
+                    if (selectedMateriaKey === 'global') globalItem.classList.add('selected');
+                    globalItem.textContent = 'Todas las materias';
+                    globalItem.addEventListener('click', () => selectMateria('global', 'Todas las materias'));
+                    materiaDropdown.appendChild(globalItem);
+                }
+
+                if (datosGlobales && datosGlobales.desglose) {
+                    const materias = Object.keys(datosGlobales.desglose).sort();
+                    
+                    materias.forEach(mat => {
+                        if (mat.toLowerCase().includes(filterText.toLowerCase())) {
+                            const item = document.createElement('div');
+                            item.className = 'dropdown-item';
+                            if (selectedMateriaKey === mat) item.classList.add('selected');
+                            item.textContent = mat;
+                            item.addEventListener('click', () => selectMateria(mat, mat));
+                            materiaDropdown.appendChild(item);
+                        }
+                    });
+                }
+                
+                if (materiaDropdown.children.length > 0) {
+                    materiaDropdown.classList.add('active');
+                } else {
+                    materiaDropdown.classList.remove('active');
+                }
+            };
+
+            materiaInput.addEventListener('input', (e) => {
+                renderDropdown(e.target.value);
+            });
+
+            materiaInput.addEventListener('focus', () => {
+                renderDropdown(materiaInput.value);
+            });
+            
+            document.addEventListener('click', (e) => {
+                if (!e.target.closest('.search-wrapper')) {
+                    materiaDropdown.classList.remove('active');
+                }
+            });
+
+            const selectMateria = (key, displayName) => {
+                selectedMateriaKey = key;
+                materiaInput.value = displayName;
+                materiaDropdown.classList.remove('active');
+                
+                const cloudContainer = document.getElementById('wordCloud');
+                const subtitle = document.getElementById('cloudSubtitle');
+                
+                if (key === 'global') {
+                    catedraSelect.disabled = true;
+                    catedraSelect.value = 'all';
+                    catedraSelect.innerHTML = '<option value="all">Todas las cátedras</option>'; 
+                    document.getElementById('cloudTitle').textContent = "Vocabulario Social (Global)";
+                    
+                    // Mostrar total global en subtítulo
+                    const totalGlobal = datosGlobales.stats.totalResenas;
+                    subtitle.textContent = `En base a ${totalGlobal} reseñas de toda la carrera`;
+                    
+                    renderizarNube(datosGlobales.topPalabras, cloudContainer);
+                } else {
+                    catedraSelect.disabled = false;
+                    llenarCatedras(key);
+                    
+                    const datosMateria = datosGlobales.desglose[key];
+                    const palabrasMateria = datosMateria.global || [];
+                    
+                    // Mostrar total de la materia en subtítulo
+                    const totalMateria = datosMateria.totalResenas || '?';
+                    subtitle.textContent = `En base a ${totalMateria} reseñas`;
+                    
+                    document.getElementById('cloudTitle').textContent = `En ${key}`;
+                    renderizarNube(palabrasMateria, cloudContainer);
+                }
+            };
+
+            catedraSelect.addEventListener('change', () => {
+                const materia = selectedMateriaKey;
+                const catedra = catedraSelect.value;
+                const cloudContainer = document.getElementById('wordCloud');
+                
+                if (materia === 'global') return; 
+
+                const datosMateria = datosGlobales.desglose[materia];
+                
+                if (catedra === 'all') {
+                    renderizarNube(datosMateria.global || [], cloudContainer);
+                    document.getElementById('cloudTitle').textContent = `En ${materia}`;
+                } else {
+                    const palabrasCatedra = datosMateria.catedras[catedra] || [];
+                    renderizarNube(palabrasCatedra, cloudContainer);
+                    document.getElementById('cloudTitle').textContent = `Cátedra ${catedra}`;
+                }
+            });
+        }
+
+        function llenarCatedras(materia) {
+            const catedraSelect = document.getElementById('filterCatedra');
+            while (catedraSelect.options.length > 1) catedraSelect.remove(1);
+            
+            if (datosGlobales.desglose[materia] && datosGlobales.desglose[materia].catedras) {
+                const catedras = Object.keys(datosGlobales.desglose[materia].catedras).sort();
+                
+                catedras.forEach(cat => {
+                    const option = document.createElement('option');
+                    option.value = cat;
+                    option.textContent = cat;
+                    catedraSelect.appendChild(option);
+                });
+            }
+        }
+
+        function renderizarNube(palabras, container) {
+            container.style.opacity = '0';
+            setTimeout(() => {
+                container.innerHTML = '';
+                
+                if (!palabras || palabras.length === 0) {
+                    container.innerHTML = '<div style="color:#888; padding:2rem;">No hay suficientes datos para este filtro.</div>';
+                    container.style.opacity = '1';
+                    return;
+                }
+
+                const maxCount = Math.max(...palabras.map(p => p.size));
+                const minCount = Math.min(...palabras.map(p => p.size));
+                
+                const palabrasMezcladas = [...palabras].sort(() => Math.random() - 0.5);
+
+                palabrasMezcladas.forEach(item => {
+                    const span = document.createElement('span');
+                    span.className = 'word-tag';
+                    span.textContent = item.text;
+                    span.dataset.count = `${item.size} veces`; 
+                    
+                    let percent = 0;
+                    if (maxCount !== minCount) {
+                        percent = (item.size - minCount) / (maxCount - minCount);
+                    } else {
+                        percent = 0.5; 
+                    }
+                    
+                    const fontSize = 0.85 + (percent * 2.5);
+                    const opacity = 0.6 + (percent * 0.4);   
+                    const fontWeight = 400 + (Math.round(percent * 5) * 100); 
+
+                    span.style.fontSize = `${fontSize}rem`;
+                    span.style.opacity = opacity;
+                    span.style.fontWeight = fontWeight;
+                    
+                    if (percent > 0.8) span.style.color = 'var(--primary-color)';
+                    else if (percent > 0.6) span.style.color = '#e67e22';
+
+                    container.appendChild(span);
+                });
+                
+                container.style.opacity = '1';
+            }, 300);
+        }
+
+        function formateaNumero(num) {
+            return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+        }
+
+        document.addEventListener('DOMContentLoaded', cargarDatos);
+    </script>
+</body>
+</html>
