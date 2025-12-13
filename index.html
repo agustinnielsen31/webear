@@ -1708,13 +1708,13 @@
     </div>
 
     <div class="modal" id="myReviewsModal">
-        <div class="modal-content modal-content-wide">
-            <h2 style="color: var(--primary-color);">Mis Reseñas</h2>
-            <div id="myReviewsList" style="max-height: 60vh; overflow-y: auto; padding-right: 10px;">
+        <div class="modal-content modal-content-wide" style="display: flex; flex-direction: column; max-height: 80vh; padding: 1.5rem;">
+            <h2 style="color: var(--primary-color); flex-shrink: 0;">Mis Reseñas</h2>
+            <div id="myReviewsList" style="overflow-y: auto; padding-right: 10px; flex-grow: 1; margin: 1rem 0;">
                 <div style="text-align: center; padding: 2rem; color: #666;">Cargando tus reseñas...</div>
             </div>
-            <div class="modal-actions" style="margin-top: 1.5rem;">
-                <button type="button" id="closeMyReviews" class="btn btn-outline" style="background:transparent; border:1px solid #ddd; color: #666; width: 100%;">Cerrar</button>
+            <div class="modal-actions" style="margin-top: 0; justify-content: center; flex-shrink: 0;">
+                <button type="button" id="closeMyReviews" class="btn btn-outline" style="background:transparent; border:1px solid #ddd; color: #666; width: auto; min-width: 120px; flex: 0 0 auto;">Cerrar</button>
             </div>
         </div>
     </div>
