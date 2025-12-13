@@ -2153,6 +2153,12 @@
                 return;
             }
 
+            document.getElementById('reviewFormElement').reset();
+            limpiarEstrellas();
+            if(document.getElementById('dificultadLabel')) {
+                document.getElementById('dificultadLabel').textContent = '';
+            }
+
             appState.materiaSeleccionada = materia;
             
             document.getElementById('formTitle').textContent = `Dejar Reseña - ${materia.nombre}`;
