@@ -9,7 +9,7 @@
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
     <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6430126392523501"
-     crossorigin="anonymous"></script>
+      crossorigin="anonymous"></script>
     <style>
         :root {
             --primary-color: #ff7d29;
@@ -107,7 +107,7 @@
             transform: scale(1.03) translateY(-2px);
             box-shadow: 0 8px 25px rgba(255, 75, 43, 0.6);
         }
-      
+       
         .eyes-container {
             position: absolute;
             left: 50%;
@@ -1767,6 +1767,23 @@
             "Psicología Social"
         ];
 
+        // Función para crear elementos DOM de forma segura (Previene XSS)
+        function crearElemento(tag, clases = [], texto = '') {
+            const el = document.createElement(tag);
+            
+            // Si clases es un string ('mi-clase'), lo convertimos a array
+            if (typeof clases === 'string' && clases.length > 0) {
+                el.className = clases;
+            } else if (Array.isArray(clases) && clases.length > 0) {
+                el.classList.add(...clases);
+            }
+            
+            // Aquí está la magia de seguridad: usamos textContent en lugar de innerHTML
+            if (texto) el.textContent = texto; 
+            
+            return el;
+        }
+
         function init() {
             configurarFirebaseAuth();
             cargarMaterias('materias'); 
@@ -1819,7 +1836,12 @@
 
         function cargarRespuestas(reviewId) {
             const listContainer = document.getElementById(`replies-list-${reviewId}`);
-            listContainer.innerHTML = '<div style="text-align:center; color:#999; padding:10px;">Cargando respuestas...</div>';
+            listContainer.textContent = ''; // Limpiar usando textContent por seguridad
+            const loadingMsg = crearElemento('div', [], 'Cargando respuestas...');
+            loadingMsg.style.textAlign = 'center';
+            loadingMsg.style.color = '#999';
+            loadingMsg.style.padding = '10px';
+            listContainer.appendChild(loadingMsg);
             
             // Usar onSnapshot para tiempo real
             respuestasListeners[reviewId] = db.collection('resenas').doc(reviewId).collection('respuestas')
@@ -1833,8 +1855,7 @@
                     listContainer.innerHTML = '';
                     snapshot.docs.forEach(doc => {
                         const reply = doc.data();
-                        const replyElement = document.createElement('div');
-                        replyElement.className = 'reply-card';
+                        const replyElement = crearElemento('div', 'reply-card');
                         
                         let fechaFormateada = "Reciente";
                         if (reply.fecha && reply.fecha.toDate) {
@@ -1843,18 +1864,28 @@
                         
                         const nombreMostrar = reply.usuarioNombre || 'Anónimo';
                         
-                        replyElement.innerHTML = `
-                            <div class="reply-header">
-                                <span class="reply-author">${nombreMostrar}</span>
-                                <span>${fechaFormateada}</span>
-                            </div>
-                            <div>${reply.texto}</div>
-                        `;
+                        // Construcción segura del DOM para respuestas
+                        const headerDiv = crearElemento('div', 'reply-header');
+                        const authorSpan = crearElemento('span', 'reply-author', nombreMostrar);
+                        const dateSpan = crearElemento('span', [], fechaFormateada);
+                        
+                        headerDiv.appendChild(authorSpan);
+                        headerDiv.appendChild(dateSpan);
+                        
+                        const textDiv = crearElemento('div', [], reply.texto); // Seguro contra XSS
+                        
+                        replyElement.appendChild(headerDiv);
+                        replyElement.appendChild(textDiv);
+                        
                         listContainer.appendChild(replyElement);
                     });
                 }, error => {
                     console.error("Error cargando respuestas:", error);
-                    listContainer.innerHTML = '<div style="color:var(--accent-color); text-align:center;">Error al cargar respuestas.</div>';
+                    listContainer.innerHTML = '';
+                    const errorMsg = crearElemento('div', [], 'Error al cargar respuestas.');
+                    errorMsg.style.color = 'var(--accent-color)';
+                    errorMsg.style.textAlign = 'center';
+                    listContainer.appendChild(errorMsg);
                 });
         }
 
@@ -2388,7 +2419,7 @@
                         oferta: parseInt(ofertaRating) || 0,
                         texto: reviewText,
                         usuarioId: appState.user.uid,
-                        usuarioEmail: appState.user.email,
+                        // usuarioEmail: appState.user.email,  <-- REMOVIDO POR PRIVACIDAD
                         usuarioNombre: nombreAutor,
                         fecha: firebase.firestore.FieldValue.serverTimestamp(),
                         votes: {},
@@ -2453,7 +2484,6 @@
             const resenasList = document.getElementById('resenasList');
             
             // CLEANUP: Unsubscribe from old listeners before wiping the DOM
-            // Esto es crucial para que al volver a crear los botones, los listeners se conecten a los elementos nuevos
             Object.keys(respuestasListeners).forEach(key => {
                 if (typeof respuestasListeners[key] === 'function') {
                     respuestasListeners[key](); // Call unsubscribe
@@ -2476,137 +2506,155 @@
             resenasList.innerHTML = '';
             
             resenasFiltradas.forEach(reseña => {
-                const reviewCard = document.createElement('div');
-                reviewCard.className = 'review-card';
-                
-                let estrellasHTML = '';
-                for (let i = 1; i <= 5; i++) {
-                    estrellasHTML += i <= reseña.calificacionGeneral ? '★' : '☆';
-                }
+                // 1. Crear el contenedor principal de la tarjeta
+                const reviewCard = crearElemento('div', 'review-card');
+
+                // --- PREPARAR DATOS ---
+                const nombreMostrar = reseña.usuarioNombre || (reseña.usuarioEmail ? reseña.usuarioEmail.split('@')[0] : 'Anónimo');
+                const inicial = nombreMostrar.charAt(0).toUpperCase();
                 
                 let fechaFormateada = "Fecha no disponible";
                 if (reseña.fecha && reseña.fecha.toDate) {
                     fechaFormateada = reseña.fecha.toDate().toLocaleDateString();
                 }
-                
-                let catedraPracticoHTML = reseña.catedra;
+
+                let catedraTexto = reseña.catedra;
                 if (reseña.practico && reseña.practico !== 'Único') {
-                    catedraPracticoHTML = `${reseña.catedra} - ${reseña.practico}`;
+                    catedraTexto += ` - ${reseña.practico}`;
                 }
                 
-                let tiposEvaluacionArray = reseña.tiposEvaluacion || [];
-                if (Array.isArray(tiposEvaluacionArray)) {
-                    tiposEvaluacionArray = tiposEvaluacionArray.filter(t => t && t.toLowerCase() !== 'on');
-                }
-                const tiposEvaluacionHTML = tiposEvaluacionArray.length > 0
-                    ? tiposEvaluacionArray.join(', ') 
-                    : 'No especificado';
-
-                let aspectosHTML = `
-                    <div class="review-aspect">
-                        <span class="aspect-name">Claridad (Pedagogía):</span>
-                        <span class="aspect-value">${reseña.claridad || 'N/A'}/5</span>
-                    </div>
-                    <div class="review-aspect">
-                        <span class="aspect-name">Programa y contenidos:</span>
-                        <span class="aspect-value">${reseña.programa || 'N/A'}/5</span>
-                    </div>
-                    <div class="review-aspect">
-                        <span class="aspect-name">Dificultad:</span>
-                        <span class="aspect-value">${reseña.dificultad || 'N/A'}/5</span>
-                    </div>
-                    <div class="review-aspect">
-                        <span class="aspect-name">Oferta horaria:</span>
-                        <span class="aspect-value">${reseña.oferta || 'N/A'}/5</span>
-                    </div>
-                `;
-                
-                const nombreMostrar = reseña.usuarioNombre || (reseña.usuarioEmail ? reseña.usuarioEmail.split('@')[0] : 'Anónimo');
-                const inicial = nombreMostrar.charAt(0).toUpperCase();
-
                 let anioDisplay = reseña.anioCursada || 'No especificado';
-                if (reseña.cursoVerano) {
-                    anioDisplay += ' | Curso de verano';
+                if (reseña.cursoVerano) anioDisplay += ' | Curso de verano';
+
+                // --- CONSTRUCCIÓN DEL DOM (BLOQUE POR BLOQUE) ---
+
+                // A. HEADER (Avatar + Info)
+                const header = crearElemento('div', 'review-header');
+                
+                const userContainer = crearElemento('div', 'review-user');
+                const avatar = crearElemento('div', 'user-avatar', inicial);
+                
+                const infoDiv = crearElemento('div', 'review-user-info');
+                const nameDiv = crearElemento('div', 'review-user-name', nombreMostrar); // SEGURIDAD AQUI
+                const catedraDiv = crearElemento('div', 'review-catedra', catedraTexto);
+                const dateDiv = crearElemento('div', 'review-date', `${fechaFormateada} | Cursada en ${anioDisplay}`);
+
+                // Ensamblar Header
+                infoDiv.appendChild(nameDiv);
+                infoDiv.appendChild(catedraDiv);
+                infoDiv.appendChild(dateDiv);
+                userContainer.appendChild(avatar);
+                userContainer.appendChild(infoDiv);
+                header.appendChild(userContainer);
+
+                // B. ESTRELLAS (Rating)
+                const ratingDiv = crearElemento('div', 'rating');
+                for (let i = 1; i <= 5; i++) {
+                    const star = document.createElement('span');
+                    star.textContent = i <= reseña.calificacionGeneral ? '★' : '☆';
+                    ratingDiv.appendChild(star);
                 }
 
+                // C. CONTENIDO (La parte más peligrosa)
+                const contentDiv = crearElemento('div', 'review-content', reseña.texto); // ¡SEGURIDAD TOTAL AQUÍ!
+                // Al usar crearElemento con textContent, si alguien pone <script>, se verá el texto escrito, no se ejecutará.
+
+                // D. ASPECTOS (Las notas específicas)
+                const aspectsContainer = crearElemento('div', 'review-aspects');
+                
+                // Función pequeña para no repetir código de aspectos
+                const agregarAspecto = (titulo, valor) => {
+                    const row = crearElemento('div', 'review-aspect');
+                    row.appendChild(crearElemento('span', 'aspect-name', titulo));
+                    row.appendChild(crearElemento('span', 'aspect-value', `${valor || 'N/A'}/5`));
+                    aspectsContainer.appendChild(row);
+                };
+
+                agregarAspecto('Claridad (Pedagogía):', reseña.claridad);
+                agregarAspecto('Programa y contenidos:', reseña.programa);
+                agregarAspecto('Dificultad:', reseña.dificultad);
+                agregarAspecto('Oferta horaria:', reseña.oferta);
+
+                // E. OTROS DATOS (Evaluación y asistencia)
+                const extraInfoContainer = crearElemento('div', 'review-aspects');
+                
+                // Tipos de evaluación
+                let tiposArr = reseña.tiposEvaluacion || [];
+                if (Array.isArray(tiposArr)) tiposArr = tiposArr.filter(t => t && t.toLowerCase() !== 'on');
+                const evalTxt = tiposArr.length > 0 ? tiposArr.join(', ') : 'No especificado';
+                
+                const evalRow = crearElemento('div', 'review-aspect');
+                evalRow.appendChild(crearElemento('span', 'aspect-name', 'Tipo de evaluación:'));
+                evalRow.appendChild(crearElemento('span', 'aspect-value', evalTxt));
+                
+                const asistRow = crearElemento('div', 'review-aspect');
+                asistRow.appendChild(crearElemento('span', 'aspect-name', 'Toman asistencia:'));
+                asistRow.appendChild(crearElemento('span', 'aspect-value', reseña.tomanAsistencia || 'No especificado'));
+
+                extraInfoContainer.appendChild(evalRow);
+                extraInfoContainer.appendChild(asistRow);
+
+                // F. FOOTER (Botones de Voto y Respuesta)
+                const footer = crearElemento('div', 'review-footer');
+                
+                // Calculamos clases de votos
                 const currentUserId = appState.user ? appState.user.uid : null;
-                const votes = reseña.votes || {};
-                const userVote = currentUserId ? votes[currentUserId] : 0; 
+                const userVote = reseña.votes && currentUserId ? reseña.votes[currentUserId] : 0;
                 
-                const likesCount = reseña.likes_count || 0;
-                const dislikesCount = reseña.dislikes_count || 0;
-                
-                const likeClass = userVote === 1 ? 'like-active' : '';
-                const dislikeClass = userVote === -1 ? 'dislike-active' : '';
+                // Botón Like
+                const btnLike = crearElemento('button', ['vote-control', 'vote-like']);
+                if(userVote === 1) btnLike.classList.add('like-active');
+                btnLike.title = "Útil";
+                btnLike.innerHTML = `<span class="vote-icon">👍</span> <span class="like-count">${reseña.likes_count || 0}</span>`;
+                btnLike.onclick = () => handleVote(reseña.id, 1); // Evento directo, más limpio
 
-                // Botón de respuesta con contador
+                // Botón Dislike
+                const btnDislike = crearElemento('button', ['vote-control', 'vote-dislike']);
+                if(userVote === -1) btnDislike.classList.add('dislike-active');
+                btnDislike.title = "No útil";
+                btnDislike.innerHTML = `<span class="vote-icon">👎</span> <span class="dislike-count">${reseña.dislikes_count || 0}</span>`;
+                btnDislike.onclick = () => handleVote(reseña.id, -1);
+
+                // Botón Responder
                 const repliesCount = reseña.replies_count || 0;
-                const replyButtonText = repliesCount > 0 ? `💬 Responder (${repliesCount})` : `💬 Responder`;
+                const btnReply = crearElemento('button', ['vote-control', 'btn-reply']);
+                btnReply.textContent = repliesCount > 0 ? `💬 Responder (${repliesCount})` : `💬 Responder`;
+                btnReply.onclick = () => toggleRespuestas(reseña.id);
 
-                const voteControlsHTML = `
-                    <div class="review-footer">
-                        <button class="vote-control vote-like ${likeClass}" data-review-id="${reseña.id}" title="Útil">
-                            <span class="vote-icon">👍</span>
-                            <span class="like-count">${likesCount}</span>
-                        </button>
-                        <button class="vote-control vote-dislike ${dislikeClass}" data-review-id="${reseña.id}" title="No útil">
-                            <span class="vote-icon">👎</span>
-                            <span class="dislike-count">${dislikesCount}</span>
-                        </button>
-                        <button class="vote-control btn-reply" data-review-id="${reseña.id}">
-                            ${replyButtonText}
-                        </button>
-                    </div>
-                `;
+                footer.appendChild(btnLike);
+                footer.appendChild(btnDislike);
+                footer.appendChild(btnReply);
 
-                // HTML para las respuestas
-                const repliesHTML = `
-                    <div id="replies-container-${reseña.id}" class="replies-container">
-                        <div id="replies-list-${reseña.id}">
-                            <!-- Las respuestas se cargarán aquí -->
-                        </div>
-                        <div class="reply-form-container">
-                            <textarea id="reply-input-${reseña.id}" class="reply-input" placeholder="Escribe una respuesta..."></textarea>
-                            <button class="btn-submit-reply" onclick="enviarRespuesta('${reseña.id}')">Enviar respuesta</button>
-                        </div>
-                    </div>
-                `;
-
-                reviewCard.innerHTML = `
-                    <div class="review-header">
-                        <div class="review-user">
-                            <div class="user-avatar">${inicial}</div>
-                            <div class="review-user-info">
-                                <div class="review-user-name">${nombreMostrar}</div>
-                                <div class="review-catedra">${catedraPracticoHTML}</div>
-                                <div class="review-date">${fechaFormateada} | Cursada en ${anioDisplay}</div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="rating">${estrellasHTML}</div>
-                    <div class="review-content">${reseña.texto}</div>
-                    <div class="review-aspects">
-                        ${aspectosHTML}
-                    </div>
-                    <div class="review-aspects">
-                        <div class="review-aspect">
-                            <span class="aspect-name">Tipo de evaluación:</span>
-                            <span class="aspect-value">${tiposEvaluacionHTML}</span>
-                        </div>
-                        <div class="review-aspect">
-                            <span class="aspect-name">Toman asistencia:</span>
-                            <span class="aspect-value">${reseña.tomanAsistencia || 'No especificado'}</span>
-                        </div>
-                    </div>
-                    ${voteControlsHTML}
-                    ${repliesHTML}
-                `;
+                // G. CONTENEDOR DE RESPUESTAS (Oculto por defecto)
+                const repliesContainer = crearElemento('div', 'replies-container');
+                repliesContainer.id = `replies-container-${reseña.id}`;
                 
-                // Event Listeners
-                reviewCard.querySelector('.vote-like').addEventListener('click', () => handleVote(reseña.id, 1));
-                reviewCard.querySelector('.vote-dislike').addEventListener('click', () => handleVote(reseña.id, -1));
-                reviewCard.querySelector('.btn-reply').addEventListener('click', () => toggleRespuestas(reseña.id));
+                const repliesList = crearElemento('div');
+                repliesList.id = `replies-list-${reseña.id}`;
+
+                const formContainer = crearElemento('div', 'reply-form-container');
+                const textArea = crearElemento('textarea', 'reply-input');
+                textArea.id = `reply-input-${reseña.id}`;
+                textArea.placeholder = "Escribe una respuesta...";
                 
+                const submitReplyBtn = crearElemento('button', 'btn-submit-reply', 'Enviar respuesta');
+                submitReplyBtn.onclick = () => enviarRespuesta(reseña.id);
+
+                formContainer.appendChild(textArea);
+                formContainer.appendChild(submitReplyBtn);
+                repliesContainer.appendChild(repliesList);
+                repliesContainer.appendChild(formContainer);
+
+                // --- ENSAMBLAJE FINAL ---
+                reviewCard.appendChild(header);
+                reviewCard.appendChild(ratingDiv);
+                reviewCard.appendChild(contentDiv); // Agregamos el contenido seguro
+                reviewCard.appendChild(aspectsContainer);
+                reviewCard.appendChild(extraInfoContainer);
+                reviewCard.appendChild(footer);
+                reviewCard.appendChild(repliesContainer);
+
+                // Insertar en el DOM
                 resenasList.appendChild(reviewCard);
             });
         }
@@ -2803,14 +2851,21 @@
                             fecha = reseña.fecha.toDate().toLocaleDateString();
                         }
 
+                        // Uso seguro de textContent para la parte dinámica
                         card.innerHTML = `
                             <div style="border-bottom: 1px solid #eee; padding-bottom: 0.5rem; margin-bottom: 0.5rem;">
                                 <h3 style="color: var(--primary-color); font-size: 1.1rem; margin:0;">${materiaNombre}</h3>
                                 <div style="font-size: 0.85rem; color: #888;">${reseña.catedra} - ${fecha}</div>
                             </div>
                             <div class="rating" style="font-size: 1rem;">${estrellasHTML}</div>
-                            <div style="font-size: 0.95rem; color: #444; margin-top: 0.5rem;">${reseña.texto}</div>
                         `;
+                        const textDiv = document.createElement('div');
+                        textDiv.style.fontSize = '0.95rem';
+                        textDiv.style.color = '#444';
+                        textDiv.style.marginTop = '0.5rem';
+                        textDiv.textContent = reseña.texto;
+                        
+                        card.appendChild(textDiv);
                         listContainer.appendChild(card);
                     });
 
