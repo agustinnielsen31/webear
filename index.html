@@ -3,13 +3,25 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gino</title>
+    <title>Gino Social</title>
     
+    <!-- Firebase Libraries -->
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
-    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6430126392523501"
-      crossorigin="anonymous"></script>
+    
+    <!-- Google Ads -->
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6430126392523501" crossorigin="anonymous"></script>
+
+    <!-- Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-8BZFCJBMY6"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-8BZFCJBMY6');
+    </script>
+
     <style>
         :root {
             --primary-color: #ff7d29;
@@ -37,6 +49,133 @@
             color: var(--dark-color);
         }
 
+        /* --- SIDEBAR & MENU STYLES --- */
+        .hamburger-btn {
+            background: transparent;
+            border: none;
+            color: white;
+            font-size: 1.8rem;
+            cursor: pointer;
+            padding: 5px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: transform 0.2s;
+            z-index: 1100;
+        }
+        
+        .hamburger-btn:hover {
+            transform: scale(1.1);
+        }
+
+        .sidebar-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 1099; /* Debajo del sidebar */
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(3px);
+        }
+
+        .sidebar-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .sidebar {
+            position: fixed;
+            top: 0;
+            left: -280px; /* Oculto a la izquierda */
+            width: 280px;
+            height: 100%;
+            background: white;
+            z-index: 1100;
+            box-shadow: 2px 0 15px rgba(0,0,0,0.1);
+            transition: left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex;
+            flex-direction: column;
+            padding: 2rem 1.5rem;
+        }
+
+        .sidebar.active {
+            left: 0;
+        }
+
+        .sidebar-header {
+            margin-bottom: 2rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid #eee;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .sidebar-brand {
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: var(--primary-color);
+        }
+
+        .close-sidebar-btn {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            color: #888;
+            cursor: pointer;
+        }
+
+        .sidebar-menu {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            flex: 1;
+        }
+
+        .sidebar-item {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 12px 15px;
+            text-decoration: none;
+            color: var(--dark-color);
+            font-weight: 600;
+            border-radius: 12px;
+            transition: background 0.2s;
+        }
+
+        .sidebar-item:hover {
+            background-color: #fff0e6; /* Naranja muy suave */
+            color: var(--primary-color);
+        }
+
+        .sidebar-item.highlight {
+            background: var(--primary-gradient);
+            color: white;
+            margin-top: 1rem;
+            justify-content: center;
+            box-shadow: 0 4px 10px rgba(255, 125, 41, 0.3);
+        }
+        
+        .sidebar-item.highlight:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 15px rgba(255, 125, 41, 0.4);
+        }
+
+        .sidebar-footer {
+            margin-top: auto;
+            text-align: center;
+            font-size: 0.8rem;
+            color: #999;
+            border-top: 1px solid #eee;
+            padding-top: 1rem;
+        }
+        /* ---------------------------- */
+
         .navbar {
             position: fixed;
             top: 0;
@@ -56,30 +195,6 @@
             padding: 0.5rem 2rem;
             box-shadow: 0 4px 10px rgba(0,0,0,0.15);
             backdrop-filter: blur(5px); 
-        }
-
-        .btn-colaborar {
-            background: rgba(255, 255, 255, 0.2);
-            backdrop-filter: blur(4px);
-            border: 1px solid rgba(255, 255, 255, 0.6);
-            color: white;
-            font-weight: 700;
-            padding: 0.5rem 1.2rem;
-            border-radius: 20px;
-            transition: all 0.3s ease;
-            text-decoration: none;
-            font-size: 0.9rem;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-        }
-
-        .btn-colaborar:hover {
-            background: white;
-            color: var(--primary-color);
-            transform: translateY(-1px);
-            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
         }
 
         .btn-donate {
@@ -1305,19 +1420,44 @@
         }
     </style>
 </head>
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-8BZFCJBMY6"></script>
-<script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
-
-  gtag('config', 'G-8BZFCJBMY6');
-</script>
 <body>
+    <!-- SIDEBAR DE NAVEGACIÓN -->
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+    <div class="sidebar" id="mainSidebar">
+        <div class="sidebar-header">
+            <span class="sidebar-brand">Gino Social</span>
+            <button class="close-sidebar-btn" id="closeSidebar">✕</button>
+        </div>
+        
+        <div class="sidebar-menu">
+            <a href="datos/index.html" class="sidebar-item">
+                <span>📊</span> Centro de Datos
+            </a>
+            <a href="datos/info.html" class="sidebar-item">
+                <span>⚖️</span> Contrato Social
+            </a>
+            <a href="#" class="sidebar-item">
+                <span>📓</span> Bitácora
+            </a>
+            <a href="#" class="sidebar-item">
+                <span>👥</span> ¿Quienes somos?
+            </a>
+            <a href="#" id="sidebarCollaborateBtn" class="sidebar-item highlight">
+                <span>🤝</span> Colaborar / Donar
+            </a>
+        </div>
+
+        <div class="sidebar-footer">
+            <p>© 2025 Gino Social</p>
+            <p style="font-size: 0.7rem; margin-top: 5px;">Hecho con ❤️ por estudiantes</p>
+        </div>
+    </div>
+
+    <!-- NAVBAR PRINCIPAL -->
     <nav id="mainNav" class="navbar">
-        <div>
-            <button id="collaborateBtn" class="btn-colaborar">
-                <span>🤝</span> <span style="display: inline-block;">Colaborar</span>
+        <div style="display: flex; align-items: center;">
+            <button id="menuBtn" class="hamburger-btn" title="Menú">
+                ☰
             </button>
         </div>
 
@@ -1343,11 +1483,13 @@
     <header>
         <div class="header-title">
             <h1 id="ginoTitle">Gino Social</h1>
-            <p>Gestor de Información, Noticias y Opinión Social. Una herramienta del pueblo. Desarrollada por <a href="https://crisispuntocom.substack.com/" target="_blank">CrisisPuntoCom</a> y <a href="https://www.instagram.com/helecho.social" target="_blank">Helecho Social</a></p>
+            <p>Gestor de Información, Noticias y Opinión Social. Una herramienta del pueblo. Desarrollada por <a href="https://crisis-puntocom.substack.com/" target="_blank">CrisisPuntoCom</a> a y <a href="https://www.instagram.com/helecho.social/" target="_blank">Helecho Social</a></p>
         </div>
     </header>
     
+    <!-- CONTENEDOR PRINCIPAL -->
     <div class="container">
+        <!-- FILTROS DE CATEGORÍA -->
         <div class="category-filters">
             <button class="category-btn active" data-category="materias">Materias obligatorias</button>
             <button class="category-btn" data-category="especiales">Sociologías especiales</button>
@@ -1356,6 +1498,7 @@
             <button class="category-btn" data-category="idiomas">Idiomas</button>
         </div>
         
+        <!-- BUSCADOR Y ORDENAMIENTO -->
         <div class="controles-busqueda-container">
             <div class="search-container">
                 <input type="text" id="searchMaterias" placeholder="🔍 Buscar por materia o cátedra..." class="search-input">
@@ -1372,6 +1515,7 @@
             </div>
         </div>
         
+        <!-- GRID DE MATERIAS -->
         <h2 id="materiasGridTitle" style="margin-bottom: 1.5rem; color: var(--dark-color);">Materias obligatorias</h2>
         <div class="materias-grid" id="materiasGrid">
             <div style="grid-column: 1/-1; text-align: center; padding: 2rem; color: #666;">
@@ -1384,6 +1528,7 @@
             @keyframes spin { to { transform: rotate(360deg); } }
         </style>
         
+        <!-- FORMULARIO DE RESEÑA (COLAPSABLE) -->
         <div class="review-form-container" id="reviewForm">
             <div class="form-header-row" onclick="toggleFormVisibility()">
                 <h2 id="formTitle">Dejar Reseña</h2>
@@ -1400,21 +1545,21 @@
                 
                 <form id="reviewFormElement" style="display: none;">
                     <div class="form-group">
-                        <label for="catedra">Cátedra:</label>
+                        <label for="catedra">Cátedra</label>
                         <select id="catedra" required>
                             <option value="">Selecciona una cátedra</option>
                         </select>
                     </div>
                     
                     <div class="form-group" id="practico-form-group">
-                        <label for="practico">Práctico:</label>
+                        <label for="practico">Práctico</label>
                         <select id="practico" required>
                             <option value="">Selecciona un práctico</option>
                         </select>
                     </div>
                     
                     <div class="form-group">
-                        <label for="anioCursada">Año de cursada:</label>
+                        <label for="anioCursada">Año de cursada</label>
                         <div class="year-input-group">
                             <select id="anioCursada" required>
                                 <option value="">Selecciona el año</option>
@@ -1432,7 +1577,7 @@
                     </div>
                     
                     <div class="form-group">
-                        <label>Tipo de evaluación:</label>
+                        <label>Tipo de evaluación</label>
                         <div class="checkbox-group" id="tiposEvaluacionCheckboxes"> 
                             <div class="checkbox-option">
                                 <input type="checkbox" id="evalParciales" value="Parcial presencial">
@@ -1462,7 +1607,7 @@
                     </div>
                     
                     <div class="form-group">
-                        <label for="tomanAsistencia">Toman asistencia:</label>
+                        <label for="tomanAsistencia">¿Toman asistencia?</label>
                         <select id="tomanAsistencia" required>
                             <option value="">Selecciona una opción</option>
                             <option value="Si">Sí</option>
@@ -1471,7 +1616,7 @@
                     </div>
                     
                     <div class="form-group">
-                        <label>Calificación General:</label>
+                        <label>Calificación General</label>
                         <div class="rating-input" id="generalRating">
                             <span class="star" data-value="1">★</span>
                             <span class="star" data-value="2">★</span>
@@ -1486,7 +1631,7 @@
                         <h3>Calificación por Aspectos</h3>
                         <br>
                         <div class="aspect-rating">
-                            <label>Claridad de la explicación (Pedagogía):</label>
+                            <label>Claridad de la explicación (Pedagogía)</label>
                             <div class="rating-input" id="claridadRating">
                                 <span class="star" data-value="1">★</span>
                                 <span class="star" data-value="2">★</span>
@@ -1497,7 +1642,7 @@
                         </div>
                         
                         <div class="aspect-rating">
-                            <label>Programa y contenidos:</label>
+                            <label>Programa y contenidos</label>
                             <div class="rating-input" id="programaRating">
                                 <span class="star" data-value="1">★</span>
                                 <span class="star" data-value="2">★</span>
@@ -1508,7 +1653,7 @@
                         </div>
 
                         <div class="aspect-rating">
-                            <label>Dificultad: <span id="dificultadLabel" style="color: var(--primary-color); font-weight: bold; margin-left: 5px;"></span></label>
+                            <label>Dificultad <span id="dificultadLabel" style="color: var(--primary-color); font-weight: bold; margin-left: 5px;"></span></label>
                             <div class="rating-input" id="dificultadRating">
                                 <span class="star" data-value="1">★</span>
                                 <span class="star" data-value="2">★</span>
@@ -1519,7 +1664,7 @@
                         </div>
                         
                         <div class="aspect-rating">
-                            <label>Oferta horaria:</label>
+                            <label>Oferta horaria</label>
                             <div class="rating-input" id="ofertaRating">
                                 <span class="star" data-value="1">★</span>
                                 <span class="star" data-value="2">★</span>
@@ -1530,7 +1675,7 @@
                         </div>
                     </div>
                                     <div class="form-group">
-                        <label for="reviewText">Reseña:</label>
+                        <label for="reviewText">Reseña</label>
                         <textarea id="reviewText" placeholder="Sé respetuoso... de lo que no se puede hablar es mejor callar." required></textarea>
                     </div>
                     
@@ -1539,27 +1684,28 @@
             </div>
         </div>
         
+        <!-- LISTA DE RESEÑAS -->
         <div class="resenas-container">
             <h2 style="color: var(--primary-color);">Reseñas de la Materia</h2>
             <br>
             
             <div class="filter-container">
                 <div class="form-group filter-select">
-                    <label for="filterCatedra">Filtrar por Cátedra:</label>
+                    <label for="filterCatedra">Filtrar por Cátedra</label>
                     <select id="filterCatedra">
                         <option value="">Todas las cátedras</option>
                     </select>
                 </div>
                 
                 <div class="form-group filter-select" id="practico-filter-group">
-                    <label for="filterPractico">Filtrar por Práctico:</label>
+                    <label for="filterPractico">Filtrar por Práctico</label>
                     <select id="filterPractico">
                         <option value="">Todos los prácticos</option>
                     </select>
                 </div>
                 
                 <div class="form-group filter-select">
-                    <label for="filterRating">Filtrar por Calificación:</label>
+                    <label for="filterRating">Filtrar por Calificación</label>
                     <select id="filterRating">
                         <option value="">Todas las calificaciones</option>
                         <option value="5">5 estrellas</option>
@@ -1571,24 +1717,24 @@
                 </div>
             </div>
             
-            <div id="resenasList">
-                
-            </div>
+            <div id="resenasList"></div>
         </div>
     </div>
 
+    <!-- BOTÓN SCROLL TOP -->
     <button id="scrollToTopBtn" title="Ir arriba">▲</button>
     
+    <!-- MODALES -->
     <div class="modal" id="loginModal">
         <div class="modal-content">
             <h2>Iniciar Sesión</h2>
             <form id="loginForm">
                 <div class="form-group">
-                    <label for="loginEmail">Email:</label>
+                    <label for="loginEmail">Email</label>
                     <input type="email" id="loginEmail" required>
                 </div>
                 <div class="form-group">
-                    <label for="loginPassword">Contraseña:</label>
+                    <label for="loginPassword">Contraseña</label>
                     <div class="password-wrapper">
                         <input type="password" id="loginPassword" required>
                         <button type="button" class="toggle-password-btn" data-target="loginPassword">👁️</button>
@@ -1616,24 +1762,24 @@
                     <form id="registerForm">
                         <div class="form-row">
                             <div class="form-group">
-                                <label for="registerFirstName">Nombre:</label>
+                                <label for="registerFirstName">Nombre</label>
                                 <input type="text" id="registerFirstName" required>
                             </div>
                             <div class="form-group">
-                                <label for="registerLastName">Apellido:</label>
+                                <label for="registerLastName">Apellido</label>
                                 <input type="text" id="registerLastName" required>
                             </div>
                         </div>
                         
                         <div class="form-group">
-                            <label for="registerEmail">Email:</label>
+                            <label for="registerEmail">Email</label>
                             <input type="email" id="registerEmail" required>
                             <small style="display: block; margin-top: 0.5rem; color: #e67e22; font-size: 0.85rem;">
                                 Revisa tu casilla de spam para confirmar tu cuenta.
                             </small>
                         </div>
                         <div class="form-group">
-                            <label for="registerPassword">Contraseña:</label>
+                            <label for="registerPassword">Contraseña</label>
                             <div class="password-wrapper">
                                 <input type="password" id="registerPassword" required minlength="6">
                                 <button type="button" class="toggle-password-btn" data-target="registerPassword">👁️</button>
@@ -1687,7 +1833,7 @@
                     pero por la misma razón necesitamos tu colaboración.
                 </p>
                 <p style="margin-bottom: 1rem; background: #f9f9f9; padding: 10px; border-radius: 8px; border-left: 4px solid var(--primary-color);">
-                    ¿Faltan materias o prácticos? ¿Hay materias que ya no existen? Podés contactarnos a: <br>
+                    ¿Faltan materias o prácticos? ¿Hay materias que ya no existen? Podés contactarnos a <br>
                     <a href="mailto:ginosocial.contacto@gmail.com" style="color: var(--primary-color); font-weight: bold; text-decoration: none;">ginosocial.contacto@gmail.com</a><br>
                     <span style="font-size: 0.9rem; color: #666;">(Comentanos errores, sugerencias, críticas o reseñas).</span>
                 </p>
@@ -1725,6 +1871,7 @@
     </div>
 
     <script>
+        /* --- CONFIGURACIÓN DE FIREBASE Y ESTADO DE LA APP --- */
         const firebaseConfig = {
             apiKey: "AIzaSyBnpshX3I7ZY3EUoraDZPdb2W6B6HZOYR0",
             authDomain: "social-sociales.firebaseapp.com",
@@ -1809,8 +1956,43 @@
             configurarEasterEgg(); 
             configurarOjosGino(); 
             configurarMisResenas(); 
+            configurarSidebar(); // NUEVO: Inicializar Sidebar
         }
         
+        /* --- FUNCIÓN DEL SIDEBAR (NUEVA) --- */
+        function configurarSidebar() {
+            const menuBtn = document.getElementById('menuBtn');
+            const sidebar = document.getElementById('mainSidebar');
+            const overlay = document.getElementById('sidebarOverlay');
+            const closeBtn = document.getElementById('closeSidebar');
+            const sidebarCollaborateBtn = document.getElementById('sidebarCollaborateBtn');
+            const collaborateModal = document.getElementById('collaborateModal');
+
+            function openSidebar() {
+                sidebar.classList.add('active');
+                overlay.classList.add('active');
+                document.body.style.overflow = 'hidden'; 
+            }
+
+            function closeSidebar() {
+                sidebar.classList.remove('active');
+                overlay.classList.remove('active');
+                document.body.style.overflow = ''; 
+            }
+
+            menuBtn.addEventListener('click', openSidebar);
+            closeBtn.addEventListener('click', closeSidebar);
+            overlay.addEventListener('click', closeSidebar);
+
+            // Botón de colaborar dentro del sidebar abre el modal
+            sidebarCollaborateBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                closeSidebar();
+                collaborateModal.classList.add('active');
+            });
+        }
+        /* ------------------------------------ */
+
         function toggleFormVisibility() {
             const content = document.getElementById('reviewFormContent');
             const icon = document.getElementById('formToggleIcon');
@@ -1883,7 +2065,7 @@
                         listContainer.appendChild(replyElement);
                     });
                 }, error => {
-                    console.error("Error cargando respuestas:", error);
+                    console.error("Error cargando respuestas", error);
                     listContainer.innerHTML = '';
                     const errorMsg = crearElemento('div', [], 'Error al cargar respuestas.');
                     errorMsg.style.color = 'var(--accent-color)';
@@ -1909,7 +2091,7 @@
             btn.textContent = 'Enviando...';
             
             try {
-                const nombreAutor = appState.user.displayName || (appState.user.email ? appState.user.email.split('@')[0] : "Usuario");
+                const nombreAutor = appState.user.displayName || (appState.user.email ? appState.user.email.split('@')[0] : 'Usuario');
                 
                 await db.collection('resenas').doc(reviewId).collection('respuestas').add({
                     texto: texto,
@@ -1926,7 +2108,7 @@
                 mostrarNotificacion('Respuesta enviada', 'success');
                 
             } catch (error) {
-                console.error("Error al enviar respuesta:", error);
+                console.error("Error al enviar respuesta", error);
                 mostrarNotificacion('Error al enviar la respuesta', 'error');
             } finally {
                 btn.disabled = false;
@@ -2094,7 +2276,7 @@
                 actualizarVistaMaterias(); 
             
             } catch (error) {
-                console.error(`Error cargando colección ${coleccionParaCargar}:`, error);
+                console.error(`Error cargando colección ${coleccionParaCargar}`, error);
                 grid.innerHTML = '<p style="grid-column: 1/-1; text-align: center; color: var(--accent-color);">Error al cargar las materias. Por favor, recarga la página.</p>';
             }
         }
@@ -2149,7 +2331,7 @@
             const materia = appState.materias.find(m => m.id === materiaId);
             
             if (!materia) {
-                console.error("No se pudo encontrar la materia con ID:", materiaId);
+                console.error("No se pudo encontrar la materia con ID", materiaId);
                 return;
             }
 
@@ -2279,7 +2461,7 @@
                 
                 cargarresenasEnUI();
             } catch (error) {
-                console.error('Error cargando resenas:', error);
+                console.error('Error cargando resenas', error);
                 appState.resenas = [];
                 cargarresenasEnUI();
             }
@@ -2369,7 +2551,7 @@
                 await cargarresenas(appState.materiaSeleccionada.id);
                 
             } catch (error) {
-                console.error('Error al votar:', error);
+                console.error('Error al votar', error);
                 mostrarNotificacion('Error al registrar tu voto: ' + error.message, 'error');
             }
         }
@@ -2425,7 +2607,7 @@
                 submitBtn.textContent = 'Enviando...';
                 
                 try {
-                    const nombreAutor = appState.user.displayName || (appState.user.email ? appState.user.email.split('@')[0] : "Usuario");
+                    const nombreAutor = appState.user.displayName || (appState.user.email ? appState.user.email.split('@')[0] : 'Usuario');
 
                     const nuevaReseña = {
                         materiaId: appState.materiaSeleccionada.id,
@@ -2461,7 +2643,7 @@
                     mostrarNotificacion('¡Reseña enviada con éxito!', 'success');
                     
                 } catch (error) {
-                    console.error('Error guardando reseña:', error);
+                    console.error('Error guardando reseña', error);
                     mostrarNotificacion('Error al enviar la reseña: ' + error.message, 'error');
                 } finally {
                     submitBtn.disabled = false;
@@ -2499,7 +2681,7 @@
                 actualizarVistaMaterias();
 
             } catch (error) {
-                console.error("Error actualizando contador:", error);
+                console.error("Error actualizando contador", error);
             }
         }
 
@@ -2544,7 +2726,7 @@
                 }
                 
                 let anioDisplay = reseña.anioCursada || 'No especificado';
-                if (reseña.cursoVerano) anioDisplay += ' | Curso de verano';
+                if (reseña.cursoVerano) anioDisplay += ' / Curso de verano';
                 
                 const header = crearElemento('div', 'review-header');
                 
@@ -2581,10 +2763,10 @@
                     aspectsContainer.appendChild(row);
                 };
 
-                agregarAspecto('Claridad (Pedagogía):', reseña.claridad);
-                agregarAspecto('Programa y contenidos:', reseña.programa);
-                agregarAspecto('Dificultad:', reseña.dificultad);
-                agregarAspecto('Oferta horaria:', reseña.oferta);
+                agregarAspecto('Claridad (Pedagogía)', reseña.claridad);
+                agregarAspecto('Programa y contenidos', reseña.programa);
+                agregarAspecto('Dificultad', reseña.dificultad);
+                agregarAspecto('Oferta horaria', reseña.oferta);
 
                 const extraInfoContainer = crearElemento('div', 'review-aspects');
                 
@@ -2593,11 +2775,11 @@
                 const evalTxt = tiposArr.length > 0 ? tiposArr.join(', ') : 'No especificado';
                 
                 const evalRow = crearElemento('div', 'review-aspect');
-                evalRow.appendChild(crearElemento('span', 'aspect-name', 'Tipo de evaluación:'));
+                evalRow.appendChild(crearElemento('span', 'aspect-name', 'Tipo de evaluación'));
                 evalRow.appendChild(crearElemento('span', 'aspect-value', evalTxt));
                 
                 const asistRow = crearElemento('div', 'review-aspect');
-                asistRow.appendChild(crearElemento('span', 'aspect-name', 'Toman asistencia:'));
+                asistRow.appendChild(crearElemento('span', 'aspect-name', 'Toman asistencia'));
                 asistRow.appendChild(crearElemento('span', 'aspect-value', reseña.tomanAsistencia || 'No especificado'));
 
                 extraInfoContainer.appendChild(evalRow);
@@ -2772,7 +2954,7 @@
 
         function configurarFiltros() {
             document.getElementById('filterCatedra').addEventListener('change', () => {
-                const catedras = appState.materiaSeleccionada?.catedras || [];
+                const catedras = appState.materiaSeleccionada.catedras || [];
                 const selectedCatedra = document.getElementById('filterCatedra').value;
                 
                 cargarPracticosEnFormulario(selectedCatedra, catedras);
@@ -2865,7 +3047,7 @@
                     });
 
                 } catch (error) {
-                    console.error("Error al cargar mis reseñas:", error);
+                    console.error("Error al cargar mis reseñas", error);
                     listContainer.innerHTML = '<div style="color:var(--accent-color); text-align: center;">Error al cargar las reseñas.</div>';
                 }
             });
@@ -2896,7 +3078,7 @@
             const cancelTerms = document.getElementById('cancelTerms');
 
             const collaborateModal = document.getElementById('collaborateModal');
-            const collaborateBtn = document.getElementById('collaborateBtn');
+            // const collaborateBtn = document.getElementById('collaborateBtn'); // REMOVIDO: Ya no existe en el navbar
             const closeCollaborate = document.getElementById('closeCollaborate');
 
             const switchToRegister = document.getElementById('switchToRegister');
@@ -2904,7 +3086,7 @@
             [loginBtn, loginFromReviewBtn].forEach(btn => btn.addEventListener('click', () => loginModal.classList.add('active')));
             registerBtn.addEventListener('click', () => registerModal.classList.add('active'));
 
-            collaborateBtn.addEventListener('click', () => collaborateModal.classList.add('active'));
+            // collaborateBtn.addEventListener('click', () => collaborateModal.classList.add('active')); // REMOVIDO
 
             cancelLogin.addEventListener('click', () => loginModal.classList.remove('active'));
             cancelRegister.addEventListener('click', () => registerModal.classList.remove('active'));
