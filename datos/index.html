@@ -22,7 +22,7 @@
             --dark-color: #2c3e50;
             --shadow-sm: 0 2px 4px rgba(0,0,0,0.05);
             --shadow-md: 0 4px 6px rgba(0,0,0,0.1);
-            --navbar-height: 60px; /* Altura para la navbar fija */
+            --navbar-height: 60px;
         }
         
         * {
@@ -33,7 +33,7 @@
         }
         
         html, body {
-            overflow-x: hidden; /* Evita el scroll horizontal */
+            overflow-x: hidden;
             width: 100%;
         }
 
@@ -44,14 +44,14 @@
             min-height: 100vh;
             display: flex;
             flex-direction: column;
-            padding-top: var(--navbar-height); /* Espacio para la navbar fija */
+            padding-top: var(--navbar-height);
         }
 
         /* --- SIDEBAR & MENU STYLES --- */
         .hamburger-btn {
             background: transparent;
             border: none;
-            color: var(--primary-color); /* Color visible en fondo blanco */
+            color: var(--primary-color);
             font-size: 1.8rem;
             cursor: pointer;
             padding: 5px;
@@ -182,7 +182,7 @@
             justify-content: space-between; 
             align-items: center;
             box-shadow: var(--shadow-sm);
-            position: fixed; /* Cambiado a fixed */
+            position: fixed;
             top: 0;
             left: 0;
             width: 100%;
@@ -294,7 +294,7 @@
         /* Buscador */
         .search-wrapper {
             position: relative;
-            min-width: 300px; /* Ancho base para escritorio */
+            min-width: 300px;
             flex: 1;
             max-width: 100%;
         }
@@ -372,7 +372,7 @@
 
         .data-card h2 {
             color: var(--primary-color);
-            margin-bottom: 0.5rem; /* Reducido para dar espacio al subtítulo */
+            margin-bottom: 0.5rem;
             font-size: 1.5rem;
             display: flex;
             justify-content: space-between;
@@ -470,14 +470,39 @@
         }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
-        /* Stats Marquee */
+        /* Stats Marquee: CARROUSEL INTERACTIVO */
+        .carousel-wrapper {
+            position: relative;
+            display: flex;
+            align-items: center;
+            margin-bottom: 2rem;
+            width: 100%;
+        }
+
+        .arrow-btn {
+            background: none;
+            border: none;
+            font-size: 3rem;
+            color: var(--primary-color);
+            cursor: pointer;
+            z-index: 10;
+            padding: 0 10px;
+            transition: transform 0.2s;
+            user-select: none;
+            flex-shrink: 0;
+        }
+        
+        .arrow-btn:hover {
+            transform: scale(1.2);
+            color: #e67e22;
+        }
+
         .stats-marquee {
-            overflow: hidden;
+            overflow-x: hidden; /* Oculta la barra de scroll pero JS la controla */
             width: 100%;
             position: relative;
-            margin-bottom: 2rem;
             padding: 1rem 0;
-            /* Máscara para suavizar bordes */
+            /* Máscara suave a los costados */
             -webkit-mask-image: linear-gradient(to right, transparent, black 5%, black 95%, transparent);
             mask-image: linear-gradient(to right, transparent, black 5%, black 95%, transparent);
         }
@@ -486,13 +511,7 @@
             display: flex;
             gap: 1.5rem;
             width: max-content;
-            /* Se duplicará el contenido para scroll infinito */
-            animation: scroll 40s linear infinite;
-        }
-
-        /* Pausar al pasar el ratón */
-        .stats-track:hover {
-            animation-play-state: paused;
+            /* Se eliminó la animación CSS infinita para controlarlo con JS */
         }
 
         .stat-box {
@@ -502,8 +521,8 @@
             text-align: center;
             box-shadow: var(--shadow-sm);
             border-bottom: 4px solid var(--primary-color);
-            min-width: 220px; /* Ancho mínimo para que se vean bien */
-            flex-shrink: 0;   /* No permitir que se encojan */
+            min-width: 220px; 
+            flex-shrink: 0;   
             display: flex;
             flex-direction: column;
             justify-content: center;
@@ -522,11 +541,6 @@
             font-weight: 600;
         }
         
-        @keyframes scroll {
-            0% { transform: translateX(0); }
-            100% { transform: translateX(-50%); } /* Se mueve la mitad (el set original) */
-        }
-
         /* Estilos del Modal Colaborar */
         .modal {
             display: none;
@@ -622,6 +636,7 @@
             /* Ajustes para evitar desbordes */
             .container { padding: 0 1rem 2rem; }
             .search-wrapper { min-width: 100%; }
+            .arrow-btn { font-size: 2rem; } /* Flechas más chicas en móvil */
         }
     </style>
 </head>
@@ -683,13 +698,19 @@
 
     <div class="container">
         
-        <!-- Stats Marquee -->
-        <div class="stats-marquee">
-            <div class="stats-track" id="statsTrack">
-                <div class="loader" style="padding: 0.5rem;">
-                    <div class="spinner" style="width: 20px; height: 20px; margin: 0;"></div>
+        <!-- Stats Carousel (Con Flechas) -->
+        <div class="carousel-wrapper">
+            <button class="arrow-btn" id="prevBtn">‹</button>
+            
+            <div class="stats-marquee" id="marqueeContainer">
+                <div class="stats-track" id="statsTrack">
+                    <div class="loader" style="padding: 0.5rem;">
+                        <div class="spinner" style="width: 20px; height: 20px; margin: 0;"></div>
+                    </div>
                 </div>
             </div>
+
+            <button class="arrow-btn" id="nextBtn">›</button>
         </div>
 
         <!-- Filtros (Con Buscador) -->
@@ -779,7 +800,51 @@
         let datosGlobales = null;
         let selectedMateriaKey = 'global'; 
 
-        // --- 2. LÓGICA DE VISUALIZACIÓN ---
+        // --- 2. LÓGICA DEL CARRUSEL (SCROLL) ---
+        const marqueeContainer = document.getElementById('marqueeContainer');
+        let autoScrollInterval;
+        let isHovering = false;
+
+        function startAutoScroll() {
+            if(autoScrollInterval) clearInterval(autoScrollInterval);
+            autoScrollInterval = setInterval(() => {
+                if(!isHovering) {
+                    marqueeContainer.scrollLeft += 1;
+                    // Reset infinito simple: si llegamos muy lejos, volvemos al principio
+                    // (Asumiendo que duplicamos contenido para que no se note el salto)
+                    if(marqueeContainer.scrollLeft >= (marqueeContainer.scrollWidth - marqueeContainer.clientWidth)) {
+                        marqueeContainer.scrollLeft = 0;
+                    }
+                }
+            }, 30); // Velocidad
+        }
+
+        function setupCarouselButtons() {
+            const prevBtn = document.getElementById('prevBtn');
+            const nextBtn = document.getElementById('nextBtn');
+
+            prevBtn.addEventListener('click', () => {
+                marqueeContainer.scrollBy({ left: -250, behavior: 'smooth' });
+            });
+            
+            nextBtn.addEventListener('click', () => {
+                marqueeContainer.scrollBy({ left: 250, behavior: 'smooth' });
+            });
+
+            marqueeContainer.addEventListener('mouseenter', () => isHovering = true);
+            marqueeContainer.addEventListener('mouseleave', () => isHovering = false);
+
+            // Agregar eventos para detener el carrousel al pasar sobre las flechas
+            prevBtn.addEventListener('mouseenter', () => isHovering = true);
+            prevBtn.addEventListener('mouseleave', () => isHovering = false);
+            nextBtn.addEventListener('mouseenter', () => isHovering = true);
+            nextBtn.addEventListener('mouseleave', () => isHovering = false);
+            
+            // Iniciar scroll automático
+            startAutoScroll();
+        }
+
+        // --- 3. LÓGICA DE VISUALIZACIÓN ---
 
         async function cargarDatos() {
             const container = document.getElementById('wordCloud');
@@ -787,8 +852,6 @@
             const statsTrack = document.getElementById('statsTrack');
             
             try {
-                // Leemos SOLO el documento de estadísticas optimizado
-                // Esto es mucho más rápido y barato que leer todas las colecciones
                 const docPalabras = await db.collection('datos').doc('palabras_clave').get();
 
                 if (!docPalabras.exists) {
@@ -805,15 +868,16 @@
 
                 datosGlobales = docPalabras.data();
                 
-                // Extraemos las estadísticas que calculó el Admin Panel
                 const stats = datosGlobales.stats || {};
                 const topWords = datosGlobales.topPalabras || [];
                 
-                // --- CONSTRUCCIÓN DEL MARQUEE (SCROLL INFINITO) ---
-                // Ahora leemos todo desde 'stats' en lugar de contar manualmente
+                // Lógica para el contador de reseñas animado
+                const realTotalResenas = stats.totalResenas || 0;
+                const startResenas = Math.max(0, realTotalResenas - 5);
+
                 const statsItems = [
                     { label: "Palabras Analizadas", value: formateaNumero(stats.totalPalabras || 0) },
-                    { label: "Reseñas Procesadas", value: stats.totalResenas || 0 },
+                    { label: "Reseñas Procesadas", value: startResenas, isReviewCounter: true }, // Marcador especial
                     { label: "Palabra #1", value: topWords[0] ? topWords[0].text : "-" },
                     { label: "Palabra #2", value: topWords[1] ? topWords[1].text : "-" },
                     { label: "Palabra #3", value: topWords[2] ? topWords[2].text : "-" },
@@ -823,26 +887,46 @@
                     { label: "Seminarios y Talleres", value: stats.totalTalleres || "-" }
                 ];
 
-                statsTrack.innerHTML = ''; // Limpiar loader
+                statsTrack.innerHTML = ''; 
 
-                // Función auxiliar para crear caja
                 const createBox = (item) => {
                     const box = document.createElement('div');
                     box.className = 'stat-box';
+                    // Si es el contador de reseñas, le ponemos un ID único
+                    const idAttr = item.isReviewCounter ? 'id="liveReviewCounter"' : '';
                     box.innerHTML = `
-                        <div class="stat-number">${item.value}</div>
+                        <div class="stat-number" ${idAttr}>${item.value}</div>
                         <div class="stat-label">${item.label}</div>
                     `;
                     return box;
                 };
 
-                // Agregamos los items originales
-                statsItems.forEach(item => statsTrack.appendChild(createBox(item)));
-                
-                // DUPLICAMOS los items para lograr el efecto de scroll infinito sin saltos
-                statsItems.forEach(item => statsTrack.appendChild(createBox(item)));
+                // Duplicamos el contenido muchas veces para asegurar el scroll infinito visualmente fluido
+                // (3 veces suele ser suficiente para pantallas anchas)
+                for(let i=0; i<3; i++) {
+                    statsItems.forEach(item => statsTrack.appendChild(createBox(item)));
+                }
 
-                // --- FIN MARQUEE ---
+                // Iniciar animación del contador de reseñas
+                if (startResenas < realTotalResenas) {
+                    let currentCount = startResenas;
+                    // Buscamos TODOS los elementos con ese ID (porque duplicamos las cajas)
+                    // Nota: ID duplicado es técnicamente inválido en HTML estricto, pero funciona con querySelectorAll
+                    // Mejor usaremos una clase si queremos ser estrictos, pero aquí un truco rápido:
+                    const counterElements = document.querySelectorAll('#liveReviewCounter');
+                    
+                    const interval = setInterval(() => {
+                        currentCount++;
+                        counterElements.forEach(el => el.textContent = currentCount);
+                        
+                        if (currentCount >= realTotalResenas) {
+                            clearInterval(interval);
+                        }
+                    }, 5000); // Suma 1 cada 5 segundos
+                }
+
+                // Iniciar Carousel
+                setupCarouselButtons();
 
                 // Fecha
                 if (datosGlobales.ultimaActualizacion) {
@@ -855,7 +939,7 @@
                 inicializarFiltros();
                 
                 // Renderizar Nube Inicial (Global)
-                document.getElementById('cloudSubtitle').textContent = `En base a ${stats.totalResenas || '-'} reseñas de toda la carrera`;
+                document.getElementById('cloudSubtitle').textContent = `En base a ${realTotalResenas} reseñas de toda la carrera`;
                 renderizarNube(topWords, container);
 
             } catch (error) {
