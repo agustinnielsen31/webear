@@ -1,0 +1,761 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quiénes Somos - Gino Social</title>
+    
+    <!-- Firebase Libraries -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+    
+    <style>
+        :root {
+            --primary-color: #ff7d29;
+            --primary-gradient: linear-gradient(135deg, #ff7d29 0%, #ff914d 100%);
+            --secondary-color: #ecf0f1;
+            --light-color: #ffffff;
+            --success-color: #2ecc71;
+            --warning-color: #f39c12;
+            --accent-color: #e74c3c;
+            --dark-color: #2c3e50;
+            --linkedin-color: #0077b5;
+            --instagram-color: #e1306c;
+            --substack-color: #ff6719;
+            --shadow-sm: 0 2px 4px rgba(0,0,0,0.05);
+            --shadow-md: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background-color: #f5f7fa;
+            line-height: 1.6;
+            color: var(--dark-color);
+        }
+
+        /* --- SIDEBAR & NAVBAR STYLES --- */
+        .hamburger-btn {
+            background: transparent;
+            border: none;
+            color: white;
+            font-size: 1.8rem;
+            cursor: pointer;
+            padding: 5px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: transform 0.2s;
+            z-index: 1100;
+        }
+        
+        .sidebar-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 1099;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(3px);
+        }
+
+        .sidebar-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .sidebar {
+            position: fixed;
+            top: 0;
+            left: -280px;
+            width: 280px;
+            height: 100%;
+            background: white;
+            z-index: 1100;
+            box-shadow: 2px 0 15px rgba(0,0,0,0.1);
+            transition: left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex;
+            flex-direction: column;
+            padding: 2rem 1.5rem;
+        }
+
+        .sidebar.active {
+            left: 0;
+        }
+
+        .sidebar-header {
+            margin-bottom: 2rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid #eee;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .sidebar-brand {
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: var(--primary-color);
+        }
+
+        .close-sidebar-btn {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            color: #888;
+            cursor: pointer;
+        }
+
+        .sidebar-menu {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            flex: 1;
+        }
+
+        .sidebar-item {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 12px 15px;
+            text-decoration: none;
+            color: var(--dark-color);
+            font-weight: 600;
+            border-radius: 12px;
+            transition: background 0.2s;
+        }
+
+        .sidebar-item:hover {
+            background-color: #fff0e6;
+            color: var(--primary-color);
+        }
+        
+        .sidebar-item.active {
+            background-color: #fff0e6;
+            color: var(--primary-color);
+            border-right: 4px solid var(--primary-color);
+        }
+
+        .sidebar-item.highlight {
+            background: var(--primary-gradient);
+            color: white;
+            margin-top: 1rem;
+            justify-content: center;
+            box-shadow: 0 4px 10px rgba(255, 125, 41, 0.3);
+        }
+
+        .sidebar-footer {
+            margin-top: auto;
+            text-align: center;
+            font-size: 0.8rem;
+            color: #999;
+            border-top: 1px solid #eee;
+            padding-top: 1rem;
+        }
+
+        .navbar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between; 
+            align-items: center;
+            z-index: 1000;
+            transition: all 0.3s ease;
+            background-color: transparent; 
+        }
+
+        .navbar.scrolled {
+            background-color: rgba(255, 125, 41, 0.95); 
+            padding: 0.5rem 2rem;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+            backdrop-filter: blur(5px); 
+        }
+
+        header {
+            background: var(--primary-gradient);
+            color: white;
+            padding: 6rem 1.5rem 4rem; 
+            text-align: center;
+            clip-path: polygon(0 0, 100% 0, 100% 90%, 0 100%); 
+            margin-bottom: 2rem;
+        }
+        
+        .header-title h1 {
+            font-size: 3.5rem;
+            font-weight: 800;
+            margin-bottom: 0.5rem;
+            letter-spacing: -0.5px;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .header-title p {
+            font-size: 1.2rem;
+            opacity: 0.9;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .auth-section {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            background: rgba(255, 255, 255, 0.2);
+            padding: 0.25rem 0.75rem 0.25rem 0.25rem;
+            border-radius: 30px;
+            backdrop-filter: blur(4px);
+            color: white;
+            font-weight: 600;
+        }
+        
+        .user-avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background-color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--primary-color);
+            font-weight: 800;
+        }
+
+        .btn {
+            background-color: white;
+            color: var(--primary-color);
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 30px; 
+            cursor: pointer;
+            font-weight: 700;
+            text-decoration: none;
+            font-size: 0.9rem;
+        }
+
+        /* --- ESTILOS DE "QUIENES SOMOS" --- */
+        
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 0 2rem 4rem; 
+        }
+
+        .section-title {
+            text-align: center;
+            margin-bottom: 3rem;
+            position: relative;
+        }
+        
+        .section-title h2 {
+            font-size: 2rem;
+            color: var(--primary-color);
+            display: inline-block;
+            background: #f5f7fa;
+            padding: 0 20px;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .section-title::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            background: #e0e0e0;
+            z-index: 0;
+        }
+
+        .intro-text {
+            text-align: center;
+            font-size: 1.2rem;
+            max-width: 800px;
+            margin: 0 auto 4rem;
+            color: #555;
+        }
+
+        /* Grid de Equipo */
+        .team-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin-bottom: 4rem;
+        }
+
+        .profile-card {
+            background: white;
+            border-radius: 20px;
+            padding: 2.5rem 2rem;
+            text-align: center;
+            box-shadow: var(--shadow-md);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            border-top: 5px solid var(--primary-color);
+            /* Flex para alinear el footer */
+            display: flex;
+            flex-direction: column;
+            height: 100%; 
+        }
+
+        .profile-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 15px 30px rgba(0,0,0,0.1);
+        }
+
+        .profile-avatar {
+            width: 120px;
+            height: 120px;
+            background: #eee;
+            border-radius: 50%;
+            margin: 0 auto 1.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 3rem;
+            color: #aaa;
+            border: 4px solid var(--primary-color);
+            background-size: cover;
+            background-position: center;
+        }
+
+        .profile-name {
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: var(--dark-color);
+            margin-bottom: 0.5rem;
+        }
+
+        .profile-role {
+            color: var(--primary-color);
+            font-weight: 600;
+            margin-bottom: 1.5rem;
+            font-size: 1rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            
+            /* TRUCO: Altura mínima fija para forzar alineación */
+            min-height: 3.2em; 
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            line-height: 1.2;
+        }
+
+        .profile-bio {
+            color: #666;
+            margin-bottom: 2rem;
+            font-size: 0.95rem;
+            flex-grow: 1; /* Esto empuja el botón hacia abajo */
+        }
+
+        .social-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 20px;
+            border-radius: 50px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.2s;
+            color: white;
+            margin: 0 auto; /* Centrar botón */
+        }
+
+        .linkedin-btn {
+            background-color: var(--linkedin-color);
+            box-shadow: 0 4px 10px rgba(0, 119, 181, 0.3);
+        }
+        
+        .linkedin-btn:hover {
+            background-color: #005582;
+            transform: translateY(-2px);
+        }
+
+        /* Grid de Proyectos */
+        .projects-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 2rem;
+        }
+
+        .project-card {
+            background: white;
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: var(--shadow-sm);
+            display: flex;
+            flex-direction: column;
+            transition: transform 0.3s;
+            height: 100%; /* Igual altura */
+        }
+
+        .project-card:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .project-header {
+            padding: 2rem;
+            color: white;
+            text-align: center;
+            /* Flex para centrar logo */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 150px; /* Asegura espacio para logos grandes */
+        }
+
+        .project-helecho {
+            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+        }
+
+        .project-crisis {
+            background: linear-gradient(135deg, #FF416C 0%, #FF4B2B 100%);
+        }
+
+        .project-icon {
+            font-size: 3rem;
+            display: block;
+        }
+
+        /* CLASE NUEVA PARA LOGO */
+        .project-logo {
+            width: 90px;
+            height: 90px;
+            object-fit: contain;
+            border-radius: 50%;
+            background-color: white;
+            padding: 8px;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+            transition: transform 0.3s ease;
+        }
+        
+        .project-logo:hover {
+            transform: scale(1.1) rotate(5deg);
+        }
+
+        .project-body {
+            padding: 2rem;
+            text-align: center;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .project-title {
+            font-size: 1.4rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            color: var(--dark-color);
+        }
+
+        .project-desc {
+            color: #666;
+            margin-bottom: 2rem;
+            flex: 1; /* Empujar botón abajo también aquí */
+        }
+
+        .project-link {
+            display: block;
+            padding: 12px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 700;
+            transition: background 0.2s;
+        }
+
+        .link-instagram {
+            color: var(--instagram-color);
+            background: rgba(225, 48, 108, 0.1);
+        }
+        .link-instagram:hover { background: rgba(225, 48, 108, 0.2); }
+
+        .link-substack {
+            color: var(--substack-color);
+            background: rgba(255, 103, 25, 0.1);
+        }
+        .link-substack:hover { background: rgba(255, 103, 25, 0.2); }
+
+        /* Modal Colaborar */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.6);
+            z-index: 2000;
+            align-items: center;
+            justify-content: center;
+            backdrop-filter: blur(3px);
+        }
+        
+        .modal.active { display: flex; animation: fadeIn 0.3s ease; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        
+        .modal-content {
+            background: white;
+            padding: 2rem; 
+            border-radius: 16px;
+            width: 90%;
+            max-width: 500px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+        }
+
+        .btn-donate-modal {
+            background: linear-gradient(45deg, #FF416C, #FF4B2B);
+            color: white;
+            border: none;
+            padding: 0.8rem 1.5rem;
+            font-size: 1.1rem;
+            border-radius: 50px;
+            font-weight: 800;
+            width: 100%;
+            margin-top: 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        @media (max-width: 768px) {
+            header { padding: 6rem 1rem 2rem; }
+            .header-title h1 { font-size: 2.5rem; }
+            .team-grid { grid-template-columns: 1fr; }
+            .projects-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- SIDEBAR DE NAVEGACIÓN -->
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+    <div class="sidebar" id="mainSidebar">
+        <div class="sidebar-header">
+            <span class="sidebar-brand">Gino Social</span>
+            <button class="close-sidebar-btn" id="closeSidebar">✕</button>
+        </div>
+        
+        <div class="sidebar-menu">
+            <a href="index.html" class="sidebar-item">
+                <span>📊</span> Centro de Datos
+            </a>
+            <a href="datos/info.html" class="sidebar-item">
+                <span>⚖️</span> Contrato Social (FAQ y Reglas)
+            </a>
+            <a href="#" class="sidebar-item">
+                <span>📓</span> Bitácora
+            </a>
+            <!-- Enlace activo -->
+            <a href="#" class="sidebar-item active">
+                <span>👥</span> ¿Quienes somos?
+            </a>
+            <a href="#" id="sidebarCollaborateBtn" class="sidebar-item highlight">
+                <span>🤝</span> Colaborar / Donar
+            </a>
+        </div>
+
+        <div class="sidebar-footer">
+            <p>© 2025 Gino Social</p>
+            <p style="font-size: 0.7rem; margin-top: 5px;">Hecho con ❤️ por estudiantes</p>
+        </div>
+    </div>
+
+    <!-- NAVBAR PRINCIPAL -->
+    <nav id="mainNav" class="navbar">
+        <div style="display: flex; align-items: center;">
+            <button id="menuBtn" class="hamburger-btn" title="Menú">☰</button>
+        </div>
+
+        <div class="auth-section">
+            <div id="userInfo" class="user-info" style="display: none;">
+                <div class="user-avatar" id="userAvatar">U</div>
+                <span id="userName">Usuario</span>
+            </div>
+            <a href="index.html" class="btn">Volver al Inicio</a>
+        </div>
+    </nav>
+
+    <header>
+        <div class="header-title">
+            <h1>Quiénes Somos</h1>
+            <p>La gente detrás de la herramienta. Estudiantes de Sociología construyendo comunidad.</p>
+        </div>
+    </header>
+
+    <div class="container">
+        
+        <p class="intro-text">
+            Somos estudiantes de la carrera de Sociología de la UBA. Creamos Gino Social con el objetivo de democratizar la información sobre las cursadas y facilitar el camino académico para todos nuestros compañeros.
+        </p>
+
+        <div class="section-title">
+            <h2>El Equipo</h2>
+        </div>
+
+        <div class="team-grid">
+            <!-- Agustín Nielsen -->
+            <div class="profile-card">
+                <!-- Placeholder para foto -->
+                <div class="profile-avatar" style="background-image: url('agustin.jpg');">
+                    <span>A</span>
+                </div>
+                <h3 class="profile-name">Agustín Nielsen</h3>
+                <div class="profile-role">Co-Fundador & Comunicación</div>
+                <p class="profile-bio">Estudiante de Sociología (UBA). Apasionado por la tecnología y el análisis de datos sociales.</p>
+                <a href="https://www.linkedin.com/in/agust%C3%ADn-nielsen/" target="_blank" class="social-btn linkedin-btn">
+                     Ver LinkedIn
+                </a>
+            </div>
+
+            <!-- Camilo Romano -->
+            <div class="profile-card">
+                <!-- Placeholder para foto -->
+                <div class="profile-avatar" style="background-image: url('camilo.jpg');">
+                    <span>C</span>
+                </div>
+                <h3 class="profile-name">Camilo Romano</h3>
+                <div class="profile-role">Co-Fundador & Desarrollador</div>
+                <p class="profile-bio">Estudiante de Sociología (UBA). Enfocado en la comunicación y la construcción de comunidades.</p>
+                <a href="https://www.linkedin.com/in/camilo-romano-a6918019b/" target="_blank" class="social-btn linkedin-btn">
+                    Ver LinkedIn
+                </a>
+            </div>
+        </div>
+
+        <div class="section-title">
+            <h2>Otros Proyectos</h2>
+        </div>
+
+        <div class="projects-grid">
+            <!-- Helecho Social -->
+            <div class="project-card">
+                <div class="project-header project-helecho">
+                    <span class="project-icon">🌿</span>
+                </div>
+                <div class="project-body">
+                    <h3 class="project-title">Helecho Social</h3>
+                    <p class="project-desc">Un espacio de divulgación y reflexión sociológica en formato digital. Memes, noticias y sociología para la vida cotidiana.</p>
+                    <a href="https://instagram.com/helecho.social" target="_blank" class="project-link link-instagram">
+                        Ver en Instagram ↗
+                    </a>
+                </div>
+            </div>
+
+            <!-- CrisisPuntoCom -->
+            <div class="project-card">
+                <div class="project-header project-crisis">
+                    <!-- LOGO INTEGRADO -->
+                    <img src="bd33d0eb-24d0-43be-b4fd-78091393b930 (1).png" alt="Logo CrisisPuntoCom" class="project-logo" onerror="this.style.display='none'; this.nextElementSibling.style.display='block'">
+                    <span class="project-icon" style="display:none">🔥</span>
+                </div>
+                <div class="project-body">
+                    <h3 class="project-title">CrisisPuntoCom</h3>
+                    <p class="project-desc">Análisis político, cultural y social de la coyuntura actual. Newsletter y artículos de opinión profunda.</p>
+                    <a href="https://crisispuntocom.substack.com" target="_blank" class="project-link link-substack">
+                        Leer en Substack ↗
+                    </a>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- MODAL COLABORAR -->
+    <div class="modal" id="collaborateModal">
+        <div class="modal-content">
+            <h2 style="color: var(--primary-color); text-align: center; margin-bottom: 1rem;">🤝 Colaborar</h2>
+            <p style="margin-bottom: 1rem; color: #555;">¿Faltan materias? ¿Encontraste un error? Escribinos a <a href="mailto:ginosocial.contacto@gmail.com" style="color:var(--primary-color); font-weight:bold;">ginosocial.contacto@gmail.com</a></p>
+            <p style="color: #555;">También aceptamos donaciones para mantener el servidor:</p>
+            <a href="https://link.mercadopago.com.ar/ginosocio" target="_blank" class="btn-donate-modal">☕ Donar una ayuda</a>
+            <button class="btn" style="width:100%; margin-top:1rem; border:1px solid #ddd; color:#666;" onclick="document.getElementById('collaborateModal').classList.remove('active')">Cerrar</button>
+        </div>
+    </div>
+
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyBnpshX3I7ZY3EUoraDZPdb2W6B6HZOYR0",
+            authDomain: "social-sociales.firebaseapp.com",
+            projectId: "social-sociales",
+            storageBucket: "social-sociales.firebasestorage.app",
+            messagingSenderId: "18764420760",
+            appId: "1:18764420760:web:92e33662d4e0b050cfa2ed",
+            measurementId: "G-8BZFCJBMY6"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+
+        const menuBtn = document.getElementById('menuBtn');
+        const sidebar = document.getElementById('mainSidebar');
+        const overlay = document.getElementById('sidebarOverlay');
+        const closeBtn = document.getElementById('closeSidebar');
+        const sidebarCollaborateBtn = document.getElementById('sidebarCollaborateBtn');
+        const collaborateModal = document.getElementById('collaborateModal');
+
+        function openSidebar() {
+            sidebar.classList.add('active');
+            overlay.classList.add('active');
+            document.body.style.overflow = 'hidden'; 
+        }
+
+        function closeSidebar() {
+            sidebar.classList.remove('active');
+            overlay.classList.remove('active');
+            document.body.style.overflow = ''; 
+        }
+
+        menuBtn.addEventListener('click', openSidebar);
+        closeBtn.addEventListener('click', closeSidebar);
+        overlay.addEventListener('click', closeSidebar);
+
+        sidebarCollaborateBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            closeSidebar();
+            collaborateModal.classList.add('active');
+        });
+
+        auth.onAuthStateChanged((user) => {
+            const userInfo = document.getElementById('userInfo');
+            const userName = document.getElementById('userName');
+            const userAvatar = document.getElementById('userAvatar');
+            
+            if (user) {
+                userInfo.style.display = 'flex';
+                userName.textContent = user.displayName ? user.displayName.split(' ')[0] : 'Usuario';
+                userAvatar.textContent = (user.displayName || user.email).charAt(0).toUpperCase();
+            } else {
+                userInfo.style.display = 'none';
+            }
+        });
+
+        window.addEventListener('scroll', () => {
+            const nav = document.getElementById('mainNav');
+            if (window.scrollY > 50) nav.classList.add('scrolled');
+            else nav.classList.remove('scrolled');
+        });
+    </script>
+</body>
+</html>
