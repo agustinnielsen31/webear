@@ -5,11 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Quiénes Somos - Gino Social</title>
     
-    <!-- Firebase Libraries -->
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
-    
     <style>
         :root {
             --primary-color: #ff7d29;
@@ -214,30 +209,7 @@
             gap: 1rem;
         }
         
-        .user-info {
-            display: flex;
-            align-items: center;
-            gap: 0.75rem;
-            background: rgba(255, 255, 255, 0.2);
-            padding: 0.25rem 0.75rem 0.25rem 0.25rem;
-            border-radius: 30px;
-            backdrop-filter: blur(4px);
-            color: white;
-            font-weight: 600;
-        }
-        
-        .user-avatar {
-            width: 32px;
-            height: 32px;
-            border-radius: 50%;
-            background-color: white;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: var(--primary-color);
-            font-weight: 800;
-        }
-
+        /* Estilos de usuario eliminados, pero mantenemos btn para "Volver al Inicio" */
         .btn {
             background-color: white;
             color: var(--primary-color);
@@ -560,6 +532,10 @@
         </div>
         
         <div class="sidebar-menu">
+            <!-- Nuevo enlace movido arriba -->
+            <a href="https://ginosocial.ar" class="sidebar-item">
+                <span>💬</span> Reseñas
+            </a>
             <a href="index.html" class="sidebar-item">
                 <span>📊</span> Centro de Datos
             </a>
@@ -591,10 +567,7 @@
         </div>
 
         <div class="auth-section">
-            <div id="userInfo" class="user-info" style="display: none;">
-                <div class="user-avatar" id="userAvatar">U</div>
-                <span id="userName">Usuario</span>
-            </div>
+            <!-- Sección de usuario eliminada, solo queda navegación -->
             <a href="index.html" class="btn">Volver al Inicio</a>
         </div>
     </nav>
@@ -698,18 +671,7 @@
     </div>
 
     <script>
-        const firebaseConfig = {
-            apiKey: "AIzaSyBnpshX3I7ZY3EUoraDZPdb2W6B6HZOYR0",
-            authDomain: "social-sociales.firebaseapp.com",
-            projectId: "social-sociales",
-            storageBucket: "social-sociales.firebasestorage.app",
-            messagingSenderId: "18764420760",
-            appId: "1:18764420760:web:92e33662d4e0b050cfa2ed",
-            measurementId: "G-8BZFCJBMY6"
-        };
-        firebase.initializeApp(firebaseConfig);
-        const auth = firebase.auth();
-
+        // Lógica de navegación e interfaz (sin Firebase)
         const menuBtn = document.getElementById('menuBtn');
         const sidebar = document.getElementById('mainSidebar');
         const overlay = document.getElementById('sidebarOverlay');
@@ -737,20 +699,6 @@
             e.preventDefault();
             closeSidebar();
             collaborateModal.classList.add('active');
-        });
-
-        auth.onAuthStateChanged((user) => {
-            const userInfo = document.getElementById('userInfo');
-            const userName = document.getElementById('userName');
-            const userAvatar = document.getElementById('userAvatar');
-            
-            if (user) {
-                userInfo.style.display = 'flex';
-                userName.textContent = user.displayName ? user.displayName.split(' ')[0] : 'Usuario';
-                userAvatar.textContent = (user.displayName || user.email).charAt(0).toUpperCase();
-            } else {
-                userInfo.style.display = 'none';
-            }
         });
 
         window.addEventListener('scroll', () => {
