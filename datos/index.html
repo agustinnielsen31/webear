@@ -145,11 +145,19 @@
             font-weight: 600;
             border-radius: 12px;
             transition: background 0.2s;
+            border-left: 4px solid transparent; /* Reserva espacio para evitar saltos */
         }
 
         .sidebar-item:hover {
             background-color: #fff0e6;
             color: var(--primary-color);
+        }
+
+        .sidebar-item.active {
+            background-color: #fff0e6;
+            color: var(--primary-color);
+            border-left: 4px solid var(--primary-color); /* Indicador a la izquierda */
+            border-right: none;
         }
 
         .sidebar-item.highlight {
@@ -158,6 +166,7 @@
             margin-top: 1rem;
             justify-content: center;
             box-shadow: 0 4px 10px rgba(255, 125, 41, 0.3);
+            border-left: none; /* Sin borde en el botón destacado */
         }
         
         .sidebar-item.highlight:hover {
@@ -652,21 +661,26 @@
         
         <div class="sidebar-menu">
             <!-- Apunta a la raíz (Página Principal) -->
-            <a href="../index.html" class="sidebar-item">
+            <a href="https://ginosocial.ar" class="sidebar-item">
                 <span>💬</span> Reseñas
             </a>
+            <!-- Enlace activo para Datos -->
+            <a href="https://ginosocial.ar/datos" class="sidebar-item active">
+                <span>📊</span> Centro de Datos
+            </a>
             <!-- Apunta al archivo hermano info.html -->
-            <a href="info.html" class="sidebar-item">
+            <a href="https://ginosocial.ar/ContratoSocial" class="sidebar-item">
                 <span>⚖️</span> Contrato Social
             </a>
-            <a href="#" class="sidebar-item">
+            <a href="https://ginosocial.ar/bitacora" class="sidebar-item">
                 <span>📓</span> Bitácora
             </a>
-            <a href="#" class="sidebar-item">
+            <!-- Apunta a la página de Quienes Somos -->
+            <a href="https://ginosocial.ar/quienessomos" class="sidebar-item">
                 <span>👥</span> ¿Quienes somos?
             </a>
             <a href="#" id="sidebarCollaborateBtn" class="sidebar-item highlight">
-                <span>🤝</span> Colaborar / Donar
+                <span>🤝</span> Colaborar
             </a>
         </div>
 
@@ -693,7 +707,7 @@
 
     <header class="page-header">
         <h1>Lo que se dice</h1>
-        <p>Estadísticas para nerds y otras cosas. Emancipando al dato de su cárcel burocrática</p>
+        <p>Estadísticas para nerds y otras cosas. Emancipando al dato de su cárcel burocrática.</p>
     </header>
 
     <div class="container">
@@ -810,13 +824,11 @@
             autoScrollInterval = setInterval(() => {
                 if(!isHovering) {
                     marqueeContainer.scrollLeft += 1;
-                    // Reset infinito simple: si llegamos muy lejos, volvemos al principio
-                    // (Asumiendo que duplicamos contenido para que no se note el salto)
                     if(marqueeContainer.scrollLeft >= (marqueeContainer.scrollWidth - marqueeContainer.clientWidth)) {
                         marqueeContainer.scrollLeft = 0;
                     }
                 }
-            }, 30); // Velocidad
+            }, 30); 
         }
 
         function setupCarouselButtons() {
@@ -834,13 +846,11 @@
             marqueeContainer.addEventListener('mouseenter', () => isHovering = true);
             marqueeContainer.addEventListener('mouseleave', () => isHovering = false);
 
-            // Agregar eventos para detener el carrousel al pasar sobre las flechas
             prevBtn.addEventListener('mouseenter', () => isHovering = true);
             prevBtn.addEventListener('mouseleave', () => isHovering = false);
             nextBtn.addEventListener('mouseenter', () => isHovering = true);
             nextBtn.addEventListener('mouseleave', () => isHovering = false);
             
-            // Iniciar scroll automático
             startAutoScroll();
         }
 
@@ -855,12 +865,7 @@
                 const docPalabras = await db.collection('datos').doc('palabras_clave').get();
 
                 if (!docPalabras.exists) {
-                    container.innerHTML = `
-                        <div style="text-align:center; color: #888; padding: 2rem;">
-                            <p>Aún no se han generado datos.</p>
-                            <p style="font-size:0.9rem">Contacta al administrador para actualizar las estadísticas.</p>
-                        </div>
-                    `;
+                    container.innerHTML = `<div style="text-align:center; color: #888; padding: 2rem;"><p>Aún no se han generado datos.</p></div>`;
                     dateLabel.textContent = "Sin datos";
                     statsTrack.innerHTML = '<div style="padding:1rem">Sin datos estadísticos</div>';
                     return;
@@ -871,13 +876,12 @@
                 const stats = datosGlobales.stats || {};
                 const topWords = datosGlobales.topPalabras || [];
                 
-                // Lógica para el contador de reseñas animado
                 const realTotalResenas = stats.totalResenas || 0;
                 const startResenas = Math.max(0, realTotalResenas - 5);
 
                 const statsItems = [
                     { label: "Palabras Analizadas", value: formateaNumero(stats.totalPalabras || 0) },
-                    { label: "Reseñas Procesadas", value: startResenas, isReviewCounter: true }, // Marcador especial
+                    { label: "Reseñas Procesadas", value: startResenas, isReviewCounter: true },
                     { label: "Palabra #1", value: topWords[0] ? topWords[0].text : "-" },
                     { label: "Palabra #2", value: topWords[1] ? topWords[1].text : "-" },
                     { label: "Palabra #3", value: topWords[2] ? topWords[2].text : "-" },
@@ -892,7 +896,6 @@
                 const createBox = (item) => {
                     const box = document.createElement('div');
                     box.className = 'stat-box';
-                    // Si es el contador de reseñas, le ponemos un ID único
                     const idAttr = item.isReviewCounter ? 'id="liveReviewCounter"' : '';
                     box.innerHTML = `
                         <div class="stat-number" ${idAttr}>${item.value}</div>
@@ -901,34 +904,23 @@
                     return box;
                 };
 
-                // Duplicamos el contenido muchas veces para asegurar el scroll infinito visualmente fluido
-                // (3 veces suele ser suficiente para pantallas anchas)
                 for(let i=0; i<3; i++) {
                     statsItems.forEach(item => statsTrack.appendChild(createBox(item)));
                 }
 
-                // Iniciar animación del contador de reseñas
                 if (startResenas < realTotalResenas) {
                     let currentCount = startResenas;
-                    // Buscamos TODOS los elementos con ese ID (porque duplicamos las cajas)
-                    // Nota: ID duplicado es técnicamente inválido en HTML estricto, pero funciona con querySelectorAll
-                    // Mejor usaremos una clase si queremos ser estrictos, pero aquí un truco rápido:
                     const counterElements = document.querySelectorAll('#liveReviewCounter');
                     
                     const interval = setInterval(() => {
                         currentCount++;
                         counterElements.forEach(el => el.textContent = currentCount);
-                        
-                        if (currentCount >= realTotalResenas) {
-                            clearInterval(interval);
-                        }
-                    }, 5000); // Suma 1 cada 5 segundos
+                        if (currentCount >= realTotalResenas) clearInterval(interval);
+                    }, 5000);
                 }
 
-                // Iniciar Carousel
                 setupCarouselButtons();
 
-                // Fecha
                 if (datosGlobales.ultimaActualizacion) {
                     const fecha = datosGlobales.ultimaActualizacion.toDate();
                     dateLabel.textContent = `Actualizado: ${fecha.toLocaleDateString()} ${fecha.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}`;
@@ -938,7 +930,6 @@
                 
                 inicializarFiltros();
                 
-                // Renderizar Nube Inicial (Global)
                 document.getElementById('cloudSubtitle').textContent = `En base a ${realTotalResenas} reseñas de toda la carrera`;
                 renderizarNube(topWords, container);
 
@@ -988,13 +979,8 @@
                 }
             };
 
-            materiaInput.addEventListener('input', (e) => {
-                renderDropdown(e.target.value);
-            });
-
-            materiaInput.addEventListener('focus', () => {
-                renderDropdown(materiaInput.value);
-            });
+            materiaInput.addEventListener('input', (e) => renderDropdown(e.target.value));
+            materiaInput.addEventListener('focus', () => renderDropdown(materiaInput.value));
             
             document.addEventListener('click', (e) => {
                 if (!e.target.closest('.search-wrapper')) {
@@ -1016,7 +1002,6 @@
                     catedraSelect.innerHTML = '<option value="all">Todas las cátedras</option>'; 
                     document.getElementById('cloudTitle').textContent = "Vocabulario Social (Global)";
                     
-                    // Mostrar total global en subtítulo
                     const totalGlobal = datosGlobales.stats ? (datosGlobales.stats.totalResenas || datosGlobales.totalResenas) : 0;
                     subtitle.textContent = `En base a ${totalGlobal} reseñas de toda la carrera`;
                     
@@ -1028,7 +1013,6 @@
                     const datosMateria = datosGlobales.desglose[key];
                     const palabrasMateria = datosMateria.global || [];
                     
-                    // Mostrar total de la materia en subtítulo
                     const totalMateria = datosMateria.totalResenas || '?';
                     subtitle.textContent = `En base a ${totalMateria} reseñas`;
                     
@@ -1063,7 +1047,6 @@
             
             if (datosGlobales.desglose[materia] && datosGlobales.desglose[materia].catedras) {
                 const catedras = Object.keys(datosGlobales.desglose[materia].catedras).sort();
-                
                 catedras.forEach(cat => {
                     const option = document.createElement('option');
                     option.value = cat;
@@ -1149,7 +1132,6 @@
             closeBtn.addEventListener('click', closeSidebar);
             overlay.addEventListener('click', closeSidebar);
 
-            // Modal Colaborar
             sidebarCollaborateBtn.addEventListener('click', (e) => {
                 e.preventDefault();
                 closeSidebar();
