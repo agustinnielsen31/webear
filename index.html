@@ -75,7 +75,7 @@
             width: 100%;
             height: 100%;
             background: rgba(0,0,0,0.5);
-            z-index: 1099; /* Debajo del sidebar */
+            z-index: 1099;
             opacity: 0;
             visibility: hidden;
             transition: all 0.3s ease;
@@ -90,7 +90,7 @@
         .sidebar {
             position: fixed;
             top: 0;
-            left: -280px; /* Oculto a la izquierda */
+            left: -280px;
             width: 280px;
             height: 100%;
             background: white;
@@ -146,11 +146,18 @@
             font-weight: 600;
             border-radius: 12px;
             transition: background 0.2s;
+            border-left: 4px solid transparent;
         }
 
         .sidebar-item:hover {
-            background-color: #fff0e6; /* Naranja muy suave */
+            background-color: #fff0e6;
             color: var(--primary-color);
+        }
+
+        .sidebar-item.active {
+            background-color: #fff0e6;
+            color: var(--primary-color);
+            border-left: 4px solid var(--primary-color);
         }
 
         .sidebar-item.highlight {
@@ -159,6 +166,7 @@
             margin-top: 1rem;
             justify-content: center;
             box-shadow: 0 4px 10px rgba(255, 125, 41, 0.3);
+            border-left: none;
         }
         
         .sidebar-item.highlight:hover {
@@ -1430,20 +1438,29 @@
         </div>
         
         <div class="sidebar-menu">
-            <a href="datos/index.html" class="sidebar-item">
+            <!-- Enlace activo para Reseñas (Página Principal) -->
+            <a href="https://ginosocial.ar" class="sidebar-item active">
+                <span>💬</span> Reseñas
+            </a>
+            <!-- Enlace para Datos -->
+            <a href="https://ginosocial.ar/datos" class="sidebar-item">
                 <span>📊</span> Centro de Datos
             </a>
-            <a href="ContratoSocial/index.html" class="sidebar-item">
+            <!-- Enlace para Contrato Social -->
+            <a href="https://ginosocial.ar/ContratoSocial" class="sidebar-item">
                 <span>⚖️</span> Contrato Social
             </a>
-            <a href="bitacora/index.html" class="sidebar-item">
+            <!-- Enlace para Bitácora -->
+            <a href="https://ginosocial.ar/bitacora" class="sidebar-item">
                 <span>📓</span> Bitácora
             </a>
-            <a href="#" class="sidebar-item">
+            <!-- Enlace para Quienes Somos -->
+            <a href="https://ginosocial.ar/quienessomos" class="sidebar-item">
                 <span>👥</span> ¿Quienes somos?
             </a>
+            <!-- Botón destacado para Colaborar -->
             <a href="#" id="sidebarCollaborateBtn" class="sidebar-item highlight">
-                <span>🤝</span> Colaborar / Donar
+                <span>🤝</span> Colaborar
             </a>
         </div>
 
@@ -1956,10 +1973,10 @@
             configurarEasterEgg(); 
             configurarOjosGino(); 
             configurarMisResenas(); 
-            configurarSidebar(); // NUEVO: Inicializar Sidebar
+            configurarSidebar(); 
         }
         
-        /* --- FUNCIÓN DEL SIDEBAR (NUEVA) --- */
+        /* --- FUNCIÓN DEL SIDEBAR --- */
         function configurarSidebar() {
             const menuBtn = document.getElementById('menuBtn');
             const sidebar = document.getElementById('mainSidebar');
@@ -1984,7 +2001,6 @@
             closeBtn.addEventListener('click', closeSidebar);
             overlay.addEventListener('click', closeSidebar);
 
-            // Botón de colaborar dentro del sidebar abre el modal
             sidebarCollaborateBtn.addEventListener('click', (e) => {
                 e.preventDefault();
                 closeSidebar();
@@ -2384,7 +2400,7 @@
                 });
             } else {
                 const element = document.getElementById('reviewForm');
-                const headerOffset = 120; // Un poco más de margen para que quede centrado lindo
+                const headerOffset = 120;
                 const elementPosition = element.getBoundingClientRect().top;
                 const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
                 
@@ -2526,8 +2542,6 @@
                 
                 if (currentVote === voteType) {
                     delete votes[userId];
-                } else if (currentVote !== undefined) {
-                    votes[userId] = newVote;
                 } else {
                     votes[userId] = newVote;
                 }
@@ -3055,10 +3069,6 @@
             closeMyReviews.addEventListener('click', () => {
                 myReviewsModal.classList.remove('active');
             });
-            
-            window.addEventListener('click', (e) => {
-                if (e.target === myReviewsModal) myReviewsModal.classList.remove('active');
-            });
         }
 
         function configurarModales() {
@@ -3078,15 +3088,12 @@
             const cancelTerms = document.getElementById('cancelTerms');
 
             const collaborateModal = document.getElementById('collaborateModal');
-            // const collaborateBtn = document.getElementById('collaborateBtn'); // REMOVIDO: Ya no existe en el navbar
             const closeCollaborate = document.getElementById('closeCollaborate');
 
             const switchToRegister = document.getElementById('switchToRegister');
 
             [loginBtn, loginFromReviewBtn].forEach(btn => btn.addEventListener('click', () => loginModal.classList.add('active')));
             registerBtn.addEventListener('click', () => registerModal.classList.add('active'));
-
-            // collaborateBtn.addEventListener('click', () => collaborateModal.classList.add('active')); // REMOVIDO
 
             cancelLogin.addEventListener('click', () => loginModal.classList.remove('active'));
             cancelRegister.addEventListener('click', () => registerModal.classList.remove('active'));
@@ -3134,17 +3141,6 @@
 
             registerForm.addEventListener('submit', (e) => {
                 e.preventDefault(); 
-
-                const firstName = document.getElementById('registerFirstName').value.trim();
-                const lastName = document.getElementById('registerLastName').value.trim();
-                const errorElement = document.getElementById('registerError');
-
-                if (!firstName || !lastName) {
-                    errorElement.textContent = "Por favor, completa tu nombre y apellido.";
-                    return;
-                }
-                
-                errorElement.textContent = ''; 
                 termsModal.classList.add('active');
             });
 
@@ -3242,5 +3238,3 @@
     </script>
 </body>
 </html>
-
-
