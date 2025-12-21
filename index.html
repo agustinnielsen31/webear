@@ -927,6 +927,7 @@
             padding: 1.5rem;
             box-shadow: var(--shadow-sm);
             margin-bottom: 1.5rem;
+            position: relative;
         }
 
         .review-header {
@@ -936,10 +937,76 @@
             margin-bottom: 1rem;
         }
         
+        /* --- MENU DE DENUNCIA --- */
+        .review-menu-container {
+            position: relative;
+        }
+
+        .menu-dots {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            color: #aaa;
+            cursor: pointer;
+            padding: 0 5px;
+            line-height: 1;
+            border-radius: 50%;
+            transition: background 0.2s, color 0.2s;
+        }
+
+        .menu-dots:hover {
+            background: #f0f0f0;
+            color: var(--dark-color);
+        }
+
+        .dropdown-menu {
+            display: none;
+            position: absolute;
+            top: 100%;
+            right: 0;
+            background: white;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            border-radius: 8px;
+            z-index: 100;
+            min-width: 120px;
+            overflow: hidden;
+            border: 1px solid #eee;
+        }
+
+        .dropdown-menu.active {
+            display: block;
+            animation: fadeIn 0.2s ease;
+        }
+
+        .dropdown-item {
+            padding: 10px 15px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            color: var(--dark-color);
+            transition: background 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .dropdown-item:hover {
+            background: #f9f9f9;
+        }
+
+        .dropdown-item.danger {
+            color: var(--accent-color);
+        }
+
+        .dropdown-item.danger:hover {
+            background: #fff5f5;
+        }
+        /* ----------------------- */
+
         .review-user {
             display: flex;
             align-items: center;
             gap: 0.75rem;
+            flex: 1;
         }
 
         .review-user-info {
@@ -1438,27 +1505,21 @@
         </div>
         
         <div class="sidebar-menu">
-            <!-- Enlace activo para Reseñas (Página Principal) -->
             <a href="https://ginosocial.ar" class="sidebar-item active">
                 <span>💬</span> Reseñas
             </a>
-            <!-- Enlace para Datos -->
             <a href="https://ginosocial.ar/datos" class="sidebar-item">
                 <span>📊</span> Centro de Datos
             </a>
-            <!-- Enlace para Contrato Social -->
             <a href="https://ginosocial.ar/ContratoSocial" class="sidebar-item">
                 <span>⚖️</span> Contrato Social
             </a>
-            <!-- Enlace para Bitácora -->
             <a href="https://ginosocial.ar/bitacora" class="sidebar-item">
                 <span>📓</span> Bitácora
             </a>
-            <!-- Enlace para Quienes Somos -->
             <a href="https://ginosocial.ar/quienessomos" class="sidebar-item">
                 <span>👥</span> ¿Quienes somos?
             </a>
-            <!-- Botón destacado para Colaborar -->
             <a href="#" id="sidebarCollaborateBtn" class="sidebar-item highlight">
                 <span>🤝</span> Colaborar
             </a>
@@ -1540,10 +1601,6 @@
                 <p style="margin-top: 1rem;">Cargando materias...</p>
             </div>
         </div>
-        
-        <style>
-            @keyframes spin { to { transform: rotate(360deg); } }
-        </style>
         
         <!-- FORMULARIO DE RESEÑA (COLAPSABLE) -->
         <div class="review-form-container" id="reviewForm">
@@ -1839,31 +1896,14 @@
     <div class="modal" id="collaborateModal">
         <div class="modal-content" style="max-width: 500px;">
             <h2 style="color: var(--primary-color); margin-bottom: 1rem;">🤝 Colaborar</h2>
-            
             <div style="text-align: left; color: #444; font-size: 1rem; line-height: 1.7;">
-                <p style="margin-bottom: 1rem;">
-                    Este proyecto está llevado a cabo por <strong>Helecho Social</strong> y <strong>CrisisPuntoCom</strong>, 
-                    dos revistas partes de un colectivo conformado por estudiantes de la carrera de Sociología de la UBA.
-                </p>
-                <p style="margin-bottom: 1rem;">
-                    Porque alguien tiene que hacerle la vida más fácil al pueblo. Para hacerlo no tuvimos que pedirle permiso a nadie, 
-                    pero por la misma razón necesitamos tu colaboración.
-                </p>
-                <p style="margin-bottom: 1rem; background: #f9f9f9; padding: 10px; border-radius: 8px; border-left: 4px solid var(--primary-color);">
-                    ¿Faltan materias o prácticos? ¿Hay materias que ya no existen? Podés contactarnos a <br>
-                    <a href="mailto:ginosocial.contacto@gmail.com" style="color: var(--primary-color); font-weight: bold; text-decoration: none;">ginosocial.contacto@gmail.com</a><br>
-                    <span style="font-size: 0.9rem; color: #666;">(Comentanos errores, sugerencias, críticas o reseñas).</span>
-                </p>
-                <p>Siempre estamos abiertos al diálogo.</p>
-                <p style="margin-top: 1rem;">También aceptamos donaciones, porque lamentablemente alojar todo esto no es gratis y nos vendría muy bien una ayuda.</p>
+                <p style="margin-bottom: 1rem;">Este proyecto está llevado a cabo por Helecho Social y CrisisPuntoCom...</p>
             </div>
-
             <a href="https://link.mercadopago.com.ar/ginosocio" target="_blank" style="text-decoration: none;">
                 <button class="btn-donate">
                     <span>☕</span> Donar una ayuda
                 </button>
             </a>
-
             <div class="modal-actions" style="margin-top: 1.5rem;">
                 <button type="button" id="closeCollaborate" class="btn btn-outline" style="background:transparent; border:1px solid #ddd; color: #666; width: 100%;">Cerrar</button>
             </div>
@@ -1883,7 +1923,7 @@
     </div>
 
     <div id="ginoEasterEgg" class="gino-overlay">
-        <img src="168358-gino.jpeg" alt="Gino Germani" onerror="this.style.display='none'; this.nextElementSibling.innerText = '¡Gino vive! (Imagen no encontrada: asegura que 168358-gino.jpeg esté en la carpeta)'">
+        <img src="168358-gino.jpeg" alt="Gino Germani" onerror="this.style.display='none';">
         <p>¡Gino vive!</p>
     </div>
 
@@ -1912,50 +1952,24 @@
         };
         
         let respuestasListeners = {}; 
-        
         let yaCargadas = {
-            materias: false,
-            especiales: false,
-            teorias: false,
-            horasdeinv: false,
-            idiomas: false
+            materias: false, especiales: false, teorias: false, horasdeinv: false, idiomas: false
         };
 
         let currentSort = 'carrera';
         let currentSearch = '';
 
-        const materiasData = [
-            "Sociología General",
-            "Filosofía",
-            "Economía 2",
-            "Epistemología de las Ciencias Sociales",
-            "Historia Social Moderna y Contemporánea",
-            "Historia Social Latinoamericana",
-            "Historia Social Argentina",
-            "Análisis de la sociedad Argentina",
-            "Historia del Conocimiento Sociológico 1",
-            "Historia del Conocimiento Sociológico 2",
-            "Sociología Sistemática",
-            "Metodología 1",
-            "Metodología 2",
-            "Metodología 3",
-            "Sociología política",
-            "Psicología Social"
-        ];
+        const materiasData = ["Sociología General", "Filosofía", "Economía 2", "Epistemología de las Ciencias Sociales", "Historia Social Moderna y Contemporánea", "Historia Social Latinoamericana", "Historia Social Argentina", "Análisis de la sociedad Argentina", "Historia del Conocimiento Sociológico 1", "Historia del Conocimiento Sociológico 2", "Sociología Sistemática", "Metodología 1", "Metodología 2", "Metodología 3", "Sociología política", "Psicología Social"];
 
         function crearElemento(tag, clases = [], texto = '') {
             const el = document.createElement(tag);
-            
-            if (typeof clases === 'string' && clases.length > 0) {
-                el.className = clases;
-            } else if (Array.isArray(clases) && clases.length > 0) {
-                el.classList.add(...clases);
-            }
-            
+            if (typeof clases === 'string' && clases.length > 0) el.className = clases;
+            else if (Array.isArray(clases) && clases.length > 0) el.classList.add(...clases);
             if (texto) el.textContent = texto; 
-            
             return el;
         }
+
+        const mod = (id) => document.getElementById(id);
 
         function init() {
             configurarFirebaseAuth();
@@ -1968,1272 +1982,439 @@
             configurarBuscador(); 
             configurarSort(); 
             configurarTogglePasswords();
-            configurarScrollToTop();
+            configurarScrollToTop(); 
             configurarNavScroll();
             configurarEasterEgg(); 
             configurarOjosGino(); 
             configurarMisResenas(); 
             configurarSidebar(); 
-        }
-        
-        /* --- FUNCIÓN DEL SIDEBAR --- */
-        function configurarSidebar() {
-            const menuBtn = document.getElementById('menuBtn');
-            const sidebar = document.getElementById('mainSidebar');
-            const overlay = document.getElementById('sidebarOverlay');
-            const closeBtn = document.getElementById('closeSidebar');
-            const sidebarCollaborateBtn = document.getElementById('sidebarCollaborateBtn');
-            const collaborateModal = document.getElementById('collaborateModal');
-
-            function openSidebar() {
-                sidebar.classList.add('active');
-                overlay.classList.add('active');
-                document.body.style.overflow = 'hidden'; 
-            }
-
-            function closeSidebar() {
-                sidebar.classList.remove('active');
-                overlay.classList.remove('active');
-                document.body.style.overflow = ''; 
-            }
-
-            menuBtn.addEventListener('click', openSidebar);
-            closeBtn.addEventListener('click', closeSidebar);
-            overlay.addEventListener('click', closeSidebar);
-
-            sidebarCollaborateBtn.addEventListener('click', (e) => {
-                e.preventDefault();
-                closeSidebar();
-                collaborateModal.classList.add('active');
+            
+            // Cerrar menú de denuncias al hacer clic fuera
+            document.addEventListener('click', (e) => {
+                if (!e.target.closest('.review-menu-container')) {
+                    document.querySelectorAll('.dropdown-menu.active').forEach(m => m.classList.remove('active'));
+                }
             });
         }
-        /* ------------------------------------ */
+        
+        function configurarSidebar() {
+            const menuBtn = mod('menuBtn');
+            const sidebar = mod('mainSidebar');
+            const overlay = mod('sidebarOverlay');
+            const closeBtn = mod('closeSidebar');
+            const sidebarCollaborateBtn = mod('sidebarCollaborateBtn');
+
+            menuBtn.onclick = () => { sidebar.classList.add('active'); overlay.classList.add('active'); document.body.style.overflow = 'hidden'; };
+            const close = () => { sidebar.classList.remove('active'); overlay.classList.remove('active'); document.body.style.overflow = ''; };
+            closeBtn.onclick = close;
+            overlay.onclick = close;
+            sidebarCollaborateBtn.onclick = (e) => { e.preventDefault(); close(); mod('collaborateModal').classList.add('active'); };
+        }
 
         function toggleFormVisibility() {
-            const content = document.getElementById('reviewFormContent');
-            const icon = document.getElementById('formToggleIcon');
-            
-            if (content.classList.contains('collapsed')) {
-                content.classList.remove('collapsed');
-                icon.classList.add('rotated'); 
-            } else {
-                content.classList.add('collapsed');
-                icon.classList.remove('rotated'); 
+            const content = mod('reviewFormContent');
+            const icon = mod('formToggleIcon');
+            if (content.classList.contains('collapsed')) { content.classList.remove('collapsed'); icon.classList.add('rotated'); }
+            else { content.classList.add('collapsed'); icon.classList.remove('rotated'); }
+        }
+
+        async function denunciarResena(reviewId) {
+            if (!appState.user) {
+                mostrarNotificacion('Inicia sesión para denunciar una reseña.', 'error');
+                return;
             }
+            try {
+                await db.collection('resenas').doc(reviewId).update({
+                    denuncia: firebase.firestore.FieldValue.increment(1)
+                });
+                mostrarNotificacion('Reseña denunciada correctamente. Un administrador la revisará.', 'success');
+                document.querySelectorAll('.dropdown-menu.active').forEach(m => m.classList.remove('active'));
+            } catch (error) {
+                console.error("Error al denunciar:", error);
+                mostrarNotificacion('Error al procesar la denuncia.', 'error');
+            }
+        }
+
+        function toggleReportMenu(reviewId) {
+            const menu = mod(`menu-${reviewId}`);
+            const isActive = menu.classList.contains('active');
+            document.querySelectorAll('.dropdown-menu.active').forEach(m => m.classList.remove('active'));
+            if (!isActive) menu.classList.add('active');
         }
 
         function toggleRespuestas(reviewId) {
-            const container = document.getElementById(`replies-container-${reviewId}`);
-            const isActive = container.classList.contains('active');
-            
-            if (isActive) {
-                container.classList.remove('active');
-            } else {
-                container.classList.add('active');
-                
-                if (!respuestasListeners[reviewId]) {
-                    cargarRespuestas(reviewId);
-                }
-            }
+            const container = mod(`replies-container-${reviewId}`);
+            if (container.classList.contains('active')) container.classList.remove('active');
+            else { container.classList.add('active'); if (!respuestasListeners[reviewId]) cargarRespuestas(reviewId); }
         }
 
         function cargarRespuestas(reviewId) {
-            const listContainer = document.getElementById(`replies-list-${reviewId}`);
-            listContainer.textContent = ''; 
-            const loadingMsg = crearElemento('div', [], 'Cargando respuestas...');
-            loadingMsg.style.textAlign = 'center';
-            loadingMsg.style.color = '#999';
-            loadingMsg.style.padding = '10px';
-            listContainer.appendChild(loadingMsg);
-            
+            const listContainer = mod(`replies-list-${reviewId}`);
+            listContainer.innerHTML = '<div style="text-align:center;color:#999;padding:10px;">Cargando...</div>';
             respuestasListeners[reviewId] = db.collection('resenas').doc(reviewId).collection('respuestas')
                 .orderBy('fecha', 'asc')
                 .onSnapshot(snapshot => {
-                    if (snapshot.empty) {
-                        listContainer.innerHTML = ''; 
-                        return;
-                    }
-                    
                     listContainer.innerHTML = '';
                     snapshot.docs.forEach(doc => {
                         const reply = doc.data();
-                        const replyElement = crearElemento('div', 'reply-card');
-                        
-                        let fechaFormateada = "Reciente";
-                        if (reply.fecha && reply.fecha.toDate) {
-                            fechaFormateada = reply.fecha.toDate().toLocaleDateString();
-                        }
-                        
-                        const nombreMostrar = reply.usuarioNombre || 'Anónimo';
-                        
-                        const headerDiv = crearElemento('div', 'reply-header');
-                        const authorSpan = crearElemento('span', 'reply-author', nombreMostrar);
-                        const dateSpan = crearElemento('span', [], fechaFormateada);
-                        
-                        headerDiv.appendChild(authorSpan);
-                        headerDiv.appendChild(dateSpan);
-                        
-                        const textDiv = crearElemento('div', [], reply.texto); 
-                        
-                        replyElement.appendChild(headerDiv);
-                        replyElement.appendChild(textDiv);
-                        
-                        listContainer.appendChild(replyElement);
+                        const card = crearElemento('div', 'reply-card');
+                        let fecha = reply.fecha ? reply.fecha.toDate().toLocaleDateString() : "Reciente";
+                        card.innerHTML = `<div class="reply-header"><span class="reply-author">${reply.usuarioNombre || 'Anónimo'}</span><span>${fecha}</span></div><div>${reply.texto}</div>`;
+                        listContainer.appendChild(card);
                     });
-                }, error => {
-                    console.error("Error cargando respuestas", error);
-                    listContainer.innerHTML = '';
-                    const errorMsg = crearElemento('div', [], 'Error al cargar respuestas.');
-                    errorMsg.style.color = 'var(--accent-color)';
-                    errorMsg.style.textAlign = 'center';
-                    listContainer.appendChild(errorMsg);
                 });
         }
 
         async function enviarRespuesta(reviewId) {
-            if (!appState.user) {
-                mostrarNotificacion('Debes iniciar sesión para responder.', 'error');
-                return;
-            }
-            
-            const input = document.getElementById(`reply-input-${reviewId}`);
+            if (!appState.user) { mostrarNotificacion('Inicia sesión para responder.', 'error'); return; }
+            const input = mod(`reply-input-${reviewId}`);
             const texto = input.value.trim();
-            
             if (!texto) return;
-            
-            const btn = document.querySelector(`#replies-container-${reviewId} .btn-submit-reply`);
-            const originalText = btn.textContent;
-            btn.disabled = true;
-            btn.textContent = 'Enviando...';
-            
             try {
-                const nombreAutor = appState.user.displayName || (appState.user.email ? appState.user.email.split('@')[0] : 'Usuario');
-                
                 await db.collection('resenas').doc(reviewId).collection('respuestas').add({
-                    texto: texto,
-                    usuarioId: appState.user.uid,
-                    usuarioNombre: nombreAutor,
-                    fecha: firebase.firestore.FieldValue.serverTimestamp()
+                    texto, usuarioId: appState.user.uid, usuarioNombre: appState.user.displayName || 'Usuario', fecha: firebase.firestore.FieldValue.serverTimestamp()
                 });
-
-                await db.collection('resenas').doc(reviewId).update({
-                    replies_count: firebase.firestore.FieldValue.increment(1)
-                });
-                
+                await db.collection('resenas').doc(reviewId).update({ replies_count: firebase.firestore.FieldValue.increment(1) });
                 input.value = '';
                 mostrarNotificacion('Respuesta enviada', 'success');
-                
-            } catch (error) {
-                console.error("Error al enviar respuesta", error);
-                mostrarNotificacion('Error al enviar la respuesta', 'error');
-            } finally {
-                btn.disabled = false;
-                btn.textContent = originalText;
-            }
+            } catch (error) { mostrarNotificacion('Error al responder', 'error'); }
         }
         
         function configurarOjosGino() {
-            const eyesContainer = document.getElementById('navEyes');
+            const eyesContainer = mod('navEyes');
             const pupils = document.querySelectorAll('.pupil');
-            const reviewTextarea = document.getElementById('reviewText');
-            const userInfo = document.getElementById('userInfo'); 
+            const reviewTextarea = mod('reviewText');
         
-            reviewTextarea.addEventListener('focus', () => {
-                eyesContainer.classList.add('active');
-                eyesContainer.classList.add('open');
-                
-                if (userInfo) {
-                    userInfo.classList.add('compressed');
-                }
-            });
+            reviewTextarea.onfocus = () => { eyesContainer.classList.add('active', 'open'); mod('userInfo').classList.add('compressed'); };
+            reviewTextarea.onblur = () => { eyesContainer.classList.remove('open'); mod('userInfo').classList.remove('compressed'); setTimeout(() => eyesContainer.classList.remove('active'), 300); };
             
-            reviewTextarea.addEventListener('blur', () => {
-                eyesContainer.classList.remove('open');
-                
-                if (userInfo) {
-                    userInfo.classList.remove('compressed');
-                }
-                
-                setTimeout(() => {
-                    eyesContainer.classList.remove('active');
-                }, 300);
-            });
-            
-            document.addEventListener('mousemove', (e) => {
+            document.onmousemove = (e) => {
                 if (!eyesContainer.classList.contains('active')) return;
-                
-                const x = e.clientX;
-                const y = e.clientY;
-                
                 pupils.forEach(pupil => {
                     const rect = pupil.parentElement.getBoundingClientRect();
-                    const eyeCenterX = rect.left + rect.width / 2;
-                    const eyeCenterY = rect.top + rect.height / 2;
-                    
-                    const angle = Math.atan2(y - eyeCenterY, x - eyeCenterX);
-                    const distance = Math.min(
-                        10, 
-                        Math.hypot(x - eyeCenterX, y - eyeCenterY) / 15 
-                    );
-                    
-                    const pupilX = Math.cos(angle) * distance;
-                    const pupilY = Math.sin(angle) * distance;
-                    
-                    pupil.style.transform = `translate(calc(-50% + ${pupilX}px), calc(-50% + ${pupilY}px))`;
+                    const angle = Math.atan2(e.clientY - (rect.top + rect.height / 2), e.clientX - (rect.left + rect.width / 2));
+                    const dist = Math.min(10, Math.hypot(e.clientX - (rect.left + rect.width / 2), e.clientY - (rect.top + rect.height / 2)) / 15);
+                    pupil.style.transform = `translate(calc(-50% + ${Math.cos(angle)*dist}px), calc(-50% + ${Math.sin(angle)*dist}px))`;
                 });
-            });
+            };
         }
-        function configurarEasterEgg() {
-            const title = document.querySelector('.header-title h1');
-            const easterEggContainer = document.getElementById('ginoEasterEgg');
-            let clickCount = 0;
 
-            title.addEventListener('click', () => {
-                clickCount++;
-                
-                if (clickCount === 15) {
-                    easterEggContainer.classList.add('active');
-                    clickCount = 0; 
-                    
-                    setTimeout(() => {
-                        easterEggContainer.classList.remove('active');
-                    }, 5000);
-                }
-            });
+        function configurarEasterEgg() {
+            const title = mod('ginoTitle');
+            let clicks = 0;
+            title.onclick = () => { clicks++; if(clicks >= 15) { mod('ginoEasterEgg').classList.add('active'); clicks = 0; setTimeout(() => mod('ginoEasterEgg').classList.remove('active'), 5000); } };
         }
         
         function configurarNavScroll() {
-            const nav = document.getElementById('mainNav');
             window.addEventListener('scroll', () => {
-                if (window.scrollY > 50) {
-                    nav.classList.add('scrolled');
-                } else {
-                    nav.classList.remove('scrolled');
-                }
+                const nav = mod('mainNav');
+                if (window.scrollY > 50) nav.classList.add('scrolled'); else nav.classList.remove('scrolled');
             });
+        }
+
+        function scrollToTop() {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function configurarScrollToTop() {
+            const btn = mod('scrollToTopBtn');
+            window.addEventListener('scroll', () => {
+                if (window.scrollY > 300) btn.style.display = 'block';
+                else btn.style.display = 'none';
+            });
+            btn.addEventListener('click', scrollToTop);
         }
 
         function configurarFirebaseAuth() {
             auth.onAuthStateChanged((user) => {
+                appState.user = user;
                 if (user) {
-                    appState.user = user;
-                    mostrarInfoUsuario(user);
+                    mod('userInfo').style.display = 'flex';
+                    mod('authButtons').style.display = 'none';
+                    mod('userName').textContent = (user.displayName || user.email).split(' ')[0];
+                    mod('userAvatar').textContent = (user.displayName || 'U')[0].toUpperCase();
+                    mod('authRequiredMessage').style.display = 'none';
+                    mod('reviewFormElement').style.display = 'block';
                 } else {
-                    appState.user = null;
-                    ocultarInfoUsuario();
+                    mod('userInfo').style.display = 'none';
+                    mod('authButtons').style.display = 'flex';
+                    mod('authRequiredMessage').style.display = 'block';
+                    mod('reviewFormElement').style.display = 'none';
                 }
-                actualizarUIUsuario();
             });
         }
 
-        function mostrarInfoUsuario(user) {
-            const userInfo = document.getElementById('userInfo');
-            const userAvatar = document.getElementById('userAvatar');
-            const userName = document.getElementById('userName');
-            const authButtons = document.getElementById('authButtons');
-            
-            const displayName = user.displayName || user.email;
-            userName.textContent = displayName.split(' ')[0]; 
-            
-            if (user.displayName) {
-                userAvatar.textContent = user.displayName.charAt(0).toUpperCase();
-            } else if (user.email) {
-                userAvatar.textContent = user.email.charAt(0).toUpperCase();
-            } else {
-                userAvatar.textContent = 'A';
-            }
-            
-            userInfo.style.display = 'flex';
-            authButtons.style.display = 'none';
-        }
-
-        function ocultarInfoUsuario() {
-            document.getElementById('userInfo').style.display = 'none';
-            document.getElementById('authButtons').style.display = 'flex';
-        }
-
-        function actualizarUIUsuario() {
-            const authRequiredMessage = document.getElementById('authRequiredMessage');
-            const reviewForm = document.getElementById('reviewFormElement');
-            
-            if (authRequiredMessage && reviewForm) {
-                if (appState.user) {
-                    authRequiredMessage.style.display = 'none';
-                    reviewForm.style.display = 'block';
-                } else {
-                    authRequiredMessage.style.display = 'block';
-                    reviewForm.style.display = 'none';
-                }
-            }
-        }
-
-        async function cargarMaterias(coleccionParaCargar) {
-            if (yaCargadas[coleccionParaCargar]) {
-                actualizarVistaMaterias();
-                return;
-            }
-
-            const grid = document.getElementById('materiasGrid');
-            grid.innerHTML = '<div style="grid-column: 1/-1; text-align: center; padding: 2rem; color: #666;">Cargando materias...</div>';
-
+        async function cargarMaterias(cat) {
+            if (yaCargadas[cat]) { actualizarVistaMaterias(); return; }
+            const grid = mod('materiasGrid');
+            grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:2rem;">Cargando...</div>';
             try {
-                const snapshot = await db.collection(coleccionParaCargar).get();
-                
-                const nuevasMaterias = snapshot.docs.map(doc => ({ 
-                    id: doc.id, 
-                    ...doc.data(), 
-                    tipo: coleccionParaCargar
-                }));
-                
-                appState.materias = [...appState.materias, ...nuevasMaterias];
-                
-                yaCargadas[coleccionParaCargar] = true;
-                
-                actualizarVistaMaterias(); 
-            
-            } catch (error) {
-                console.error(`Error cargando colección ${coleccionParaCargar}`, error);
-                grid.innerHTML = '<p style="grid-column: 1/-1; text-align: center; color: var(--accent-color);">Error al cargar las materias. Por favor, recarga la página.</p>';
-            }
+                const snapshot = await db.collection(cat).get();
+                const items = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data(), tipo: cat }));
+                appState.materias = [...appState.materias, ...items];
+                yaCargadas[cat] = true;
+                actualizarVistaMaterias();
+            } catch (e) { grid.innerHTML = 'Error al cargar.'; }
         }
 
-        function cargarMateriasEnUI(listaMaterias) {
-            const materiasGrid = document.getElementById('materiasGrid');
-            materiasGrid.innerHTML = '';
-
-            if (listaMaterias.length === 0) {
-                materiasGrid.innerHTML = '<p style="grid-column: 1/-1; text-align: center; color: #777;">No se encontraron materias para esta categoría o búsqueda.</p>';
-                return;
-            }
-            
-            listaMaterias.forEach(materia => {
-                const card = document.createElement('div');
-                card.className = 'materia-card';
-                card.dataset.materiaId = materia.id;
-                
-                let catedrasHTML = 'No hay cátedras cargadas';
-                if (Array.isArray(materia.catedras) && materia.catedras.length > 0) {
-                    catedrasHTML = materia.catedras.map(c => 
-                        `<span class="catedra-link" data-catedra-nombre="${c.nombre}">${c.nombre}</span>`
-                    ).join('');
-                }
-                
-                card.innerHTML = `
-                    <div>
-                        <h3>${materia.nombre || 'Sin Nombre'}</h3>
-                        <div class="materia-catedras">
-                            ${catedrasHTML}
-                        </div>
-                    </div>
-                    <div class="review-count">${materia.numresenas || 0} reseñas</div>
-                `;
-                
-                card.addEventListener('click', (e) => {
-                    const linkClickeado = e.target.closest('.catedra-link');
-                    
-                    if (linkClickeado) {
-                        const catedraNombre = linkClickeado.dataset.catedraNombre;
-                        seleccionarMateria(materia.id, catedraNombre);
-                    } else {
-                        seleccionarMateria(materia.id);
-                    }
-                });
-                
-                materiasGrid.appendChild(card);
+        function cargarMateriasEnUI(list) {
+            const grid = mod('materiasGrid');
+            grid.innerHTML = list.length ? '' : '<p style="grid-column:1/-1;text-align:center;">No hay resultados.</p>';
+            list.forEach(m => {
+                const card = crearElemento('div', 'materia-card');
+                let catedras = m.catedras?.map(c => `<span class="catedra-link" data-name="${c.nombre}">${c.nombre}</span>`).join('') || 'Sin cátedras';
+                card.innerHTML = `<div><h3>${m.nombre}</h3><div class="materia-catedras">${catedras}</div></div><div class="review-count">${m.numresenas || 0} reseñas</div>`;
+                card.onclick = (e) => {
+                    const link = e.target.closest('.catedra-link');
+                    seleccionarMateria(m.id, link ? link.dataset.name : null);
+                };
+                grid.appendChild(card);
             });
         }
 
-        async function seleccionarMateria(materiaId, catedraNombre = null) {
-            const materia = appState.materias.find(m => m.id === materiaId);
-            
-            if (!materia) {
-                console.error("No se pudo encontrar la materia con ID", materiaId);
-                return;
-            }
-
-            document.getElementById('reviewFormElement').reset();
-            limpiarEstrellas();
-            if(document.getElementById('dificultadLabel')) {
-                document.getElementById('dificultadLabel').textContent = '';
-            }
-
-            appState.materiaSeleccionada = materia;
-            
-            document.getElementById('formTitle').textContent = `Dejar Reseña - ${materia.nombre}`;
-            document.getElementById('reviewForm').classList.add('active');
+        async function seleccionarMateria(id, catName) {
+            const m = appState.materias.find(x => x.id === id);
+            appState.materiaSeleccionada = m;
+            mod('formTitle').textContent = `Dejar Reseña - ${m.nombre}`;
+            mod('reviewForm').classList.add('active');
             document.querySelector('.resenas-container').classList.add('active');
             
-            const catedras = Array.isArray(materia.catedras) ? materia.catedras : [];
-            cargarCatedrasEnFormulario(catedras);
-
-            const practicoFormGroup = document.getElementById('practico-form-group');
-            const practicoSelect = document.getElementById('practico');
-            const filterPracticoGroup = document.getElementById('practico-filter-group');
-
-            if (materia.tipo === 'materias') {
-                practicoFormGroup.style.display = 'block';
-                filterPracticoGroup.style.display = 'block';
-                practicoSelect.required = true;
-                practicoSelect.innerHTML = '<option value="">Selecciona un práctico</option>';
-            } else {
-                practicoFormGroup.style.display = 'none';
-                filterPracticoGroup.style.display = 'none';
-                practicoSelect.required = false;
-            }
-            
-            await cargarresenas(materiaId);
-            
-            if (catedraNombre) {
-                const filterSelect = document.getElementById('filterCatedra');
-                filterSelect.value = catedraNombre;
-                
-                cargarresenasEnUI();
-                
-                const element = document.getElementById('resenasList');
-                const headerOffset = 100;
-                const elementPosition = element.getBoundingClientRect().top;
-                const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
-                
-                window.scrollTo({
-                    top: offsetPosition,
-                    behavior: "smooth"
-                });
-            } else {
-                const element = document.getElementById('reviewForm');
-                const headerOffset = 120;
-                const elementPosition = element.getBoundingClientRect().top;
-                const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
-                
-                window.scrollTo({
-                    top: offsetPosition,
-                    behavior: "smooth"
-                });
-            }
-        }
-
-        function cargarCatedrasEnFormulario(catedras) {
-            const catedraSelect = document.getElementById('catedra');
-            const filterCatedraSelect = document.getElementById('filterCatedra');
-            
-            catedraSelect.innerHTML = '<option value="">Selecciona una cátedra</option>';
-            filterCatedraSelect.innerHTML = '<option value="">Todas las cátedras</option>';
-            
-            if (Array.isArray(catedras)) {
-                catedras.forEach(catedra => {
-                    const option = document.createElement('option');
-                    option.value = catedra.nombre;
-                    option.textContent = catedra.nombre;
-                    catedraSelect.appendChild(option.cloneNode(true));
-                    filterCatedraSelect.appendChild(option);
-                });
-            }
-            
-            const newCatedraSelect = catedraSelect.cloneNode(true);
-            catedraSelect.parentNode.replaceChild(newCatedraSelect, catedraSelect);
-
-            newCatedraSelect.addEventListener('change', function() {
-                cargarPracticosEnFormulario(this.value, catedras);
+            const catSel = mod('catedra');
+            const fCatSel = mod('filterCatedra');
+            catSel.innerHTML = '<option value="">Selecciona cátedra</option>';
+            fCatSel.innerHTML = '<option value="">Todas</option>';
+            m.catedras?.forEach(c => {
+                const opt = new Option(c.nombre, c.nombre);
+                catSel.add(opt.cloneNode(true));
+                fCatSel.add(opt);
             });
-        }
 
-        function cargarPracticosEnFormulario(catedraNombre, catedras) {
-            const practicoSelect = document.getElementById('practico');
-            const filterPracticoSelect = document.getElementById('filterPractico');
+            const pracGroup = mod('practico-form-group');
+            const fPracGroup = mod('practico-filter-group');
+            if (m.tipo === 'materias') { pracGroup.style.display = fPracGroup.style.display = 'block'; mod('practico').required = true; }
+            else { pracGroup.style.display = fPracGroup.style.display = 'none'; mod('practico').required = false; }
             
-            practicoSelect.innerHTML = '<option value="">Selecciona un práctico</option>';
-            filterPracticoSelect.innerHTML = '<option value="">Todos los prácticos</option>';
-            
-            if (catedraNombre && Array.isArray(catedras)) {
-                const catedra = catedras.find(c => c.nombre === catedraNombre);
-                
-                if (catedra && Array.isArray(catedra.practicos)) {
-                    catedra.practicos.forEach(practico => {
-                        const option = document.createElement('option');
-                        option.value = practico;
-                        option.textContent = practico;
-                        practicoSelect.appendChild(option.cloneNode(true));
-                        filterPracticoSelect.appendChild(option);
-                    });
-                }
-            }
+            catSel.onchange = () => {
+                const sel = catSel.value;
+                const pSel = mod('practico');
+                pSel.innerHTML = '<option value="">Selecciona práctico</option>';
+                m.catedras?.find(x => x.nombre === sel)?.practicos?.forEach(p => pSel.add(new Option(p, p)));
+            };
+
+            await cargarresenas(id);
+            if (catName) { mod('filterCatedra').value = catName; cargarresenasEnUI(); }
+            window.scrollTo({ top: mod(catName ? 'resenasList' : 'reviewForm').offsetTop - 120, behavior: 'smooth' });
         }
 
-        async function cargarresenas(materiaId) {
-            try {
-                const resenasSnapshot = await db.collection('resenas')
-                    .where('materiaId', '==', materiaId)
-                    .get();
-
-                appState.resenas = resenasSnapshot.docs.map(doc => ({
-                    id: doc.id,
-                    ...doc.data()
-                }));
-
-                appState.resenas.sort((a, b) => {
-                    const fa = a.fecha?.toMillis?.() || 0;
-                    const fb = b.fecha?.toMillis?.() || 0;
-                    return fb - fa;
-                });
-                
-                cargarresenasEnUI();
-            } catch (error) {
-                console.error('Error cargando resenas', error);
-                appState.resenas = [];
-                cargarresenasEnUI();
-            }
-        }
-
-        function getDifficultyLabel(value) {
-            switch(parseInt(value)) {
-                case 1: return "Muy Fácil";
-                case 2: return "Fácil";
-                case 3: return "Media";
-                case 4: return "Difícil";
-                case 5: return "Muy Difícil";
-                default: return "";
-            }
-        }
-
-        function configurarSistemaEstrellas() {
-            document.querySelectorAll('.rating-input').forEach(input => {
-                const stars = input.querySelectorAll('.star');
-                
-                stars.forEach(star => {
-                    star.addEventListener('click', function() {
-                        const value = parseInt(this.dataset.value);
-                        const parent = this.parentElement;
-                        
-                        parent.querySelectorAll('.star').forEach(s => {
-                            s.classList.toggle('active', parseInt(s.dataset.value) <= value);
-                        });
-                        
-                        parent.dataset.rating = value;
-
-                        if (parent.id === 'dificultadRating') {
-                            const label = document.getElementById('dificultadLabel');
-                            if (label) label.textContent = getDifficultyLabel(value);
-                        }
-                    });
-                });
-            });
-        }
-
-        async function handleVote(reviewId, voteType) {
-            if (!appState.user) {
-                mostrarNotificacion('Debes iniciar sesión para votar.', 'error');
-                return;
-            }
-
-            const userId = appState.user.uid;
-            const reviewRef = db.collection('resenas').doc(reviewId);
-
-            try {
-                const doc = await reviewRef.get();
-                if (!doc.exists) {
-                    mostrarNotificacion('Error: Reseña no encontrada.', 'error');
-                    return;
-                }
-
-                const data = doc.data();
-                const votes = data.votes || {};
-                const currentVote = votes[userId];
-                
-                let newVote = voteType; 
-                
-                if (currentVote === voteType) {
-                    delete votes[userId];
-                } else {
-                    votes[userId] = newVote;
-                }
-                
-                let likes = 0;
-                let dislikes = 0;
-                for (const uid in votes) {
-                    if (votes[uid] === 1) {
-                        likes++;
-                    } else if (votes[uid] === -1) {
-                        dislikes++;
-                    }
-                }
-
-                await reviewRef.update({
-                    votes: votes,
-                    likes_count: likes,
-                    dislikes_count: dislikes
-                });
-
-                await cargarresenas(appState.materiaSeleccionada.id);
-                
-            } catch (error) {
-                console.error('Error al votar', error);
-                mostrarNotificacion('Error al registrar tu voto: ' + error.message, 'error');
-            }
-        }
-
-
-        function configurarFormulario() {
-            const form = document.getElementById('reviewFormElement');
-            
-            form.addEventListener('submit', async function(e) {
-                e.preventDefault();
-                
-                if (!appState.user) {
-                    mostrarNotificacion('Debes iniciar sesión para dejar una reseña.', 'error');
-                    return;
-                }
-                
-                if (!appState.materiaSeleccionada) {
-                    mostrarNotificacion('Por favor, selecciona una materia primero.', 'error');
-                    return;
-                }
-                
-                const catedra = document.getElementById('catedra').value;
-                let practico;
-                if (appState.materiaSeleccionada.tipo === 'materias') {
-                    practico = document.getElementById('practico').value;
-                } else {
-                    practico = "Único";
-                }
-                
-                const anioCursada = document.getElementById('anioCursada').value;
-                const cursoVerano = document.getElementById('cursoVerano').checked;
-
-                const reviewText = document.getElementById('reviewText').value;
-                const tomanAsistencia = document.getElementById('tomanAsistencia').value;
-                
-                const tiposEvaluacion = Array.from(document.getElementById('tiposEvaluacionCheckboxes').querySelectorAll('input[type="checkbox"]:checked'))
-                    .map(checkbox => checkbox.value);
-                
-                const generalRating = document.getElementById('generalRating').dataset.rating;
-                const claridadRating = document.getElementById('claridadRating').dataset.rating;
-                const programaRating = document.getElementById('programaRating').dataset.rating;
-                const dificultadRating = document.getElementById('dificultadRating').dataset.rating;
-                const ofertaRating = document.getElementById('ofertaRating').dataset.rating;
-                
-                if (!catedra || (appState.materiaSeleccionada.tipo === 'materias' && !practico) || !anioCursada || !tomanAsistencia || !reviewText || !generalRating) {
-                    mostrarNotificacion('Por favor, completa todos los campos obligatorios.', 'error');
-                    return;
-                }
-                
-                const submitBtn = form.querySelector('button[type="submit"]');
-                const originalText = submitBtn.textContent;
-                submitBtn.disabled = true;
-                submitBtn.textContent = 'Enviando...';
-                
-                try {
-                    const nombreAutor = appState.user.displayName || (appState.user.email ? appState.user.email.split('@')[0] : 'Usuario');
-
-                    const nuevaReseña = {
-                        materiaId: appState.materiaSeleccionada.id,
-                        materiaNombre: appState.materiaSeleccionada.nombre,
-                        catedra: catedra,
-                        practico: practico,
-                        anioCursada: parseInt(anioCursada),
-                        cursoVerano: cursoVerano,
-                        tiposEvaluacion: tiposEvaluacion,
-                        tomanAsistencia: tomanAsistencia,
-                        calificacionGeneral: parseInt(generalRating),
-                        claridad: parseInt(claridadRating) || 0,
-                        programa: parseInt(programaRating) || 0,
-                        dificultad: parseInt(dificultadRating) || 0,
-                        oferta: parseInt(ofertaRating) || 0,
-                        texto: reviewText,
-                        usuarioId: appState.user.uid,
-                        usuarioNombre: nombreAutor,
-                        fecha: firebase.firestore.FieldValue.serverTimestamp(),
-                        votes: {},
-                        likes_count: 0,
-                        dislikes_count: 0
-                    };
-                    
-                    await db.collection('resenas').add(nuevaReseña);
-                    
-                    await actualizarContadorresenas(appState.materiaSeleccionada.id);
-                    await cargarresenas(appState.materiaSeleccionada.id);
-                    
-                    form.reset();
-                    limpiarEstrellas();
-                    
-                    mostrarNotificacion('¡Reseña enviada con éxito!', 'success');
-                    
-                } catch (error) {
-                    console.error('Error guardando reseña', error);
-                    mostrarNotificacion('Error al enviar la reseña: ' + error.message, 'error');
-                } finally {
-                    submitBtn.disabled = false;
-                    submitBtn.textContent = originalText;
-                }
-            });
-        }
-
-        function limpiarEstrellas() {
-            document.querySelectorAll('.rating-input').forEach(input => {
-                input.dataset.rating = '';
-                input.querySelectorAll('.star').forEach(star => {
-                    star.classList.remove('active');
-                });
-            });
-        }
-
-        async function actualizarContadorresenas(materiaId) {
-            const materia = appState.materias.find(m => m.id === materiaId);
-            if (!materia) return;
-
-            const coleccion = materia.tipo; 
-
-            try {
-                await db.collection(coleccion).doc(materiaId).update({
-                    numresenas: firebase.firestore.FieldValue.increment(1)
-                });
-
-                if (materia.numresenas) {
-                    materia.numresenas++;
-                } else {
-                    materia.numresenas = 1;
-                }
-                
-                actualizarVistaMaterias();
-
-            } catch (error) {
-                console.error("Error actualizando contador", error);
-            }
+        async function cargarresenas(id) {
+            const snap = await db.collection('resenas').where('materiaId', '==', id).get();
+            appState.resenas = snap.docs.map(doc => ({ id: doc.id, ...doc.data() })).sort((a,b) => (b.fecha?.toMillis()||0) - (a.fecha?.toMillis()||0));
+            cargarresenasEnUI();
         }
 
         function cargarresenasEnUI() {
-            const resenasList = document.getElementById('resenasList');
+            const list = mod('resenasList');
+            const fCat = mod('filterCatedra').value;
+            const fPrac = mod('filterPractico').value;
+            const fRat = mod('filterRating').value;
             
-            Object.keys(respuestasListeners).forEach(key => {
-                if (typeof respuestasListeners[key] === 'function') {
-                    respuestasListeners[key](); 
-                }
+            const res = appState.resenas.filter(r => (!fCat || r.catedra === fCat) && (!fPrac || r.practico === fPrac) && (!fRat || r.calificacionGeneral >= fRat));
+            list.innerHTML = res.length ? '' : '<div class="no-resenas">No hay reseñas.</div>';
+            
+            res.forEach(r => {
+                const card = crearElemento('div', 'review-card');
+                let estrellas = '★'.repeat(r.calificacionGeneral) + '☆'.repeat(5-r.calificacionGeneral);
+                let fecha = r.fecha?.toDate().toLocaleDateString() || "Reciente";
+                
+                card.innerHTML = `
+                    <div class="review-header">
+                        <div class="review-user">
+                            <div class="user-avatar">${(r.usuarioNombre || 'A')[0]}</div>
+                            <div class="review-user-info">
+                                <span class="review-user-name">${r.usuarioNombre || 'Anónimo'}</span>
+                                <span class="review-catedra">${r.catedra} ${r.practico !== 'Único' ? '- '+r.practico : ''}</span>
+                                <span class="review-date">${fecha} | Cursada ${r.anioCursada} ${r.cursoVerano ? '(Verano)' : ''}</span>
+                            </div>
+                        </div>
+                        <div class="review-menu-container">
+                            <button class="menu-dots" onclick="toggleReportMenu('${r.id}')">⋮</button>
+                            <div class="dropdown-menu" id="menu-${r.id}">
+                                <div class="dropdown-item danger" onclick="denunciarResena('${r.id}')">
+                                    <span>🚩</span> Denunciar
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="rating">${estrellas}</div>
+                    <div class="review-content">${r.texto}</div>
+                    <div class="review-aspects">
+                        <div class="review-aspect"><span class="aspect-name">Pedagogía</span><span class="aspect-value">${r.claridad}/5</span></div>
+                        <div class="review-aspect"><span class="aspect-name">Contenidos</span><span class="aspect-value">${r.programa}/5</span></div>
+                        <div class="review-aspect"><span class="aspect-name">Dificultad</span><span class="aspect-value">${r.dificultad}/5</span></div>
+                        <div class="review-aspect"><span class="aspect-name">Oferta</span><span class="aspect-value">${r.oferta}/5</span></div>
+                    </div>
+                    <div class="review-footer">
+                        <button class="vote-control ${r.votes?.[appState.user?.uid]===1?'like-active':''}" onclick="handleVote('${r.id}', 1)">👍 ${r.likes_count||0}</button>
+                        <button class="vote-control ${r.votes?.[appState.user?.uid]===-1?'dislike-active':''}" onclick="handleVote('${r.id}', -1)">👎 ${r.dislikes_count||0}</button>
+                        <button class="vote-control btn-reply" onclick="toggleRespuestas('${r.id}')">💬 ${r.replies_count||''}</button>
+                    </div>
+                    <div class="replies-container" id="replies-container-${r.id}">
+                        <div id="replies-list-${r.id}"></div>
+                        <div class="reply-form-container">
+                            <textarea id="reply-input-${r.id}" class="reply-input" placeholder="Responder..."></textarea>
+                            <button class="btn-submit-reply" onclick="enviarRespuesta('${r.id}')">Responder</button>
+                        </div>
+                    </div>
+                `;
+                list.appendChild(card);
             });
-            respuestasListeners = {}; 
-            
-            if (!appState.resenas || appState.resenas.length === 0) {
-                resenasList.innerHTML = '<div class="no-resenas">No hay reseñas para esta materia aún.</div>';
-                return;
-            }
-            
-            const resenasFiltradas = aplicarFiltros(appState.resenas);
-            
-            if (resenasFiltradas.length === 0) {
-                resenasList.innerHTML = '<div class="no-resenas">No hay reseñas que coincidan con los filtros seleccionados.</div>';
-                return;
-            }
-            
-            resenasList.innerHTML = '';
-            
-            resenasFiltradas.forEach(reseña => {
-                const reviewCard = crearElemento('div', 'review-card');
+        }
 
-                const nombreMostrar = reseña.usuarioNombre || (reseña.usuarioEmail ? reseña.usuarioEmail.split('@')[0] : 'Anónimo');
-                const inicial = nombreMostrar.charAt(0).toUpperCase();
-                
-                let fechaFormateada = "Fecha no disponible";
-                if (reseña.fecha && reseña.fecha.toDate) {
-                    fechaFormateada = reseña.fecha.toDate().toLocaleDateString();
-                }
+        async function handleVote(rid, type) {
+            if (!appState.user) { mostrarNotificacion('Inicia sesión para votar.', 'error'); return; }
+            const ref = db.collection('resenas').doc(rid);
+            const doc = await ref.get();
+            const data = doc.data();
+            const votes = data.votes || {};
+            if (votes[appState.user.uid] === type) delete votes[appState.user.uid]; else votes[appState.user.uid] = type;
+            let l = 0, d = 0;
+            Object.values(votes).forEach(v => { if(v===1) l++; if(v===-1) d++; });
+            await ref.update({ votes, likes_count: l, dislikes_count: d });
+            cargarresenas(appState.materiaSeleccionada.id);
+        }
 
-                let catedraTexto = reseña.catedra;
-                if (reseña.practico && reseña.practico !== 'Único') {
-                    catedraTexto += ` - ${reseña.practico}`;
-                }
-                
-                let anioDisplay = reseña.anioCursada || 'No especificado';
-                if (reseña.cursoVerano) anioDisplay += ' / Curso de verano';
-                
-                const header = crearElemento('div', 'review-header');
-                
-                const userContainer = crearElemento('div', 'review-user');
-                const avatar = crearElemento('div', 'user-avatar', inicial);
-                
-                const infoDiv = crearElemento('div', 'review-user-info');
-                const nameDiv = crearElemento('div', 'review-user-name', nombreMostrar); 
-                const catedraDiv = crearElemento('div', 'review-catedra', catedraTexto);
-                const dateDiv = crearElemento('div', 'review-date', `${fechaFormateada} | Cursada en ${anioDisplay}`);
-                
-                infoDiv.appendChild(nameDiv);
-                infoDiv.appendChild(catedraDiv);
-                infoDiv.appendChild(dateDiv);
-                userContainer.appendChild(avatar);
-                userContainer.appendChild(infoDiv);
-                header.appendChild(userContainer);
-
-                const ratingDiv = crearElemento('div', 'rating');
-                for (let i = 1; i <= 5; i++) {
-                    const star = document.createElement('span');
-                    star.textContent = i <= reseña.calificacionGeneral ? '★' : '☆';
-                    ratingDiv.appendChild(star);
-                }
-
-                const contentDiv = crearElemento('div', 'review-content', reseña.texto);
-
-                const aspectsContainer = crearElemento('div', 'review-aspects');
-                
-                const agregarAspecto = (titulo, valor) => {
-                    const row = crearElemento('div', 'review-aspect');
-                    row.appendChild(crearElemento('span', 'aspect-name', titulo));
-                    row.appendChild(crearElemento('span', 'aspect-value', `${valor || 'N/A'}/5`));
-                    aspectsContainer.appendChild(row);
+        function configurarFormulario() {
+            mod('reviewFormElement').onsubmit = async (e) => {
+                e.preventDefault();
+                const btn = e.target.querySelector('button');
+                btn.disabled = true;
+                const ratings = {
+                    gen: parseInt(mod('generalRating').dataset.rating),
+                    cla: parseInt(mod('claridadRating').dataset.rating),
+                    pro: parseInt(mod('programaRating').dataset.rating),
+                    dif: parseInt(mod('dificultadRating').dataset.rating),
+                    ofe: parseInt(mod('ofertaRating').dataset.rating)
                 };
+                try {
+                    await db.collection('resenas').add({
+                        materiaId: appState.materiaSeleccionada.id,
+                        materiaNombre: appState.materiaSeleccionada.nombre,
+                        catedra: mod('catedra').value,
+                        practico: mod('practico').value || "Único",
+                        anioCursada: parseInt(mod('anioCursada').value),
+                        cursoVerano: mod('cursoVerano').checked,
+                        tomanAsistencia: mod('tomanAsistencia').value,
+                        calificacionGeneral: ratings.gen,
+                        claridad: ratings.cla || 0, programa: ratings.pro || 0, dificultad: ratings.dif || 0, oferta: ratings.ofe || 0,
+                        texto: mod('reviewText').value,
+                        usuarioId: appState.user.uid,
+                        usuarioNombre: appState.user.displayName,
+                        fecha: firebase.firestore.FieldValue.serverTimestamp(),
+                        likes_count: 0, dislikes_count: 0, replies_count: 0, denuncia: 0
+                    });
+                    await db.collection(appState.materiaSeleccionada.tipo).doc(appState.materiaSeleccionada.id).update({ numresenas: firebase.firestore.FieldValue.increment(1) });
+                    mostrarNotificacion('¡Reseña enviada!', 'success');
+                    e.target.reset();
+                    cargarresenas(appState.materiaSeleccionada.id);
+                } catch(err) { mostrarNotificacion('Error', 'error'); }
+                finally { btn.disabled = false; }
+            };
+        }
 
-                agregarAspecto('Claridad (Pedagogía)', reseña.claridad);
-                agregarAspecto('Programa y contenidos', reseña.programa);
-                agregarAspecto('Dificultad', reseña.dificultad);
-                agregarAspecto('Oferta horaria', reseña.oferta);
-
-                const extraInfoContainer = crearElemento('div', 'review-aspects');
-                
-                let tiposArr = reseña.tiposEvaluacion || [];
-                if (Array.isArray(tiposArr)) tiposArr = tiposArr.filter(t => t && t.toLowerCase() !== 'on');
-                const evalTxt = tiposArr.length > 0 ? tiposArr.join(', ') : 'No especificado';
-                
-                const evalRow = crearElemento('div', 'review-aspect');
-                evalRow.appendChild(crearElemento('span', 'aspect-name', 'Tipo de evaluación'));
-                evalRow.appendChild(crearElemento('span', 'aspect-value', evalTxt));
-                
-                const asistRow = crearElemento('div', 'review-aspect');
-                asistRow.appendChild(crearElemento('span', 'aspect-name', 'Toman asistencia'));
-                asistRow.appendChild(crearElemento('span', 'aspect-value', reseña.tomanAsistencia || 'No especificado'));
-
-                extraInfoContainer.appendChild(evalRow);
-                extraInfoContainer.appendChild(asistRow);
-
-                const footer = crearElemento('div', 'review-footer');
-                
-                const currentUserId = appState.user ? appState.user.uid : null;
-                const userVote = reseña.votes && currentUserId ? reseña.votes[currentUserId] : 0;
-
-                const btnLike = crearElemento('button', ['vote-control', 'vote-like']);
-                if(userVote === 1) btnLike.classList.add('like-active');
-                btnLike.title = "Útil";
-                btnLike.innerHTML = `<span class="vote-icon">👍</span> <span class="like-count">${reseña.likes_count || 0}</span>`;
-                btnLike.onclick = () => handleVote(reseña.id, 1);
-
-                const btnDislike = crearElemento('button', ['vote-control', 'vote-dislike']);
-                if(userVote === -1) btnDislike.classList.add('dislike-active');
-                btnDislike.title = "No útil";
-                btnDislike.innerHTML = `<span class="vote-icon">👎</span> <span class="dislike-count">${reseña.dislikes_count || 0}</span>`;
-                btnDislike.onclick = () => handleVote(reseña.id, -1);
-
-                const repliesCount = reseña.replies_count || 0;
-                const btnReply = crearElemento('button', ['vote-control', 'btn-reply']);
-                btnReply.textContent = repliesCount > 0 ? `💬 Respuestas (${repliesCount})` : `💬 Respuestas`;
-                btnReply.onclick = () => toggleRespuestas(reseña.id);
-
-                footer.appendChild(btnLike);
-                footer.appendChild(btnDislike);
-                footer.appendChild(btnReply);
-
-                const repliesContainer = crearElemento('div', 'replies-container');
-                repliesContainer.id = `replies-container-${reseña.id}`;
-                
-                const repliesList = crearElemento('div');
-                repliesList.id = `replies-list-${reseña.id}`;
-
-                const formContainer = crearElemento('div', 'reply-form-container');
-                const textArea = crearElemento('textarea', 'reply-input');
-                textArea.id = `reply-input-${reseña.id}`;
-                textArea.placeholder = "Escribe una respuesta...";
-                
-                const submitReplyBtn = crearElemento('button', 'btn-submit-reply', 'Enviar respuesta');
-                submitReplyBtn.onclick = () => enviarRespuesta(reseña.id);
-
-                formContainer.appendChild(textArea);
-                formContainer.appendChild(submitReplyBtn);
-                repliesContainer.appendChild(repliesList);
-                repliesContainer.appendChild(formContainer);
-
-                reviewCard.appendChild(header);
-                reviewCard.appendChild(ratingDiv);
-                reviewCard.appendChild(contentDiv);
-                reviewCard.appendChild(aspectsContainer);
-                reviewCard.appendChild(extraInfoContainer);
-                reviewCard.appendChild(footer);
-                reviewCard.appendChild(repliesContainer);
-
-                resenasList.appendChild(reviewCard);
+        function configurarSistemaEstrellas() {
+            document.querySelectorAll('.rating-input').forEach(group => {
+                group.querySelectorAll('.star').forEach(s => {
+                    s.onclick = () => {
+                        const v = parseInt(s.dataset.value);
+                        group.dataset.rating = v;
+                        group.querySelectorAll('.star').forEach(x => x.classList.toggle('active', parseInt(x.dataset.value) <= v));
+                        if(group.id === 'dificultadRating') mod('dificultadLabel').textContent = ["","Fácil","Media","Normal","Difícil","Hardcore"][v];
+                    };
+                });
             });
         }
 
-        function aplicarFiltros(resenas) {
-            const filterCatedra = document.getElementById('filterCatedra').value;
-            const filterPractico = document.getElementById('filterPractico').value;
-            const filterRating = document.getElementById('filterRating').value;
-            
-            return resenas.filter(r => {
-                return (!filterCatedra || r.catedra === filterCatedra) &&
-                       (!filterPractico || r.practico === filterPractico) &&
-                       (!filterRating || r.calificacionGeneral >= parseInt(filterRating));
-            });
+        function configurarFiltros() {
+            ['filterCatedra', 'filterPractico', 'filterRating'].forEach(id => mod(id).onchange = cargarresenasEnUI);
         }
-        
+
         function configurarBuscador() {
-            const searchInput = document.getElementById('searchMaterias');
-            
-            searchInput.addEventListener('input', (e) => {
-                currentSearch = e.target.value.toLowerCase().trim();
-                actualizarVistaMaterias();
-            });
+            mod('searchMaterias').oninput = (e) => { currentSearch = e.target.value.toLowerCase(); actualizarVistaMaterias(); };
         }
 
         function configurarSort() {
-            const sortSelect = document.getElementById('sortSelect');
-
-            sortSelect.value = currentSort;
-
-            sortSelect.addEventListener('change', (e) => {
-                currentSort = e.target.value;
-                actualizarVistaMaterias();
-            });
+            mod('sortSelect').onchange = (e) => { currentSort = e.target.value; actualizarVistaMaterias(); };
         }
 
         function configurarFiltrosCategoria() {
-            const buttons = document.querySelectorAll('.category-btn');
-            const titleElement = document.getElementById('materiasGridTitle');
-            
-            buttons.forEach(button => {
-                button.addEventListener('click', () => {
-                    const category = button.dataset.category;
-                    const buttonText = button.textContent;
-                    
-                    appState.currentCategory = category;
-                    
-                    buttons.forEach(btn => btn.classList.remove('active'));
-                    button.classList.add('active');
-                    
-                    titleElement.textContent = buttonText;
-                    
-                    document.getElementById('reviewForm').classList.remove('active');
-                    document.querySelector('.resenas-container').classList.remove('active');
-                    appState.materiaSeleccionada = null;
-
-                    cargarMaterias(category);
-                });
+            document.querySelectorAll('.category-btn').forEach(b => {
+                b.onclick = () => {
+                    appState.currentCategory = b.dataset.category;
+                    document.querySelectorAll('.category-btn').forEach(x => x.classList.remove('active'));
+                    b.classList.add('active');
+                    mod('materiasGridTitle').textContent = b.textContent;
+                    cargarMaterias(b.dataset.category);
+                };
             });
         }
 
         function actualizarVistaMaterias() {
-            let materiasParaRenderizar = [...appState.materias];
-
-            materiasParaRenderizar = materiasParaRenderizar.filter(materia => 
-                materia.tipo === appState.currentCategory
-            );
-
-            if (currentSearch.length > 0) {
-                materiasParaRenderizar = materiasParaRenderizar.filter(materia => {
-                    const nombreMateria = (materia.nombre || '').toLowerCase();
-                    const coincideNombre = nombreMateria.includes(currentSearch);
-                    
-                    const coincideCatedra = Array.isArray(materia.catedras) && materia.catedras.some(c => 
-                        (c.nombre || '').toLowerCase().includes(currentSearch)
-                    );
-
-                    return coincideNombre || coincideCatedra;
-                });
-            }
-
-            switch (currentSort) {
-                case 'carrera':
-                    materiasParaRenderizar.sort((a, b) => {
-                        const nombreA = a.nombre || '';
-                        const nombreB = b.nombre || '';
-
-                        const indexA = materiasData.indexOf(nombreA);
-                        const indexB = materiasData.indexOf(nombreB);
-                        
-                        if (indexA === -1 && indexB === -1) return nombreA.localeCompare(nombreB);
-                        if (indexA === -1) return 1;
-                        if (indexB === -1) return -1;
-                        
-                        return indexA - indexB;
-                    });
-                    break;
-                case 'reviews-desc':
-                    materiasParaRenderizar.sort((a, b) => (b.numresenas || 0) - (a.numresenas || 0));
-                    break;
-                case 'reviews-asc':
-                    materiasParaRenderizar.sort((a, b) => (a.numresenas || 0) - (b.numresenas || 0));
-                    break;
-                case 'alpha-asc':
-                    materiasParaRenderizar.sort((a, b) => (a.nombre || '').localeCompare(b.nombre || ''));
-                    break;
-                case 'alpha-desc':
-                    materiasParaRenderizar.sort((a, b) => (b.nombre || '').localeCompare(a.nombre || ''));
-                    break;
-            }
-
-            cargarMateriasEnUI(materiasParaRenderizar);
+            let list = appState.materias.filter(m => m.tipo === appState.currentCategory);
+            if(currentSearch) list = list.filter(m => m.nombre.toLowerCase().includes(currentSearch) || m.catedras?.some(c => c.nombre.toLowerCase().includes(currentSearch)));
+            
+            if(currentSort === 'reviews-desc') list.sort((a,b) => (b.numresenas||0) - (a.numresenas||0));
+            else if(currentSort === 'alpha-asc') list.sort((a,b) => a.nombre.localeCompare(b.nombre));
+            else if(currentSort === 'carrera') list.sort((a,b) => materiasData.indexOf(a.nombre) - materiasData.indexOf(b.nombre));
+            
+            cargarMateriasEnUI(list);
         }
 
-        function configurarFiltros() {
-            document.getElementById('filterCatedra').addEventListener('change', () => {
-                const catedras = appState.materiaSeleccionada.catedras || [];
-                const selectedCatedra = document.getElementById('filterCatedra').value;
-                
-                cargarPracticosEnFormulario(selectedCatedra, catedras);
-                
-                document.getElementById('filterPractico').value = "";
-                
-                cargarresenasEnUI();
-            });
-            
-            document.getElementById('filterPractico').addEventListener('change', () => cargarresenasEnUI());
-            document.getElementById('filterRating').addEventListener('change', () => cargarresenasEnUI());
+        function configurarModales() {
+            mod('loginBtn').onclick = () => mod('loginModal').classList.add('active');
+            mod('registerBtn').onclick = () => mod('registerModal').classList.add('active');
+            mod('cancelLogin').onclick = () => mod('loginModal').classList.remove('active');
+            mod('cancelRegister').onclick = () => mod('registerModal').classList.remove('active');
+            mod('logoutBtn').onclick = () => auth.signOut();
+            mod('loginForm').onsubmit = async (e) => {
+                e.preventDefault();
+                try {
+                    const cred = await auth.signInWithEmailAndPassword(mod('loginEmail').value, mod('loginPassword').value);
+                    if(!cred.user.emailVerified) { await auth.signOut(); mod('loginError').textContent = "Verifica tu email."; return; }
+                    mod('loginModal').classList.remove('active');
+                } catch(e) { mod('loginError').textContent = "Error al entrar."; }
+            };
         }
 
         function configurarTogglePasswords() {
-            document.querySelectorAll('.toggle-password-btn').forEach(btn => {
-                btn.addEventListener('click', function() {
-                    const targetId = this.getAttribute('data-target');
-                    const input = document.getElementById(targetId);
-                    
-                    if (input.type === 'password') {
-                        input.type = 'text';
-                    } else {
-                        input.type = 'password';
-                    }
-                });
+            document.querySelectorAll('.toggle-password-btn').forEach(b => b.onclick = () => {
+                const i = mod(b.dataset.target);
+                i.type = i.type === 'password' ? 'text' : 'password';
             });
         }
 
         function configurarMisResenas() {
-            const myReviewsBtn = document.getElementById('myReviewsBtn');
-            const myReviewsModal = document.getElementById('myReviewsModal');
-            const closeMyReviews = document.getElementById('closeMyReviews');
-            const listContainer = document.getElementById('myReviewsList');
-
-            myReviewsBtn.addEventListener('click', async () => {
-                if (!appState.user) return;
-                
-                myReviewsModal.classList.add('active');
-                listContainer.innerHTML = '<div style="text-align: center; padding: 2rem; color: #666;">Cargando tus reseñas...</div>';
-
-                try {
-
-                    const snapshot = await db.collection('resenas')
-                        .where('usuarioId', '==', appState.user.uid)
-                        .get();
-
-                    if (snapshot.empty) {
-                        listContainer.innerHTML = '<div style="text-align: center; padding: 2rem; color: #888;">Aún no has escrito ninguna reseña.</div>';
-                        return;
-                    }
-
-                    let misResenas = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-                    misResenas.sort((a, b) => {
-                        const fa = a.fecha?.toMillis?.() || 0;
-                        const fb = b.fecha?.toMillis?.() || 0;
-                        return fb - fa;
-                    });
-
-                    listContainer.innerHTML = '';
-                    misResenas.forEach(reseña => {
-                        const card = document.createElement('div');
-                        card.className = 'review-card';
-                        
-                        const materiaNombre = reseña.materiaNombre || 'Materia Desconocida';
-                        
-                        let estrellasHTML = '';
-                        for (let i = 1; i <= 5; i++) {
-                            estrellasHTML += i <= reseña.calificacionGeneral ? '★' : '☆';
-                        }
-
-                        let fecha = "Fecha desconocida";
-                        if (reseña.fecha && reseña.fecha.toDate) {
-                            fecha = reseña.fecha.toDate().toLocaleDateString();
-                        }
-                        card.innerHTML = `
-                            <div style="border-bottom: 1px solid #eee; padding-bottom: 0.5rem; margin-bottom: 0.5rem;">
-                                <h3 style="color: var(--primary-color); font-size: 1.1rem; margin:0;">${materiaNombre}</h3>
-                                <div style="font-size: 0.85rem; color: #888;">${reseña.catedra} - ${fecha}</div>
-                            </div>
-                            <div class="rating" style="font-size: 1rem;">${estrellasHTML}</div>
-                        `;
-                        const textDiv = document.createElement('div');
-                        textDiv.style.fontSize = '0.95rem';
-                        textDiv.style.color = '#444';
-                        textDiv.style.marginTop = '0.5rem';
-                        textDiv.textContent = reseña.texto;
-                        
-                        card.appendChild(textDiv);
-                        listContainer.appendChild(card);
-                    });
-
-                } catch (error) {
-                    console.error("Error al cargar mis reseñas", error);
-                    listContainer.innerHTML = '<div style="color:var(--accent-color); text-align: center;">Error al cargar las reseñas.</div>';
-                }
-            });
-
-            closeMyReviews.addEventListener('click', () => {
-                myReviewsModal.classList.remove('active');
-            });
-        }
-
-        function configurarModales() {
-            const loginModal = document.getElementById('loginModal');
-            const registerModal = document.getElementById('registerModal');
-            const loginBtn = document.getElementById('loginBtn');
-            const registerBtn = document.getElementById('registerBtn');
-            const cancelLogin = document.getElementById('cancelLogin');
-            const cancelRegister = document.getElementById('cancelRegister');
-            const loginForm = document.getElementById('loginForm');
-            const registerForm = document.getElementById('registerForm');
-            const logoutBtn = document.getElementById('logoutBtn');
-            const loginFromReviewBtn = document.getElementById('loginFromReviewBtn');
-
-            const termsModal = document.getElementById('termsModal');
-            const acceptTerms = document.getElementById('acceptTerms');
-            const cancelTerms = document.getElementById('cancelTerms');
-
-            const collaborateModal = document.getElementById('collaborateModal');
-            const closeCollaborate = document.getElementById('closeCollaborate');
-
-            const switchToRegister = document.getElementById('switchToRegister');
-
-            [loginBtn, loginFromReviewBtn].forEach(btn => btn.addEventListener('click', () => loginModal.classList.add('active')));
-            registerBtn.addEventListener('click', () => registerModal.classList.add('active'));
-
-            cancelLogin.addEventListener('click', () => loginModal.classList.remove('active'));
-            cancelRegister.addEventListener('click', () => registerModal.classList.remove('active'));
-            cancelTerms.addEventListener('click', () => termsModal.classList.remove('active'));
-            
-            closeCollaborate.addEventListener('click', () => collaborateModal.classList.remove('active'));
-
-            if(switchToRegister) {
-                switchToRegister.addEventListener('click', (e) => {
-                    e.preventDefault();
-                    loginModal.classList.remove('active');
-                    registerModal.classList.add('active');
+            mod('myReviewsBtn').onclick = async () => {
+                const list = mod('myReviewsList');
+                mod('myReviewsModal').classList.add('active');
+                list.innerHTML = 'Cargando...';
+                const snap = await db.collection('resenas').where('usuarioId', '==', appState.user.uid).get();
+                list.innerHTML = snap.empty ? 'No tienes reseñas.' : '';
+                snap.forEach(d => {
+                    const r = d.data();
+                    const el = crearElemento('div', 'review-card');
+                    el.innerHTML = `<h3>${r.materiaNombre}</h3><p>${r.texto}</p>`;
+                    list.appendChild(el);
                 });
-            }
-
-            window.addEventListener('click', (e) => {
-                if (e.target === loginModal) loginModal.classList.remove('active');
-                if (e.target === registerModal) registerModal.classList.remove('active');
-                if (e.target === termsModal) termsModal.classList.remove('active');
-                if (e.target === collaborateModal) collaborateModal.classList.remove('active');
-            });
-
-            loginForm.addEventListener('submit', async (e) => {
-                e.preventDefault();
-                const email = document.getElementById('loginEmail').value;
-                const password = document.getElementById('loginPassword').value;
-                const errorElement = document.getElementById('loginError');
-
-                try {
-                    const userCredential = await auth.signInWithEmailAndPassword(email, password);
-                    
-                    if (!userCredential.user.emailVerified) {
-                        await auth.signOut();
-                        errorElement.textContent = 'Email no verificado. Por favor, revisa tu bandeja de entrada.';
-                        return;
-                    }
-
-                    loginModal.classList.remove('active');
-                    loginForm.reset();
-                    errorElement.textContent = '';
-                } catch (error) {
-                    errorElement.textContent = getAuthErrorMessage(error.code);
-                }
-            });
-
-            registerForm.addEventListener('submit', (e) => {
-                e.preventDefault(); 
-                termsModal.classList.add('active');
-            });
-
-            acceptTerms.addEventListener('click', async () => {
-                const originalText = acceptTerms.textContent;
-                acceptTerms.disabled = true;
-                acceptTerms.textContent = 'Procesando...';
-
-                const firstName = document.getElementById('registerFirstName').value.trim();
-                const lastName = document.getElementById('registerLastName').value.trim();
-                const email = document.getElementById('registerEmail').value;
-                const password = document.getElementById('registerPassword').value;
-                const errorElement = document.getElementById('registerError');
-
-                try {
-                    const userCredential = await auth.createUserWithEmailAndPassword(email, password);
-                    
-                    const fullName = `${firstName} ${lastName}`;
-                    await userCredential.user.updateProfile({
-                        displayName: fullName
-                    });
-
-                    await auth.currentUser.sendEmailVerification();
-                    await auth.signOut();
-                    
-                    mostrarNotificacion('¡Registro exitoso! Revisa tu email para verificar tu cuenta.', 'success');
-                    
-                    termsModal.classList.remove('active');
-                    registerModal.classList.remove('active');
-                    registerForm.reset();
-                    errorElement.textContent = '';
-                } catch (error) {
-                    termsModal.classList.remove('active');
-                    errorElement.textContent = getAuthErrorMessage(error.code);
-                } finally {
-                    acceptTerms.disabled = false;
-                    acceptTerms.textContent = originalText;
-                }
-            });
-
-            logoutBtn.addEventListener('click', () => auth.signOut());
-        }
-
-        function getAuthErrorMessage(errorCode) {
-            const messages = {
-                'auth/invalid-email': 'El email no es válido.',
-                'auth/user-disabled': 'Esta cuenta ha sido deshabilitada.',
-                'auth/user-not-found': 'No existe una cuenta con este email.',
-                'auth/wrong-password': 'La contraseña es incorrecta.',
-                'auth/email-already-in-use': 'Ya existe una cuenta con este email.',
-                'auth/weak-password': 'La contraseña debe tener al menos 6 caracteres.',
-                'auth/operation-not-allowed': 'Esta operación no está permitida.',
-                'auth/network-request-failed': 'Error de conexión. Verifica tu internet.'
             };
-            return messages[errorCode] || 'Error desconocido. Intenta nuevamente.';
+            mod('closeMyReviews').onclick = () => mod('myReviewsModal').classList.remove('active');
         }
 
-        function mostrarNotificacion(mensaje, tipo = 'info') {
-            const notification = document.createElement('div');
-            notification.className = `notification ${tipo}`;
-            notification.textContent = mensaje;
-            
-            document.body.appendChild(notification);
-            
-            setTimeout(() => {
-                if (notification.parentElement) {
-                    notification.remove();
-                }
-            }, 5000);
-        }
-        
-        function scrollToTop() {
-            window.scrollTo({
-                top: 0,
-                behavior: 'smooth'
-            });
+        function mostrarNotificacion(m, t) {
+            const n = crearElemento('div', `notification ${t}`, m);
+            document.body.appendChild(n);
+            setTimeout(() => n.remove(), 4000);
         }
 
-        function toggleScrollButton() {
-            const btn = document.getElementById('scrollToTopBtn');
-            if (document.body.scrollTop > 300 || document.documentElement.scrollTop > 300) {
-                btn.style.display = 'block';
-            } else {
-                btn.style.display = 'none';
-            }
-        }
-
-        function configurarScrollToTop() {
-            const btn = document.getElementById('scrollToTopBtn');
-            window.addEventListener('scroll', toggleScrollButton);
-            btn.addEventListener('click', scrollToTop);
-        }
-        
         document.addEventListener('DOMContentLoaded', init);
     </script>
 </body>
