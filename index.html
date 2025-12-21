@@ -1435,6 +1435,52 @@
             font-weight: 700;
         }
 
+        /* ESTILOS PARA CAJA DE SCROLL TyC */
+        .tyc-scroll-box {
+            background-color: #f9f9f9;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 15px;
+            max-height: 300px;
+            overflow-y: auto;
+            font-size: 0.9rem;
+            color: #444;
+            text-align: left;
+            margin-bottom: 1rem;
+        }
+        
+        .tyc-scroll-box h4 {
+            color: var(--dark-color);
+            margin-top: 1rem;
+            margin-bottom: 0.5rem;
+            font-size: 1rem;
+        }
+        
+        .tyc-scroll-box ul {
+            padding-left: 20px;
+            margin-bottom: 10px;
+        }
+        
+        .tyc-scroll-box p {
+            margin-bottom: 10px;
+        }
+        
+        /* Scrollbar personalizada */
+        .tyc-scroll-box::-webkit-scrollbar {
+            width: 8px;
+        }
+        .tyc-scroll-box::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 4px;
+        }
+        .tyc-scroll-box::-webkit-scrollbar-thumb {
+            background: #ccc;
+            border-radius: 4px;
+        }
+        .tyc-scroll-box::-webkit-scrollbar-thumb:hover {
+            background: var(--primary-color);
+        }
+
         @media (max-width: 768px) {
             .category-filters {
                 flex-direction: row; 
@@ -1878,6 +1924,74 @@
         </div>
     </div>
 
+    <!-- MODAL TÉRMINOS Y CONDICIONES (NUEVO) -->
+    <div class="modal" id="tycModal">
+        <div class="modal-content" style="max-width: 600px;">
+            <h2 style="color: var(--primary-color); margin-bottom: 1rem; text-align: center;">📜 Términos y Condiciones</h2>
+            
+            <p style="text-align: center; margin-bottom: 1rem; color: #666;">
+                Para finalizar tu registro en <strong>Gino Social</strong>, por favor lee y acepta nuestras normas de convivencia.
+            </p>
+            
+            <!-- Caja con scroll para el texto largo -->
+            <div class="tyc-scroll-box">
+                <h3 style="text-align: center; color: var(--primary-color);">TÉRMINOS Y CONDICIONES DE USO – GINOSOCIAL.AR</h3>
+                <p style="text-align: center; font-size: 0.8rem; color: #888;">Última actualización: 21 de diciembre de 2025</p>
+                <br>
+                <p>Los presentes Términos y Condiciones regulan el acceso y uso de la plataforma Gino Social (en adelante, "la Plataforma"), un sistema de Gestión de Información, Noticias y Opinión Social desarrollado por el colectivo conformado por Helecho Social y CrisisPuntoCom.</p>
+                <p>El acceso, registro y uso de la Plataforma atribuye la condición de Usuario e implica la aceptación plena y sin reservas de todas y cada una de las disposiciones incluidas en este documento.</p>
+
+                <h4>1. NATURALEZA DEL SERVICIO</h4>
+                <p>Gino Social es una herramienta colaborativa de acceso público y gratuito, gestionada por estudiantes, cuyo objetivo es el intercambio de experiencias académicas y la visualización de datos mediante el "Centro de Datos" (Gino Datos). La Plataforma facilita un espacio para la publicación de reseñas sobre cátedras, programas y contenidos pedagógicos de la carrera de Sociología de la Universidad de Buenos Aires (UBA).</p>
+
+                <h4>2. REGISTRO Y VERACIDAD DE LA INFORMACIÓN</h4>
+                <ul>
+                    <li><strong>Identidad del Usuario:</strong> De acuerdo con el compromiso ético de la Plataforma, se incentiva el uso de nombres y apellidos reales para fomentar la responsabilidad en la opinión.</li>
+                    <li><strong>Verificación:</strong> El registro requiere una dirección de correo electrónico válida y está sujeto a un proceso de verificación.</li>
+                    <li><strong>Responsabilidad de Cuenta:</strong> El Usuario es el único responsable de la custodia de su contraseña y de cualquier actividad realizada bajo su cuenta.</li>
+                </ul>
+
+                <h4>3. REGLAS DE CONDUCTA Y "CONTRATO SOCIAL"</h4>
+                <p>El Usuario se compromete a utilizar la Plataforma bajo los principios de buena fe y respeto a la comunidad académica. Queda estrictamente prohibido:</p>
+                <ul>
+                    <li>Publicar contenido difamatorio, injurioso, discriminatorio o que incite al odio.</li>
+                    <li>Realizar ataques personales hacia docentes, estudiantes o personal no docente que excedan la crítica pedagógica o académica.</li>
+                    <li>Proporcionar información falsa sobre la cursada o evaluaciones.</li>
+                    <li>Publicar contenido que vulnere derechos de propiedad intelectual o datos de carácter personal de terceros.</li>
+                </ul>
+
+                <h4>4. SISTEMA DE RESEÑAS Y MODERACIÓN</h4>
+                <ul>
+                    <li><strong>Propiedad del Contenido:</strong> El Usuario conserva los derechos sobre sus reseñas, pero otorga a Gino Social una licencia gratuita para mostrar, procesar estadísticamente y anonimizar dicho contenido para su sección de datos.</li>
+                    <li><strong>Derecho de Remoción:</strong> La administración se reserva el derecho de retirar cualquier contenido que reciba denuncias por infracción a estos términos o que sea considerado inapropiado mediante el sistema de "Denuncia" integrado.</li>
+                    <li><strong>Votación y Respuestas:</strong> Los Usuarios pueden interactuar con las reseñas mediante votos y respuestas, debiendo mantener el mismo estándar ético en dichas interacciones.</li>
+                </ul>
+
+                <h4>5. EXENCIÓN DE RESPONSABILIDAD</h4>
+                <p><strong>Contenido de Terceros:</strong> Gino Social funciona como un mero intermediario. Las opiniones vertidas son de exclusiva responsabilidad de los Usuarios y no reflejan necesariamente la postura de los administradores ni de las revistas Helecho Social y CrisisPuntoCom.</p>
+                <p><strong>Veracidad de los Datos:</strong> Si bien la Plataforma procesa datos estadísticos (Gino Datos), no se garantiza la exactitud absoluta de los mismos, ya que dependen de la carga manual realizada por terceros.</p>
+                <p><strong>Disponibilidad:</strong> La Plataforma no garantiza el acceso ininterrumpido al servicio, pudiendo verse afectado por tareas de mantenimiento o fallos técnicos ajenos a su control.</p>
+
+                <h4>6. DONACIONES Y COLABORACIÓN</h4>
+                <p>Gino Social es un proyecto autogestionado. Las donaciones realizadas a través de los canales oficiales (Mercado Pago/Ginosocio) tienen carácter voluntario y no oneroso, destinándose exclusivamente al sostenimiento técnico y alojamiento del sitio.</p>
+
+                <h4>7. PROTECCIÓN DE DATOS (POLÍTICA DE PRIVACIDAD)</h4>
+                <p>La Plataforma utiliza servicios de infraestructura de terceros (Firebase) para el almacenamiento de datos. Gino Social se compromete a no comercializar los datos personales de los Usuarios y a utilizarlos únicamente para las finalidades funcionales de la Plataforma.</p>
+
+                <h4>8. MODIFICACIONES Y JURISDICCIÓN</h4>
+                <p>Los administradores podrán modificar estos Términos y Condiciones en cualquier momento. La continuación en el uso de la Plataforma implicará la aceptación de los nuevos términos. Para cualquier controversia, las partes se someten a la jurisdicción de los tribunales ordinarios de la Ciudad Autónoma de Buenos Aires, Argentina.</p>
+                <br>
+                <p style="font-style: italic; text-align: center;">Nota para el Usuario: "De lo que no se puede hablar es mejor callar." El respeto es la base de nuestra construcción colectiva.</p>
+            </div>
+            
+            <div class="modal-actions" style="margin-top: 1.5rem;">
+                <button type="button" id="cancelTyC" class="btn btn-outline" style="border-color: #e74c3c; color: #e74c3c;">Cancelar</button>
+                <button type="button" id="acceptTyC" class="btn btn-block" style="background: var(--primary-gradient);">Aceptar y Registrarse</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- OTROS MODALES PREEXISTENTES -->
     <div class="modal" id="termsModal">
         <div class="modal-content">
             <h2>Contrato Social</h2>
@@ -1963,14 +2077,15 @@
             currentCategory: 'materias',
         };
         
+        // Variable temporal para guardar datos de registro
+        let pendingRegistrationData = null;
+        
         let respuestasListeners = {}; 
         let yaCargadas = {
             materias: false, especiales: false, teorias: false, horasdeinv: false, idiomas: false
         };
         
-        // Variable para guardar la reseña a borrar temporalmente
         let pendingDelete = null;
-
         let currentSort = 'carrera';
         let currentSearch = '';
 
@@ -2050,7 +2165,6 @@
             }
         }
 
-        // --- FUNCIÓN MODIFICADA PARA ABRIR MODAL DE BORRADO ---
         function borrarResena(reviewId, materiaId) {
             pendingDelete = { reviewId, materiaId };
             mod('deleteConfirmModal').classList.add('active');
@@ -2193,7 +2307,6 @@
             });
         }
 
-        // Helper para resetear visualmente las estrellas
         function resetEstrellas() {
             document.querySelectorAll('.rating-input').forEach(group => {
                 delete group.dataset.rating;
@@ -2207,7 +2320,6 @@
             appState.materiaSeleccionada = m;
             mod('formTitle').textContent = `Dejar Reseña - ${m.nombre}`;
             
-            // Resetear y colapsar formulario al cambiar de materia
             mod('reviewFormElement').reset();
             resetEstrellas();
             const formContent = mod('reviewFormContent');
@@ -2266,11 +2378,8 @@
                 let fecha = r.fecha?.toDate().toLocaleDateString() || "Reciente";
                 let userNameDisplay = r.usuarioNombre || 'Anónimo';
 
-                // --- LÓGICA PARA EL BOTÓN DE BORRAR ---
                 let deleteOption = '';
-                // Verificar si hay usuario logueado Y si el usuario es el creador de la reseña
                 if (appState.user && appState.user.uid === r.usuarioId) {
-                    // Pasamos r.id (id de la reseña) y r.materiaId (id de la materia para restar el contador)
                     deleteOption = `
                         <div class="dropdown-item danger" onclick="borrarResena('${r.id}', '${r.materiaId}')">
                             <span>🗑️</span> Borrar
@@ -2390,7 +2499,6 @@
                     e.target.reset();
                     resetEstrellas();
                     
-                    // Colapsar formulario tras enviar
                     const content = mod('reviewFormContent');
                     const icon = mod('formToggleIcon');
                     content.classList.add('collapsed');
@@ -2459,12 +2567,24 @@
             mod('cancelLogin').onclick = () => mod('loginModal').classList.remove('active');
             mod('cancelRegister').onclick = () => mod('registerModal').classList.remove('active');
             
-            // Switch buttons inside modals
             mod('switchToRegister').onclick = (e) => {
                 e.preventDefault();
                 mod('loginModal').classList.remove('active');
                 mod('registerModal').classList.add('active');
             };
+            
+            // --- NUEVO: Cierre de modales al hacer clic fuera (overlay) ---
+            window.onclick = (e) => {
+                if (e.target.classList.contains('modal')) {
+                    e.target.classList.remove('active');
+                    
+                    // Si se cierra el modal de TyC sin aceptar, limpiamos los datos pendientes
+                    if (e.target.id === 'tycModal') {
+                        pendingRegistrationData = null;
+                    }
+                }
+            };
+            // -------------------------------------------------------------
 
             mod('logoutBtn').onclick = () => auth.signOut();
             
@@ -2477,35 +2597,78 @@
                 } catch(e) { mod('loginError').textContent = "Error al entrar."; }
             };
 
-            // FIX: Added missing Register Logic
-            mod('registerForm').onsubmit = async (e) => {
+            // --- LÓGICA DE REGISTRO MODIFICADA ---
+            mod('registerForm').onsubmit = (e) => {
                 e.preventDefault();
-                const firstName = mod('registerFirstName').value;
-                const lastName = mod('registerLastName').value;
-                const email = mod('registerEmail').value;
-                const password = mod('registerPassword').value;
-                const registerError = mod('registerError');
                 
-                // Show loading state could be added here
+                // 1. Guardar los datos temporalmente
+                pendingRegistrationData = {
+                    firstName: mod('registerFirstName').value,
+                    lastName: mod('registerLastName').value,
+                    email: mod('registerEmail').value,
+                    password: mod('registerPassword').value
+                };
+                
+                // 2. Ocultar modal de registro y mostrar TyC
+                mod('registerModal').classList.remove('active');
+                mod('tycModal').classList.add('active');
+            };
+
+            // --- LÓGICA DEL MODAL TyC ---
+            
+            // Botón Cancelar
+            mod('cancelTyC').onclick = () => {
+                mod('tycModal').classList.remove('active');
+                pendingRegistrationData = null; 
+                // Opcional: Volver a mostrar el registro por si quiere editar algo
+                // mod('registerModal').classList.add('active'); 
+            };
+            
+            // Botón Aceptar
+            mod('acceptTyC').onclick = async () => {
+                if (!pendingRegistrationData) return;
+                
+                const btn = mod('acceptTyC');
+                const originalText = btn.textContent;
+                btn.disabled = true;
+                btn.textContent = "Procesando...";
+                
+                const { firstName, lastName, email, password } = pendingRegistrationData;
+                
                 try {
                     const userCredential = await auth.createUserWithEmailAndPassword(email, password);
                     
-                    // Critical: Set the Display Name immediately
                     await userCredential.user.updateProfile({
                         displayName: `${firstName} ${lastName}`
                     });
                     
                     await userCredential.user.sendEmailVerification();
                     
+                    // Guardar en Firestore que aceptó los TyC
+                    await db.collection("usuarios").doc(userCredential.user.uid).set({
+                        nombre: firstName,
+                        apellido: lastName,
+                        email: email,
+                        tycAceptados: true,
+                        fechaAceptacionTyC: firebase.firestore.FieldValue.serverTimestamp()
+                    });
+                    
                     mostrarNotificacion('Cuenta creada con éxito. Por favor verifica tu email.', 'success');
-                    mod('registerModal').classList.remove('active');
-                    auth.signOut(); // Force them to login after verification
+                    mod('tycModal').classList.remove('active');
+                    auth.signOut();
                     
                 } catch (error) {
                     let msg = "Error al registrarse.";
                     if (error.code === 'auth/email-already-in-use') msg = "El email ya está registrado.";
                     if (error.code === 'auth/weak-password') msg = "La contraseña es muy débil.";
-                    registerError.textContent = msg;
+                    
+                    mod('tycModal').classList.remove('active');
+                    mod('registerModal').classList.add('active'); // Volver para mostrar error
+                    mod('registerError').textContent = msg;
+                } finally {
+                    btn.disabled = false;
+                    btn.textContent = originalText;
+                    pendingRegistrationData = null;
                 }
             };
             
@@ -2581,4 +2744,3 @@
     </script>
 </body>
 </html>
-
