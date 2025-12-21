@@ -1921,6 +1921,18 @@
             </div>
         </div>
     </div>
+    
+    <!-- MODAL DE CONFIRMACIÓN DE BORRADO -->
+    <div class="modal" id="deleteConfirmModal">
+        <div class="modal-content">
+            <h2 style="color: var(--accent-color);">⚠️ Borrar Reseña</h2>
+            <p style="text-align: center; margin-bottom: 1.5rem; color: #666;">¿Estás seguro de que quieres borrar esta reseña? Esta acción no se puede deshacer.</p>
+            <div class="modal-actions">
+                <button type="button" id="cancelDelete" class="btn btn-outline" style="background:transparent; border:1px solid #ddd; color: #666;">Cancelar</button>
+                <button type="button" id="confirmDeleteBtn" class="btn btn-block" style="background-color: var(--accent-color); border: none;">Borrar</button>
+            </div>
+        </div>
+    </div>
 
     <div id="ginoEasterEgg" class="gino-overlay">
         <img src="168358-gino.jpeg" alt="Gino Germani" onerror="this.style.display='none';">
@@ -1955,6 +1967,9 @@
         let yaCargadas = {
             materias: false, especiales: false, teorias: false, horasdeinv: false, idiomas: false
         };
+        
+        // Variable para guardar la reseña a borrar temporalmente
+        let pendingDelete = null;
 
         let currentSort = 'carrera';
         let currentSearch = '';
@@ -2035,31 +2050,10 @@
             }
         }
 
-        // --- NUEVA FUNCIÓN PARA BORRAR RESEÑAS ---
-        async function borrarResena(reviewId, materiaId) {
-            if (!confirm('¿Estás seguro de que quieres borrar esta reseña? Esta acción no se puede deshacer.')) return;
-
-            try {
-                // 1. Borrar la reseña
-                await db.collection('resenas').doc(reviewId).delete();
-
-                // 2. Restar 1 al contador de la materia
-                // Las reglas permiten update a usuarios autenticados, así que esto es seguro.
-                const tipoColeccion = appState.materiaSeleccionada.tipo; // e.g., 'materias', 'especiales'
-
-                await db.collection(tipoColeccion).doc(materiaId).update({
-                    numresenas: firebase.firestore.FieldValue.increment(-1)
-                });
-
-                mostrarNotificacion('Reseña eliminada correctamente.', 'success');
-
-                // 3. Recargar la lista
-                cargarresenas(materiaId);
-                
-            } catch (error) {
-                console.error("Error al borrar:", error);
-                mostrarNotificacion('Error al borrar la reseña.', 'error');
-            }
+        // --- FUNCIÓN MODIFICADA PARA ABRIR MODAL DE BORRADO ---
+        function borrarResena(reviewId, materiaId) {
+            pendingDelete = { reviewId, materiaId };
+            mod('deleteConfirmModal').classList.add('active');
         }
 
         function toggleReportMenu(reviewId) {
@@ -2392,7 +2386,7 @@
                         const v = parseInt(s.dataset.value);
                         group.dataset.rating = v;
                         group.querySelectorAll('.star').forEach(x => x.classList.toggle('active', parseInt(x.dataset.value) <= v));
-                        if(group.id === 'dificultadRating') mod('dificultadLabel').textContent = ["","Fácil","Media","Normal","Difícil","Hardcore"][v];
+                        if(group.id === 'dificultadRating') mod('dificultadLabel').textContent = ["","Muy fácil","Fácil","Normal","Difícil","Muy difícil"][v];
                     };
                 });
             });
@@ -2486,6 +2480,43 @@
                     if (error.code === 'auth/email-already-in-use') msg = "El email ya está registrado.";
                     if (error.code === 'auth/weak-password') msg = "La contraseña es muy débil.";
                     registerError.textContent = msg;
+                }
+            };
+            
+            // Configurar Modal de Borrado
+            mod('cancelDelete').onclick = () => {
+                mod('deleteConfirmModal').classList.remove('active');
+                pendingDelete = null;
+            };
+
+            mod('confirmDeleteBtn').onclick = async () => {
+                if (!pendingDelete) return;
+                const { reviewId, materiaId } = pendingDelete;
+                
+                const btn = mod('confirmDeleteBtn');
+                const originalText = btn.textContent;
+                btn.disabled = true;
+                btn.textContent = "Borrando...";
+
+                try {
+                    await db.collection('resenas').doc(reviewId).delete();
+
+                    const tipoColeccion = appState.materiaSeleccionada.tipo;
+
+                    await db.collection(tipoColeccion).doc(materiaId).update({
+                        numresenas: firebase.firestore.FieldValue.increment(-1)
+                    });
+
+                    mostrarNotificacion('Reseña eliminada correctamente.', 'success');
+                    cargarresenas(materiaId);
+                    mod('deleteConfirmModal').classList.remove('active');
+                } catch (error) {
+                    console.error("Error al borrar:", error);
+                    mostrarNotificacion('Error al borrar la reseña.', 'error');
+                } finally {
+                    btn.disabled = false;
+                    btn.textContent = originalText;
+                    pendingDelete = null;
                 }
             };
         }
