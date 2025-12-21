@@ -2193,10 +2193,28 @@
             });
         }
 
+        // Helper para resetear visualmente las estrellas
+        function resetEstrellas() {
+            document.querySelectorAll('.rating-input').forEach(group => {
+                delete group.dataset.rating;
+                group.querySelectorAll('.star').forEach(s => s.classList.remove('active'));
+            });
+            mod('dificultadLabel').textContent = '';
+        }
+
         async function seleccionarMateria(id, catName) {
             const m = appState.materias.find(x => x.id === id);
             appState.materiaSeleccionada = m;
             mod('formTitle').textContent = `Dejar Reseña - ${m.nombre}`;
+            
+            // Resetear y colapsar formulario al cambiar de materia
+            mod('reviewFormElement').reset();
+            resetEstrellas();
+            const formContent = mod('reviewFormContent');
+            const formIcon = mod('formToggleIcon');
+            formContent.classList.add('collapsed');
+            formIcon.classList.remove('rotated');
+
             mod('reviewForm').classList.add('active');
             document.querySelector('.resenas-container').classList.add('active');
             
@@ -2370,6 +2388,14 @@
                     
                     mostrarNotificacion('¡Reseña enviada!', 'success');
                     e.target.reset();
+                    resetEstrellas();
+                    
+                    // Colapsar formulario tras enviar
+                    const content = mod('reviewFormContent');
+                    const icon = mod('formToggleIcon');
+                    content.classList.add('collapsed');
+                    icon.classList.remove('rotated');
+
                     cargarresenas(appState.materiaSeleccionada.id);
                 } catch(err) { 
                     console.error(err);
