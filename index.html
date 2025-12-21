@@ -182,6 +182,7 @@
             border-top: 1px solid #eee;
             padding-top: 1rem;
         }
+        /* ---------------------------- */
 
         .navbar {
             position: fixed;
@@ -936,7 +937,7 @@
             margin-bottom: 1rem;
         }
         
-        /* --- MENU DE DENUNCIA / ACCIONES --- */
+        /* --- MENU DE DENUNCIA --- */
         .review-menu-container {
             position: relative;
         }
@@ -967,7 +968,7 @@
             box-shadow: 0 4px 12px rgba(0,0,0,0.15);
             border-radius: 8px;
             z-index: 100;
-            min-width: 150px;
+            min-width: 120px;
             overflow: hidden;
             border: 1px solid #eee;
         }
@@ -986,10 +987,6 @@
             display: flex;
             align-items: center;
             gap: 10px;
-            text-align: left;
-            width: 100%;
-            border: none;
-            background: transparent;
         }
 
         .dropdown-item:hover {
@@ -1751,7 +1748,7 @@
                             </div>
                         </div>
                     </div>
-                    <div class="form-group">
+                                    <div class="form-group">
                         <label for="reviewText">Reseña</label>
                         <textarea id="reviewText" placeholder="Sé respetuoso... de lo que no se puede hablar es mejor callar." required></textarea>
                     </div>
@@ -1881,14 +1878,17 @@
         </div>
     </div>
 
-    <!-- MODAL DE CONFIRMACIÓN DE ELIMINACIÓN -->
-    <div class="modal" id="deleteConfirmModal">
+    <div class="modal" id="termsModal">
         <div class="modal-content">
-            <h2 style="color: var(--accent-color);">¿Eliminar reseña?</h2>
-            <p style="text-align: center; margin-bottom: 1rem;">Esta acción no se puede deshacer. ¿Estás seguro de que quieres borrar tu reseña?</p>
+            <h2>Contrato Social</h2>
+            <p style="margin-bottom: 1.5rem; line-height: 1.6;">
+                Gino Social es una herramienta de estudiantes de Sociología. 
+                Al registrarte, aceptas mantener el respeto y la cordialidad. 
+                Cualquier comentario que ofenda a la moral social será reprimido mediante un hecho social.
+            </p>
             <div class="modal-actions">
-                <button type="button" id="cancelDeleteBtn" class="btn btn-outline" style="background:transparent; border:1px solid #ddd; color: #666;">Cancelar</button>
-                <button type="button" id="confirmDeleteBtn" class="btn btn-block" style="background-color: var(--accent-color);">Eliminar</button>
+                <button type="button" id="cancelTerms" class="btn btn-outline" style="background:transparent; border:1px solid #ddd; color: #666;">Cancelar</button>
+                <button type="button" id="acceptTerms" class="btn btn-block">Acepto</button>
             </div>
         </div>
     </div>
@@ -2035,56 +2035,6 @@
             }
         }
 
-        let pendingDeleteReviewId = null;
-        let pendingDeleteMateriaId = null;
-
-        function confirmarEliminarResena(reviewId, materiaId) {
-            pendingDeleteReviewId = reviewId;
-            pendingDeleteMateriaId = materiaId;
-            mod('deleteConfirmModal').classList.add('active');
-            document.querySelectorAll('.dropdown-menu.active').forEach(m => m.classList.remove('active'));
-        }
-
-        async function eliminarResena() {
-            if (!pendingDeleteReviewId || !pendingDeleteMateriaId) return;
-            
-            try {
-                // Actualizar contador de la materia
-                const materia = appState.materias.find(m => m.id === pendingDeleteMateriaId);
-                if (materia) {
-                    await db.collection(materia.tipo).doc(pendingDeleteMateriaId).update({
-                        numresenas: firebase.firestore.FieldValue.increment(-1)
-                    });
-                    // Actualizar estado local
-                    materia.numresenas = (materia.numresenas || 1) - 1;
-                }
-                
-                // Borrar documento
-                await db.collection('resenas').doc(pendingDeleteReviewId).delete();
-                
-                mostrarNotificacion('Reseña eliminada correctamente.', 'success');
-                mod('deleteConfirmModal').classList.remove('active');
-                
-                // Recargar lista si es la materia actual
-                if (appState.materiaSeleccionada && appState.materiaSeleccionada.id === pendingDeleteMateriaId) {
-                    cargarresenas(pendingDeleteMateriaId);
-                }
-                
-                // Si estaba en el modal de "Mis Reseñas", refrescar esa lista también
-                if (mod('myReviewsModal').classList.contains('active')) {
-                    mod('myReviewsBtn').click();
-                }
-                
-                actualizarVistaMaterias();
-                
-                pendingDeleteReviewId = null;
-                pendingDeleteMateriaId = null;
-            } catch (error) {
-                console.error("Error al eliminar:", error);
-                mostrarNotificacion('Error al eliminar la reseña.', 'error');
-            }
-        }
-
         function toggleReportMenu(reviewId) {
             const menu = mod(`menu-${reviewId}`);
             const isActive = menu.classList.contains('active');
@@ -2112,8 +2062,6 @@
                         card.innerHTML = `<div class="reply-header"><span class="reply-author">${reply.usuarioNombre || 'Anónimo'}</span><span>${fecha}</span></div><div>${reply.texto}</div>`;
                         listContainer.appendChild(card);
                     });
-                }, err => {
-                    console.error("Error en listener respuestas:", err);
                 });
         }
 
@@ -2193,8 +2141,6 @@
                     mod('authRequiredMessage').style.display = 'block';
                     mod('reviewFormElement').style.display = 'none';
                 }
-                // Refrescar reseñas por si el usuario actual puede borrar ahora
-                if (appState.resenas.length > 0) cargarresenasEnUI();
             });
         }
 
@@ -2276,7 +2222,6 @@
             list.innerHTML = res.length ? '' : '<div class="no-resenas">No hay reseñas.</div>';
             
             res.forEach(r => {
-                const isOwner = appState.user && r.usuarioId === appState.user.uid;
                 const card = crearElemento('div', 'review-card');
                 let estrellas = '★'.repeat(r.calificacionGeneral) + '☆'.repeat(5-r.calificacionGeneral);
                 let fecha = r.fecha?.toDate().toLocaleDateString() || "Reciente";
@@ -2294,14 +2239,9 @@
                         <div class="review-menu-container">
                             <button class="menu-dots" onclick="toggleReportMenu('${r.id}')">⋮</button>
                             <div class="dropdown-menu" id="menu-${r.id}">
-                                ${isOwner ? `
-                                <button class="dropdown-item danger" onclick="confirmarEliminarResena('${r.id}', '${r.materiaId}')">
-                                    <span>🗑️</span> Eliminar
-                                </button>
-                                ` : ''}
-                                <button class="dropdown-item danger" onclick="denunciarResena('${r.id}')">
+                                <div class="dropdown-item danger" onclick="denunciarResena('${r.id}')">
                                     <span>🚩</span> Denunciar
-                                </button>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -2333,26 +2273,14 @@
         async function handleVote(rid, type) {
             if (!appState.user) { mostrarNotificacion('Inicia sesión para votar.', 'error'); return; }
             const ref = db.collection('resenas').doc(rid);
-            try {
-                const doc = await ref.get();
-                const data = doc.data();
-                const votes = data.votes || {};
-                if (votes[appState.user.uid] === type) delete votes[appState.user.uid]; else votes[appState.user.uid] = type;
-                let l = 0, d = 0;
-                Object.values(votes).forEach(v => { if(v===1) l++; if(v===-1) d++; });
-                await ref.update({ votes, likes_count: l, dislikes_count: d });
-                
-                // Actualizar solo localmente para no refrescar todo
-                const reviewIdx = appState.resenas.findIndex(r => r.id === rid);
-                if (reviewIdx !== -1) {
-                    appState.resenas[reviewIdx].votes = votes;
-                    appState.resenas[reviewIdx].likes_count = l;
-                    appState.resenas[reviewIdx].dislikes_count = d;
-                    cargarresenasEnUI();
-                }
-            } catch (err) {
-                console.error("Error al votar:", err);
-            }
+            const doc = await ref.get();
+            const data = doc.data();
+            const votes = data.votes || {};
+            if (votes[appState.user.uid] === type) delete votes[appState.user.uid]; else votes[appState.user.uid] = type;
+            let l = 0, d = 0;
+            Object.values(votes).forEach(v => { if(v===1) l++; if(v===-1) d++; });
+            await ref.update({ votes, likes_count: l, dislikes_count: d });
+            cargarresenas(appState.materiaSeleccionada.id);
         }
 
         function configurarFormulario() {
@@ -2361,19 +2289,12 @@
                 const btn = e.target.querySelector('button');
                 btn.disabled = true;
                 const ratings = {
-                    gen: parseInt(mod('generalRating').dataset.rating || 0),
-                    cla: parseInt(mod('claridadRating').dataset.rating || 0),
-                    pro: parseInt(mod('programaRating').dataset.rating || 0),
-                    dif: parseInt(mod('dificultadRating').dataset.rating || 0),
-                    ofe: parseInt(mod('ofertaRating').dataset.rating || 0)
+                    gen: parseInt(mod('generalRating').dataset.rating),
+                    cla: parseInt(mod('claridadRating').dataset.rating),
+                    pro: parseInt(mod('programaRating').dataset.rating),
+                    dif: parseInt(mod('dificultadRating').dataset.rating),
+                    ofe: parseInt(mod('ofertaRating').dataset.rating)
                 };
-                
-                if (ratings.gen === 0) {
-                    mostrarNotificacion('Por favor, indica una calificación general.', 'error');
-                    btn.disabled = false;
-                    return;
-                }
-
                 try {
                     await db.collection('resenas').add({
                         materiaId: appState.materiaSeleccionada.id,
@@ -2384,34 +2305,19 @@
                         cursoVerano: mod('cursoVerano').checked,
                         tomanAsistencia: mod('tomanAsistencia').value,
                         calificacionGeneral: ratings.gen,
-                        claridad: ratings.cla, programa: ratings.pro, dificultad: ratings.dif, oferta: ratings.ofe,
+                        claridad: ratings.cla || 0, programa: ratings.pro || 0, dificultad: ratings.dif || 0, oferta: ratings.ofe || 0,
                         texto: mod('reviewText').value,
                         usuarioId: appState.user.uid,
                         usuarioNombre: appState.user.displayName,
                         fecha: firebase.firestore.FieldValue.serverTimestamp(),
                         likes_count: 0, dislikes_count: 0, replies_count: 0, denuncia: 0
                     });
-                    
-                    await db.collection(appState.materiaSeleccionada.tipo).doc(appState.materiaSeleccionada.id).update({ 
-                        numresenas: firebase.firestore.FieldValue.increment(1) 
-                    });
-                    
+                    await db.collection(appState.materiaSeleccionada.tipo).doc(appState.materiaSeleccionada.id).update({ numresenas: firebase.firestore.FieldValue.increment(1) });
                     mostrarNotificacion('¡Reseña enviada!', 'success');
                     e.target.reset();
-                    // Limpiar estrellas
-                    document.querySelectorAll('.rating-input .star').forEach(s => s.classList.remove('active'));
-                    document.querySelectorAll('.rating-input').forEach(ri => ri.dataset.rating = 0);
-                    mod('dificultadLabel').textContent = '';
-                    
                     cargarresenas(appState.materiaSeleccionada.id);
-                    actualizarVistaMaterias();
-                    toggleFormVisibility();
-                } catch(err) { 
-                    console.error("Error al enviar:", err);
-                    mostrarNotificacion('Error al enviar la reseña.', 'error'); 
-                } finally { 
-                    btn.disabled = false; 
-                }
+                } catch(err) { mostrarNotificacion('Error', 'error'); }
+                finally { btn.disabled = false; }
             };
         }
 
@@ -2422,7 +2328,7 @@
                         const v = parseInt(s.dataset.value);
                         group.dataset.rating = v;
                         group.querySelectorAll('.star').forEach(x => x.classList.toggle('active', parseInt(x.dataset.value) <= v));
-                        if(group.id === 'dificultadRating') mod('dificultadLabel').textContent = ["","Muy fácil","Fácil","Normal","Difícil","Muy difícil"][v];
+                        if(group.id === 'dificultadRating') mod('dificultadLabel').textContent = ["","Fácil","Media","Normal","Difícil","Hardcore"][v];
                     };
                 });
             });
@@ -2457,9 +2363,7 @@
             if(currentSearch) list = list.filter(m => m.nombre.toLowerCase().includes(currentSearch) || m.catedras?.some(c => c.nombre.toLowerCase().includes(currentSearch)));
             
             if(currentSort === 'reviews-desc') list.sort((a,b) => (b.numresenas||0) - (a.numresenas||0));
-            else if(currentSort === 'reviews-asc') list.sort((a,b) => (a.numresenas||0) - (b.numresenas||0));
             else if(currentSort === 'alpha-asc') list.sort((a,b) => a.nombre.localeCompare(b.nombre));
-            else if(currentSort === 'alpha-desc') list.sort((a,b) => b.nombre.localeCompare(a.nombre));
             else if(currentSort === 'carrera') list.sort((a,b) => materiasData.indexOf(a.nombre) - materiasData.indexOf(b.nombre));
             
             cargarMateriasEnUI(list);
@@ -2470,33 +2374,14 @@
             mod('registerBtn').onclick = () => mod('registerModal').classList.add('active');
             mod('cancelLogin').onclick = () => mod('loginModal').classList.remove('active');
             mod('cancelRegister').onclick = () => mod('registerModal').classList.remove('active');
-            
-            // Acciones de eliminación
-            mod('cancelDeleteBtn').onclick = () => mod('deleteConfirmModal').classList.remove('active');
-            mod('confirmDeleteBtn').onclick = eliminarResena;
-
             mod('logoutBtn').onclick = () => auth.signOut();
-            
             mod('loginForm').onsubmit = async (e) => {
                 e.preventDefault();
                 try {
                     const cred = await auth.signInWithEmailAndPassword(mod('loginEmail').value, mod('loginPassword').value);
-                    if(!cred.user.emailVerified) { 
-                        await auth.signOut(); 
-                        mod('loginError').textContent = "Por favor verifica tu email antes de entrar."; 
-                        return; 
-                    }
+                    if(!cred.user.emailVerified) { await auth.signOut(); mod('loginError').textContent = "Verifica tu email."; return; }
                     mod('loginModal').classList.remove('active');
-                    mostrarNotificacion('¡Bienvenido de nuevo!', 'success');
-                } catch(e) { 
-                    mod('loginError').textContent = "Email o contraseña incorrectos."; 
-                }
-            };
-
-            mod('switchToRegister').onclick = (e) => {
-                e.preventDefault();
-                mod('loginModal').classList.remove('active');
-                mod('registerModal').classList.add('active');
+                } catch(e) { mod('loginError').textContent = "Error al entrar."; }
             };
         }
 
@@ -2511,27 +2396,15 @@
             mod('myReviewsBtn').onclick = async () => {
                 const list = mod('myReviewsList');
                 mod('myReviewsModal').classList.add('active');
-                list.innerHTML = '<div style="text-align:center;padding:1rem;">Cargando...</div>';
-                try {
-                    const snap = await db.collection('resenas').where('usuarioId', '==', appState.user.uid).get();
-                    list.innerHTML = snap.empty ? '<p style="text-align:center;">No tienes reseñas publicadas todavía.</p>' : '';
-                    snap.forEach(d => {
-                        const r = d.data();
-                        const el = crearElemento('div', 'review-card');
-                        el.style.borderLeft = '4px solid var(--primary-color)';
-                        el.innerHTML = `
-                            <div style="display:flex; justify-content:space-between; align-items:center;">
-                                <h3 style="font-size:1.1rem;">${r.materiaNombre}</h3>
-                                <button class="btn btn-sm danger" onclick="confirmarEliminarResena('${d.id}', '${r.materiaId}')" style="background:#fff0f0; color:var(--accent-color); padding:5px 10px;">Eliminar</button>
-                            </div>
-                            <p style="font-size:0.9rem; margin-top:0.5rem; color:#666;">${r.catedra} - Cursada ${r.anioCursada}</p>
-                            <p style="margin-top:0.8rem; font-style:italic;">"${r.texto.substring(0, 100)}${r.texto.length > 100 ? '...' : ''}"</p>
-                        `;
-                        list.appendChild(el);
-                    });
-                } catch (err) {
-                    list.innerHTML = 'Error al cargar tus reseñas.';
-                }
+                list.innerHTML = 'Cargando...';
+                const snap = await db.collection('resenas').where('usuarioId', '==', appState.user.uid).get();
+                list.innerHTML = snap.empty ? 'No tienes reseñas.' : '';
+                snap.forEach(d => {
+                    const r = d.data();
+                    const el = crearElemento('div', 'review-card');
+                    el.innerHTML = `<h3>${r.materiaNombre}</h3><p>${r.texto}</p>`;
+                    list.appendChild(el);
+                });
             };
             mod('closeMyReviews').onclick = () => mod('myReviewsModal').classList.remove('active');
         }
@@ -2539,11 +2412,7 @@
         function mostrarNotificacion(m, t) {
             const n = crearElemento('div', `notification ${t}`, m);
             document.body.appendChild(n);
-            setTimeout(() => {
-                n.style.opacity = '0';
-                n.style.transform = 'translateX(100%)';
-                setTimeout(() => n.remove(), 300);
-            }, 4000);
+            setTimeout(() => n.remove(), 4000);
         }
 
         document.addEventListener('DOMContentLoaded', init);
