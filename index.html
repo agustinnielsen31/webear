@@ -633,7 +633,7 @@
         }
 
         .catedra-link {
-            background-color: #f0f2f5;
+            background-color: #f0f0f0;
             color: var(--dark-color);
             padding: 4px 12px;
             border-radius: 20px;
@@ -2035,6 +2035,33 @@
             }
         }
 
+        // --- NUEVA FUNCIÓN PARA BORRAR RESEÑAS ---
+        async function borrarResena(reviewId, materiaId) {
+            if (!confirm('¿Estás seguro de que quieres borrar esta reseña? Esta acción no se puede deshacer.')) return;
+
+            try {
+                // 1. Borrar la reseña
+                await db.collection('resenas').doc(reviewId).delete();
+
+                // 2. Restar 1 al contador de la materia
+                // Las reglas permiten update a usuarios autenticados, así que esto es seguro.
+                const tipoColeccion = appState.materiaSeleccionada.tipo; // e.g., 'materias', 'especiales'
+
+                await db.collection(tipoColeccion).doc(materiaId).update({
+                    numresenas: firebase.firestore.FieldValue.increment(-1)
+                });
+
+                mostrarNotificacion('Reseña eliminada correctamente.', 'success');
+
+                // 3. Recargar la lista
+                cargarresenas(materiaId);
+                
+            } catch (error) {
+                console.error("Error al borrar:", error);
+                mostrarNotificacion('Error al borrar la reseña.', 'error');
+            }
+        }
+
         function toggleReportMenu(reviewId) {
             const menu = mod(`menu-${reviewId}`);
             const isActive = menu.classList.contains('active');
@@ -2225,8 +2252,19 @@
                 const card = crearElemento('div', 'review-card');
                 let estrellas = '★'.repeat(r.calificacionGeneral) + '☆'.repeat(5-r.calificacionGeneral);
                 let fecha = r.fecha?.toDate().toLocaleDateString() || "Reciente";
-                // FIX: Fallback for missing user name to avoid "null"
                 let userNameDisplay = r.usuarioNombre || 'Anónimo';
+
+                // --- LÓGICA PARA EL BOTÓN DE BORRAR ---
+                let deleteOption = '';
+                // Verificar si hay usuario logueado Y si el usuario es el creador de la reseña
+                if (appState.user && appState.user.uid === r.usuarioId) {
+                    // Pasamos r.id (id de la reseña) y r.materiaId (id de la materia para restar el contador)
+                    deleteOption = `
+                        <div class="dropdown-item danger" onclick="borrarResena('${r.id}', '${r.materiaId}')">
+                            <span>🗑️</span> Borrar
+                        </div>
+                    `;
+                }
 
                 card.innerHTML = `
                     <div class="review-header">
@@ -2241,6 +2279,7 @@
                         <div class="review-menu-container">
                             <button class="menu-dots" onclick="toggleReportMenu('${r.id}')">⋮</button>
                             <div class="dropdown-menu" id="menu-${r.id}">
+                                ${deleteOption} 
                                 <div class="dropdown-item danger" onclick="denunciarResena('${r.id}')">
                                     <span>🚩</span> Denunciar
                                 </div>
@@ -2291,8 +2330,6 @@
                 const btn = e.target.querySelector('button');
                 btn.disabled = true;
                 
-                // Usamos auth.currentUser directamente para tener el objeto más actualizado
-                // y evitar problemas de stale state en appState.user
                 const user = auth.currentUser || appState.user;
                 
                 const ratings = {
@@ -2303,17 +2340,13 @@
                     ofe: parseInt(mod('ofertaRating').dataset.rating)
                 };
                 try {
-                    // Lógica robusta para obtener el nombre
                     let userNameToSave = user.displayName;
                     
-                    // Si no tiene nombre visible, usamos la parte del email antes del @
                     if (!userNameToSave && user.email) {
                         userNameToSave = user.email.split('@')[0];
-                        // Capitalizamos la primera letra para que quede mejor (ej: "juan" -> "Juan")
                         userNameToSave = userNameToSave.charAt(0).toUpperCase() + userNameToSave.slice(1);
                     }
                     
-                    // Si falla todo lo anterior, solo entonces usamos Anónimo
                     if (!userNameToSave) userNameToSave = 'Anónimo';
 
                     await db.collection('resenas').add({
@@ -2328,12 +2361,11 @@
                         claridad: ratings.cla || 0, programa: ratings.pro || 0, dificultad: ratings.dif || 0, oferta: ratings.ofe || 0,
                         texto: mod('reviewText').value,
                         usuarioId: user.uid,
-                        usuarioNombre: userNameToSave, // Nombre forzado
+                        usuarioNombre: userNameToSave, 
                         fecha: firebase.firestore.FieldValue.serverTimestamp(),
                         likes_count: 0, dislikes_count: 0, replies_count: 0, denuncia: 0
                     });
 
-                    // Intentar actualizar el contador
                     try {
                         await db.collection(appState.materiaSeleccionada.tipo)
                                 .doc(appState.materiaSeleccionada.id)
