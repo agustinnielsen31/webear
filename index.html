@@ -2225,13 +2225,15 @@
                 const card = crearElemento('div', 'review-card');
                 let estrellas = '★'.repeat(r.calificacionGeneral) + '☆'.repeat(5-r.calificacionGeneral);
                 let fecha = r.fecha?.toDate().toLocaleDateString() || "Reciente";
-                
+                // FIX: Fallback for missing user name to avoid "null"
+                let userNameDisplay = r.usuarioNombre || 'Anónimo';
+
                 card.innerHTML = `
                     <div class="review-header">
                         <div class="review-user">
-                            <div class="user-avatar">${(r.usuarioNombre || 'A')[0]}</div>
+                            <div class="user-avatar">${userNameDisplay[0]}</div>
                             <div class="review-user-info">
-                                <span class="review-user-name">${r.usuarioNombre || 'Anónimo'}</span>
+                                <span class="review-user-name">${userNameDisplay}</span>
                                 <span class="review-catedra">${r.catedra} ${r.practico !== 'Único' ? '- '+r.practico : ''}</span>
                                 <span class="review-date">${fecha} | Cursada ${r.anioCursada} ${r.cursoVerano ? '(Verano)' : ''}</span>
                             </div>
@@ -2288,6 +2290,11 @@
                 e.preventDefault();
                 const btn = e.target.querySelector('button');
                 btn.disabled = true;
+                
+                // Usamos auth.currentUser directamente para tener el objeto más actualizado
+                // y evitar problemas de stale state en appState.user
+                const user = auth.currentUser || appState.user;
+                
                 const ratings = {
                     gen: parseInt(mod('generalRating').dataset.rating),
                     cla: parseInt(mod('claridadRating').dataset.rating),
@@ -2296,6 +2303,19 @@
                     ofe: parseInt(mod('ofertaRating').dataset.rating)
                 };
                 try {
+                    // Lógica robusta para obtener el nombre
+                    let userNameToSave = user.displayName;
+                    
+                    // Si no tiene nombre visible, usamos la parte del email antes del @
+                    if (!userNameToSave && user.email) {
+                        userNameToSave = user.email.split('@')[0];
+                        // Capitalizamos la primera letra para que quede mejor (ej: "juan" -> "Juan")
+                        userNameToSave = userNameToSave.charAt(0).toUpperCase() + userNameToSave.slice(1);
+                    }
+                    
+                    // Si falla todo lo anterior, solo entonces usamos Anónimo
+                    if (!userNameToSave) userNameToSave = 'Anónimo';
+
                     await db.collection('resenas').add({
                         materiaId: appState.materiaSeleccionada.id,
                         materiaNombre: appState.materiaSeleccionada.nombre,
@@ -2307,16 +2327,28 @@
                         calificacionGeneral: ratings.gen,
                         claridad: ratings.cla || 0, programa: ratings.pro || 0, dificultad: ratings.dif || 0, oferta: ratings.ofe || 0,
                         texto: mod('reviewText').value,
-                        usuarioId: appState.user.uid,
-                        usuarioNombre: appState.user.displayName,
+                        usuarioId: user.uid,
+                        usuarioNombre: userNameToSave, // Nombre forzado
                         fecha: firebase.firestore.FieldValue.serverTimestamp(),
                         likes_count: 0, dislikes_count: 0, replies_count: 0, denuncia: 0
                     });
-                    await db.collection(appState.materiaSeleccionada.tipo).doc(appState.materiaSeleccionada.id).update({ numresenas: firebase.firestore.FieldValue.increment(1) });
+
+                    // Intentar actualizar el contador
+                    try {
+                        await db.collection(appState.materiaSeleccionada.tipo)
+                                .doc(appState.materiaSeleccionada.id)
+                                .update({ numresenas: firebase.firestore.FieldValue.increment(1) });
+                    } catch (counterError) {
+                        console.warn("Review saved, but counter update failed:", counterError);
+                    }
+                    
                     mostrarNotificacion('¡Reseña enviada!', 'success');
                     e.target.reset();
                     cargarresenas(appState.materiaSeleccionada.id);
-                } catch(err) { mostrarNotificacion('Error', 'error'); }
+                } catch(err) { 
+                    console.error(err);
+                    mostrarNotificacion('Error al enviar reseña', 'error'); 
+                }
                 finally { btn.disabled = false; }
             };
         }
@@ -2374,7 +2406,16 @@
             mod('registerBtn').onclick = () => mod('registerModal').classList.add('active');
             mod('cancelLogin').onclick = () => mod('loginModal').classList.remove('active');
             mod('cancelRegister').onclick = () => mod('registerModal').classList.remove('active');
+            
+            // Switch buttons inside modals
+            mod('switchToRegister').onclick = (e) => {
+                e.preventDefault();
+                mod('loginModal').classList.remove('active');
+                mod('registerModal').classList.add('active');
+            };
+
             mod('logoutBtn').onclick = () => auth.signOut();
+            
             mod('loginForm').onsubmit = async (e) => {
                 e.preventDefault();
                 try {
@@ -2382,6 +2423,38 @@
                     if(!cred.user.emailVerified) { await auth.signOut(); mod('loginError').textContent = "Verifica tu email."; return; }
                     mod('loginModal').classList.remove('active');
                 } catch(e) { mod('loginError').textContent = "Error al entrar."; }
+            };
+
+            // FIX: Added missing Register Logic
+            mod('registerForm').onsubmit = async (e) => {
+                e.preventDefault();
+                const firstName = mod('registerFirstName').value;
+                const lastName = mod('registerLastName').value;
+                const email = mod('registerEmail').value;
+                const password = mod('registerPassword').value;
+                const registerError = mod('registerError');
+                
+                // Show loading state could be added here
+                try {
+                    const userCredential = await auth.createUserWithEmailAndPassword(email, password);
+                    
+                    // Critical: Set the Display Name immediately
+                    await userCredential.user.updateProfile({
+                        displayName: `${firstName} ${lastName}`
+                    });
+                    
+                    await userCredential.user.sendEmailVerification();
+                    
+                    mostrarNotificacion('Cuenta creada con éxito. Por favor verifica tu email.', 'success');
+                    mod('registerModal').classList.remove('active');
+                    auth.signOut(); // Force them to login after verification
+                    
+                } catch (error) {
+                    let msg = "Error al registrarse.";
+                    if (error.code === 'auth/email-already-in-use') msg = "El email ya está registrado.";
+                    if (error.code === 'auth/weak-password') msg = "La contraseña es muy débil.";
+                    registerError.textContent = msg;
+                }
             };
         }
 
