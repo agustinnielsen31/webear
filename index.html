@@ -5,15 +5,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Gino</title>
     
-    <!-- Firebase Libraries -->
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
     
-    <!-- Google Ads -->
     <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6430126392523501" crossorigin="anonymous"></script>
 
-    <!-- Google Analytics -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-8BZFCJBMY6"></script>
     <script>
       window.dataLayer = window.dataLayer || [];
@@ -49,7 +46,6 @@
             color: var(--dark-color);
         }
 
-        /* --- SIDEBAR & MENU STYLES --- */
         .hamburger-btn {
             background: transparent;
             border: none;
@@ -182,7 +178,6 @@
             border-top: 1px solid #eee;
             padding-top: 1rem;
         }
-        /* ---------------------------- */
 
         .navbar {
             position: fixed;
@@ -937,7 +932,6 @@
             margin-bottom: 1rem;
         }
         
-        /* --- MENU DE DENUNCIA --- */
         .review-menu-container {
             position: relative;
         }
@@ -1000,7 +994,6 @@
         .dropdown-item.danger:hover {
             background: #fff5f5;
         }
-        /* ----------------------- */
 
         .review-user {
             display: flex;
@@ -1435,7 +1428,6 @@
             font-weight: 700;
         }
 
-        /* ESTILOS PARA CAJA DE SCROLL TyC */
         .tyc-scroll-box {
             background-color: #f9f9f9;
             border: 1px solid #ddd;
@@ -1465,7 +1457,6 @@
             margin-bottom: 10px;
         }
         
-        /* Scrollbar personalizada */
         .tyc-scroll-box::-webkit-scrollbar {
             width: 8px;
         }
@@ -1542,7 +1533,6 @@
     </style>
 </head>
 <body>
-    <!-- SIDEBAR DE NAVEGACIÓN -->
     <div class="sidebar-overlay" id="sidebarOverlay"></div>
     <div class="sidebar" id="mainSidebar">
         <div class="sidebar-header">
@@ -1577,7 +1567,6 @@
         </div>
     </div>
 
-    <!-- NAVBAR PRINCIPAL -->
     <nav id="mainNav" class="navbar">
         <div style="display: flex; align-items: center;">
             <button id="menuBtn" class="hamburger-btn" title="Menú">
@@ -1611,9 +1600,7 @@
         </div>
     </header>
     
-    <!-- CONTENEDOR PRINCIPAL -->
     <div class="container">
-        <!-- FILTROS DE CATEGORÍA -->
         <div class="category-filters">
             <button class="category-btn active" data-category="materias">Materias obligatorias</button>
             <button class="category-btn" data-category="especiales">Sociologías especiales</button>
@@ -1622,7 +1609,6 @@
             <button class="category-btn" data-category="idiomas">Idiomas</button>
         </div>
         
-        <!-- BUSCADOR Y ORDENAMIENTO -->
         <div class="controles-busqueda-container">
             <div class="search-container">
                 <input type="text" id="searchMaterias" placeholder="🔍 Buscar por materia o cátedra..." class="search-input">
@@ -1639,7 +1625,6 @@
             </div>
         </div>
         
-        <!-- GRID DE MATERIAS -->
         <h2 id="materiasGridTitle" style="margin-bottom: 1.5rem; color: var(--dark-color);">Materias obligatorias</h2>
         <div class="materias-grid" id="materiasGrid">
             <div style="grid-column: 1/-1; text-align: center; padding: 2rem; color: #666;">
@@ -1648,7 +1633,6 @@
             </div>
         </div>
         
-        <!-- FORMULARIO DE RESEÑA (COLAPSABLE) -->
         <div class="review-form-container" id="reviewForm">
             <div class="form-header-row" onclick="toggleFormVisibility()">
                 <h2 id="formTitle">Dejar Reseña</h2>
@@ -1807,7 +1791,6 @@
             </div>
         </div>
         
-        <!-- LISTA DE RESEÑAS -->
         <div class="resenas-container">
             <h2 style="color: var(--primary-color);">Reseñas de la Materia</h2>
             <br>
@@ -1844,10 +1827,8 @@
         </div>
     </div>
 
-    <!-- BOTÓN SCROLL TOP -->
     <button id="scrollToTopBtn" title="Ir arriba">▲</button>
     
-    <!-- MODALES -->
     <div class="modal" id="loginModal">
         <div class="modal-content">
             <h2>Iniciar Sesión</h2>
@@ -1927,7 +1908,6 @@
         </div>
     </div>
 
-    <!-- MODAL TÉRMINOS Y CONDICIONES (NUEVO) -->
     <div class="modal" id="tycModal">
         <div class="modal-content" style="max-width: 600px;">
             <h2 style="color: var(--primary-color); margin-bottom: 1rem; text-align: center;">📜 Términos y Condiciones</h2>
@@ -1936,7 +1916,6 @@
                 Para finalizar tu registro en <strong>Gino Social</strong>, por favor lee y acepta nuestras normas de convivencia.
             </p>
             
-            <!-- Caja con scroll para el texto largo -->
             <div class="tyc-scroll-box">
                 <h3 style="text-align: center; color: var(--primary-color);">TÉRMINOS Y CONDICIONES DE USO – GINOSOCIAL.AR</h3>
                 <p style="text-align: center; font-size: 0.8rem; color: #888;">Última actualización: 21 de diciembre de 2025</p>
@@ -1994,7 +1973,6 @@
         </div>
     </div>
 
-    <!-- OTROS MODALES PREEXISTENTES -->
     <div class="modal" id="termsModal">
         <div class="modal-content">
             <h2>Contrato Social</h2>
@@ -2054,7 +2032,6 @@
         </div>
     </div>
     
-    <!-- MODAL DE CONFIRMACIÓN DE BORRADO -->
     <div class="modal" id="deleteConfirmModal">
         <div class="modal-content">
             <h2 style="color: var(--accent-color);">⚠️ Borrar Reseña</h2>
@@ -2072,7 +2049,6 @@
     </div>
 
     <script>
-        /* --- CONFIGURACIÓN DE FIREBASE Y ESTADO DE LA APP --- */
         const firebaseConfig = {
             apiKey: "AIzaSyBnpshX3I7ZY3EUoraDZPdb2W6B6HZOYR0",
             authDomain: "social-sociales.firebaseapp.com",
@@ -2095,7 +2071,6 @@
             currentCategory: 'materias',
         };
         
-        // Variable temporal para guardar datos de registro
         let pendingRegistrationData = null;
         
         let respuestasListeners = {}; 
@@ -2119,7 +2094,6 @@
 
         const mod = (id) => document.getElementById(id);
 
-        /* --- FUNCIONES GENÉRICAS PARA MODALES --- */
         function abrirModal(id) {
             const el = mod(id);
             if (el) el.classList.add('active');
@@ -2130,11 +2104,9 @@
             if (!el) return;
             el.classList.remove('active');
             
-            // Lógica de limpieza centralizada para evitar errores
             if (id === 'tycModal') pendingRegistrationData = null;
             if (id === 'deleteConfirmModal') pendingDelete = null;
         }
-        /* ----------------------------------------- */
 
         function init() {
             configurarFirebaseAuth();
@@ -2154,7 +2126,6 @@
             configurarMisResenas(); 
             configurarSidebar(); 
             
-            // Cerrar menú de denuncias al hacer clic fuera
             document.addEventListener('click', (e) => {
                 if (!e.target.closest('.review-menu-container')) {
                     document.querySelectorAll('.dropdown-menu.active').forEach(m => m.classList.remove('active'));
@@ -2604,14 +2575,12 @@
         }
 
         function configurarModales() {
-            // Lógica general de triggers usando las funciones genéricas
             mod('loginBtn').onclick = () => abrirModal('loginModal');
             mod('registerBtn').onclick = () => abrirModal('registerModal');
             
             mod('cancelLogin').onclick = () => cerrarModal('loginModal');
             mod('cancelRegister').onclick = () => cerrarModal('registerModal');
             
-            // Botón cerrar del modal Colaborar que faltaba implementar
             mod('closeCollaborate').onclick = () => cerrarModal('collaborateModal');
 
             mod('switchToRegister').onclick = (e) => {
@@ -2620,13 +2589,11 @@
                 abrirModal('registerModal');
             };
             
-            // --- NUEVO: Cierre de modales genérico al hacer clic fuera (overlay) ---
             window.onclick = (e) => {
                 if (e.target.classList.contains('modal')) {
                     cerrarModal(e.target.id);
                 }
             };
-            // -------------------------------------------------------------
 
             mod('logoutBtn').onclick = () => auth.signOut();
             
@@ -2639,11 +2606,9 @@
                 } catch(e) { mod('loginError').textContent = "Error al entrar."; }
             };
 
-            // --- LÓGICA DE REGISTRO MODIFICADA ---
             mod('registerForm').onsubmit = (e) => {
                 e.preventDefault();
                 
-                // 1. Guardar los datos temporalmente
                 pendingRegistrationData = {
                     firstName: mod('registerFirstName').value,
                     lastName: mod('registerLastName').value,
@@ -2651,20 +2616,15 @@
                     password: mod('registerPassword').value
                 };
                 
-                // 2. Ocultar modal de registro y mostrar TyC
                 cerrarModal('registerModal');
                 abrirModal('tycModal');
             };
 
-            // --- LÓGICA DEL MODAL TyC ---
             
-            // Botón Cancelar
             mod('cancelTyC').onclick = () => {
                 cerrarModal('tycModal');
-                // Nota: pendingRegistrationData se limpia automáticamente en cerrarModal
             };
             
-            // Botón Aceptar
             mod('acceptTyC').onclick = async () => {
                 if (!pendingRegistrationData) return;
                 
@@ -2684,7 +2644,6 @@
                     
                     await userCredential.user.sendEmailVerification();
                     
-                    // Guardar en Firestore que aceptó los TyC
                     await db.collection("usuarios").doc(userCredential.user.uid).set({
                         nombre: firstName,
                         apellido: lastName,
@@ -2703,7 +2662,7 @@
                     if (error.code === 'auth/weak-password') msg = "La contraseña es muy débil.";
                     
                     cerrarModal('tycModal');
-                    abrirModal('registerModal'); // Volver para mostrar error
+                    abrirModal('registerModal'); 
                     mod('registerError').textContent = msg;
                 } finally {
                     btn.disabled = false;
@@ -2711,10 +2670,8 @@
                 }
             };
             
-            // Configurar Modal de Borrado
             mod('cancelDelete').onclick = () => {
                 cerrarModal('deleteConfirmModal');
-                // Nota: pendingDelete se limpia automáticamente en cerrarModal
             };
 
             mod('confirmDeleteBtn').onclick = async () => {
@@ -2783,4 +2740,3 @@
     </script>
 </body>
 </html>
-
