@@ -9,8 +9,7 @@
         body { font-family: 'Segoe UI', sans-serif; background: #f5f7fa; color: #333; margin: 0; }
         
         .navbar { background: white; padding: 1rem 2rem; display: flex; justify-content: space-between; align-items: center; }
-        .btn-back { text-decoration: none; color: var(--dark); font-weight: 600; }
-        
+            
         .container { max-width: 800px; margin: 0 auto; padding: 2rem; }
         
         .timeline { border-left: 3px solid #ddd; padding-left: 2rem; margin-top: 2rem; }
@@ -31,10 +30,48 @@
     </style>
 </head>
 <body>
+
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+    <div class="sidebar" id="mainSidebar">
+        <div class="sidebar-header">
+            <span class="sidebar-brand">Gino Social</span>
+            <button class="close-sidebar-btn" id="closeSidebar">✕</button>
+        </div>
+        
+        <div class="sidebar-menu">
+            <!-- Apunta a la raíz (Página Principal) -->
+            <a href="https://ginosocial.ar" class="sidebar-item">
+                <span>💬</span> Reseñas
+            </a>
+            <!-- Enlace activo para Datos -->
+            <a href="https://ginosocial.ar/datos" class="sidebar-item">
+                <span>📊</span> Centro de Datos
+            </a>
+            <!-- Apunta al archivo hermano info.html -->
+            <a href="https://ginosocial.ar/ContratoSocial" class="sidebar-item">
+                <span>⚖️</span> Contrato Social
+            </a>
+            <a href="https://ginosocial.ar/bitacora" class="sidebar-item active">
+                <span>📓</span> Bitácora
+            </a>
+            <!-- Apunta a la página de Quienes Somos -->
+            <a href="https://ginosocial.ar/quienessomos" class="sidebar-item">
+                <span>👥</span> ¿Quienes somos?
+            </a>
+            <a href="#" id="sidebarCollaborateBtn" class="sidebar-item highlight">
+                <span>🤝</span> Colaborar
+            </a>
+        </div>
+
+        <div class="sidebar-footer">
+            <p>© 2025 Gino Social</p>
+            <p style="font-size: 0.7rem; margin-top: 5px;">Hecho con ❤️ por estudiantes</p>
+        </div>
+    </div>
+    
     <nav class="navbar">
-        <span style="font-weight: 800; font-size: 1.2rem;">🛠️ DevLog</span>
-        <a href="index.html" class="btn-back">← Volver al Hub</a>
-    </nav>
+        <span style="font-weight: 800; font-size: 1.2rem;">🛠️ Bitácora</span>
+           </nav>
 
     <div class="container">
         <h1>Bitácora de Desarrollo</h1>
