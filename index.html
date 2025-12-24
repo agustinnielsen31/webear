@@ -1664,21 +1664,22 @@
                 </div>
                 
                <form id="reviewFormElement" style="display: none;">
-                <div class="form-row">
-                <div class="form-group">
-                    <label for="catedra">Cátedra</label>
-                    <select id="catedra" required>
-                        <option value="">Selecciona una cátedra</option>
-                    </select>
-                </div>
-                
-                <div class="form-group" id="practico-form-group">
-                    <label for="practico">Práctico</label>
-                    <select id="practico" required>
-                        <option value="">Selecciona un práctico</option>
-                    </select>
-                </div>
-            </div>
+    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="catedra">Cátedra</label>
+                            <select id="catedra" required>
+                                <option value="">Selecciona una cátedra</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group" id="practico-form-group">
+                            <label for="practico">Práctico</label>
+                            <select id="practico" required>
+                                <option value="">Selecciona un práctico</option>
+                            </select>
+                        </div>
+                    </div>
                     
                     <div class="form-group">
                         <label for="anioCursada">Año de cursada</label>
@@ -2103,6 +2104,23 @@
 
         const mod = (id) => document.getElementById(id);
 
+        /* --- FUNCIONES GENÉRICAS PARA MODALES --- */
+        function abrirModal(id) {
+            const el = mod(id);
+            if (el) el.classList.add('active');
+        }
+
+        function cerrarModal(id) {
+            const el = mod(id);
+            if (!el) return;
+            el.classList.remove('active');
+            
+            // Lógica de limpieza centralizada para evitar errores
+            if (id === 'tycModal') pendingRegistrationData = null;
+            if (id === 'deleteConfirmModal') pendingDelete = null;
+        }
+        /* ----------------------------------------- */
+
         function init() {
             configurarFirebaseAuth();
             cargarMaterias('materias'); 
@@ -2140,7 +2158,12 @@
             const close = () => { sidebar.classList.remove('active'); overlay.classList.remove('active'); document.body.style.overflow = ''; };
             closeBtn.onclick = close;
             overlay.onclick = close;
-            sidebarCollaborateBtn.onclick = (e) => { e.preventDefault(); close(); mod('collaborateModal').classList.add('active'); };
+            
+            sidebarCollaborateBtn.onclick = (e) => { 
+                e.preventDefault(); 
+                close(); 
+                abrirModal('collaborateModal'); 
+            };
         }
 
         function toggleFormVisibility() {
@@ -2169,7 +2192,7 @@
 
         function borrarResena(reviewId, materiaId) {
             pendingDelete = { reviewId, materiaId };
-            mod('deleteConfirmModal').classList.add('active');
+            abrirModal('deleteConfirmModal');
         }
 
         function toggleReportMenu(reviewId) {
@@ -2564,26 +2587,26 @@
         }
 
         function configurarModales() {
-            mod('loginBtn').onclick = () => mod('loginModal').classList.add('active');
-            mod('registerBtn').onclick = () => mod('registerModal').classList.add('active');
-            mod('cancelLogin').onclick = () => mod('loginModal').classList.remove('active');
-            mod('cancelRegister').onclick = () => mod('registerModal').classList.remove('active');
+            // Lógica general de triggers usando las funciones genéricas
+            mod('loginBtn').onclick = () => abrirModal('loginModal');
+            mod('registerBtn').onclick = () => abrirModal('registerModal');
             
+            mod('cancelLogin').onclick = () => cerrarModal('loginModal');
+            mod('cancelRegister').onclick = () => cerrarModal('registerModal');
+            
+            // Botón cerrar del modal Colaborar que faltaba implementar
+            mod('closeCollaborate').onclick = () => cerrarModal('collaborateModal');
+
             mod('switchToRegister').onclick = (e) => {
                 e.preventDefault();
-                mod('loginModal').classList.remove('active');
-                mod('registerModal').classList.add('active');
+                cerrarModal('loginModal');
+                abrirModal('registerModal');
             };
             
-            // --- NUEVO: Cierre de modales al hacer clic fuera (overlay) ---
+            // --- NUEVO: Cierre de modales genérico al hacer clic fuera (overlay) ---
             window.onclick = (e) => {
                 if (e.target.classList.contains('modal')) {
-                    e.target.classList.remove('active');
-                    
-                    // Si se cierra el modal de TyC sin aceptar, limpiamos los datos pendientes
-                    if (e.target.id === 'tycModal') {
-                        pendingRegistrationData = null;
-                    }
+                    cerrarModal(e.target.id);
                 }
             };
             // -------------------------------------------------------------
@@ -2595,7 +2618,7 @@
                 try {
                     const cred = await auth.signInWithEmailAndPassword(mod('loginEmail').value, mod('loginPassword').value);
                     if(!cred.user.emailVerified) { await auth.signOut(); mod('loginError').textContent = "Verifica tu email."; return; }
-                    mod('loginModal').classList.remove('active');
+                    cerrarModal('loginModal');
                 } catch(e) { mod('loginError').textContent = "Error al entrar."; }
             };
 
@@ -2612,18 +2635,16 @@
                 };
                 
                 // 2. Ocultar modal de registro y mostrar TyC
-                mod('registerModal').classList.remove('active');
-                mod('tycModal').classList.add('active');
+                cerrarModal('registerModal');
+                abrirModal('tycModal');
             };
 
             // --- LÓGICA DEL MODAL TyC ---
             
             // Botón Cancelar
             mod('cancelTyC').onclick = () => {
-                mod('tycModal').classList.remove('active');
-                pendingRegistrationData = null; 
-                // Opcional: Volver a mostrar el registro por si quiere editar algo
-                // mod('registerModal').classList.add('active'); 
+                cerrarModal('tycModal');
+                // Nota: pendingRegistrationData se limpia automáticamente en cerrarModal
             };
             
             // Botón Aceptar
@@ -2656,7 +2677,7 @@
                     });
                     
                     mostrarNotificacion('Cuenta creada con éxito. Por favor verifica tu email.', 'success');
-                    mod('tycModal').classList.remove('active');
+                    cerrarModal('tycModal');
                     auth.signOut();
                     
                 } catch (error) {
@@ -2664,20 +2685,19 @@
                     if (error.code === 'auth/email-already-in-use') msg = "El email ya está registrado.";
                     if (error.code === 'auth/weak-password') msg = "La contraseña es muy débil.";
                     
-                    mod('tycModal').classList.remove('active');
-                    mod('registerModal').classList.add('active'); // Volver para mostrar error
+                    cerrarModal('tycModal');
+                    abrirModal('registerModal'); // Volver para mostrar error
                     mod('registerError').textContent = msg;
                 } finally {
                     btn.disabled = false;
                     btn.textContent = originalText;
-                    pendingRegistrationData = null;
                 }
             };
             
             // Configurar Modal de Borrado
             mod('cancelDelete').onclick = () => {
-                mod('deleteConfirmModal').classList.remove('active');
-                pendingDelete = null;
+                cerrarModal('deleteConfirmModal');
+                // Nota: pendingDelete se limpia automáticamente en cerrarModal
             };
 
             mod('confirmDeleteBtn').onclick = async () => {
@@ -2700,14 +2720,14 @@
 
                     mostrarNotificacion('Reseña eliminada correctamente.', 'success');
                     cargarresenas(materiaId);
-                    mod('deleteConfirmModal').classList.remove('active');
+                    cerrarModal('deleteConfirmModal');
                 } catch (error) {
                     console.error("Error al borrar:", error);
                     mostrarNotificacion('Error al borrar la reseña.', 'error');
+                    cerrarModal('deleteConfirmModal');
                 } finally {
                     btn.disabled = false;
                     btn.textContent = originalText;
-                    pendingDelete = null;
                 }
             };
         }
@@ -2722,7 +2742,7 @@
         function configurarMisResenas() {
             mod('myReviewsBtn').onclick = async () => {
                 const list = mod('myReviewsList');
-                mod('myReviewsModal').classList.add('active');
+                abrirModal('myReviewsModal');
                 list.innerHTML = 'Cargando...';
                 const snap = await db.collection('resenas').where('usuarioId', '==', appState.user.uid).get();
                 list.innerHTML = snap.empty ? 'No tienes reseñas.' : '';
@@ -2733,7 +2753,7 @@
                     list.appendChild(el);
                 });
             };
-            mod('closeMyReviews').onclick = () => mod('myReviewsModal').classList.remove('active');
+            mod('closeMyReviews').onclick = () => cerrarModal('myReviewsModal');
         }
 
         function mostrarNotificacion(m, t) {
@@ -2746,4 +2766,3 @@
     </script>
 </body>
 </html>
-
