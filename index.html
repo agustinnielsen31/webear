@@ -2597,6 +2597,8 @@
             if(currentSort === 'reviews-desc') list.sort((a,b) => (b.numresenas||0) - (a.numresenas||0));
             else if(currentSort === 'alpha-asc') list.sort((a,b) => a.nombre.localeCompare(b.nombre));
             else if(currentSort === 'carrera') list.sort((a,b) => materiasData.indexOf(a.nombre) - materiasData.indexOf(b.nombre));
+
+            if(currentSort === 'reviews-asc') list.sort((b,a) => (b.numresenas||0) - (a.numresenas||0));
             
             cargarMateriasEnUI(list);
         }
@@ -2781,3 +2783,4 @@
     </script>
 </body>
 </html>
+
