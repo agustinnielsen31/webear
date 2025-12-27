@@ -1,11 +1,11 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet" />
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Gino</title>
-    
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+      <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
     
@@ -1542,22 +1542,27 @@
         
         <div class="sidebar-menu">
             <a href="https://ginosocial.ar" class="sidebar-item active">
-                <span>💬</span> Reseñas
+                <span class="material-symbols-outlined"> comment_bank
+</span> Reseñas
             </a>
             <a href="https://ginosocial.ar/datos" class="sidebar-item">
-                <span>📊</span> Centro de Datos
+             <span class="material-symbols-outlined">graph_3</span> Centro de Datos
             </a>
             <a href="https://ginosocial.ar/ContratoSocial" class="sidebar-item">
-                <span>⚖️</span> Contrato Social
+                <span class="material-symbols-outlined"> diversity_3
+</span> Contrato Social
             </a>
             <a href="https://ginosocial.ar/bitacora" class="sidebar-item">
-                <span>📓</span> Bitácora
+                <span class="material-symbols-outlined"> book_5
+</span> Bitácora
             </a>
             <a href="https://ginosocial.ar/quienessomos" class="sidebar-item">
-                <span>👥</span> ¿Quienes somos?
+                <span class="material-symbols-outlined"> co_present
+</span> ¿Quienes somos?
             </a>
             <a href="#" id="sidebarCollaborateBtn" class="sidebar-item highlight">
-                <span>🤝</span> Colaborar
+                <span class="material-symbols-outlined"> handshake
+</span> Colaborar
             </a>
         </div>
 
@@ -1841,7 +1846,8 @@
                     <label for="loginPassword">Contraseña</label>
                     <div class="password-wrapper">
                         <input type="password" id="loginPassword" required>
-                        <button type="button" class="toggle-password-btn" data-target="loginPassword">👁️</button>
+                        <button type="button" class="toggle-password-btn" data-target="loginPassword"><span class="material-symbols-outlined"> visibility
+</span>️</button>
                     </div>
                 </div>
                 <div id="loginError" class="error-message"></div>
@@ -1886,7 +1892,9 @@
                             <label for="registerPassword">Contraseña</label>
                             <div class="password-wrapper">
                                 <input type="password" id="registerPassword" required minlength="6">
-                                <button type="button" class="toggle-password-btn" data-target="registerPassword">👁️</button>
+                                <button type="button" class="toggle-password-btn" data-target="registerPassword"><span class="material-symbols-outlined">
+visibility
+</span>️</button>
                             </div>
                         </div>
                         <div id="registerError" class="error-message"></div>
@@ -2393,7 +2401,9 @@
                 if (appState.user && appState.user.uid === r.usuarioId) {
                     deleteOption = `
                         <div class="dropdown-item danger" onclick="borrarResena('${r.id}', '${r.materiaId}')">
-                            <span>🗑️</span> Borrar
+                           <span class="material-symbols-outlined">
+delete
+</span>> Borrar
                         </div>
                     `;
                 }
@@ -2413,7 +2423,9 @@
                             <div class="dropdown-menu" id="menu-${r.id}">
                                 ${deleteOption} 
                                 <div class="dropdown-item danger" onclick="denunciarResena('${r.id}')">
-                                    <span>🚩</span> Denunciar
+                                    <span class="material-symbols-outlined">
+report
+</span> Denunciar
                                 </div>
                             </div>
                         </div>
@@ -2427,9 +2439,15 @@
                         <div class="review-aspect"><span class="aspect-name">Oferta</span><span class="aspect-value">${r.oferta}/5</span></div>
                     </div>
                     <div class="review-footer">
-                        <button class="vote-control ${r.votes?.[appState.user?.uid]===1?'like-active':''}" onclick="handleVote('${r.id}', 1)">👍 ${r.likes_count||0}</button>
-                        <button class="vote-control ${r.votes?.[appState.user?.uid]===-1?'dislike-active':''}" onclick="handleVote('${r.id}', -1)">👎 ${r.dislikes_count||0}</button>
-                        <button class="vote-control btn-reply" onclick="toggleRespuestas('${r.id}')">💬 ${r.replies_count||''}</button>
+                        <button class="vote-control ${r.votes?.[appState.user?.uid]===1?'like-active':''}" onclick="handleVote('${r.id}', 1)"><span class="material-symbols-outlined">
+thumb_up
+</span> ${r.likes_count||0}</button>
+                        <button class="vote-control ${r.votes?.[appState.user?.uid]===-1?'dislike-active':''}" onclick="handleVote('${r.id}', -1)"><span class="material-symbols-outlined">
+thumb_down
+</span> ${r.dislikes_count||0}</button>
+                        <button class="vote-control btn-reply" onclick="toggleRespuestas('${r.id}')"><span class="material-symbols-outlined">
+add_comment
+</span> ${r.replies_count||''}</button>
                     </div>
                     <div class="replies-container" id="replies-container-${r.id}">
                         <div id="replies-list-${r.id}"></div>
