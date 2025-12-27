@@ -3,41 +3,820 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Información - Gino Social</title>
+    <title>Contrato Social - Gino</title>
+    
+    <!-- Firebase SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+    
     <style>
-        body { font-family: 'Segoe UI', sans-serif; line-height: 1.6; color: #333; max-width: 800px; margin: 0 auto; padding: 2rem; background: #f9f9f9; }
-        .card { background: white; padding: 2rem; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); margin-bottom: 2rem; }
-        h1, h2 { color: #2c3e50; }
-        h1 { border-bottom: 3px solid #ff7d29; padding-bottom: 10px; display: inline-block; }
-        .question { font-weight: 700; margin-top: 1.5rem; color: #ff7d29; }
-        .back-link { display: block; margin-bottom: 2rem; text-decoration: none; color: #666; }
-        .back-link:hover { color: #ff7d29; }
+        :root {
+            --primary-color: #ff7d29;
+            --primary-gradient: linear-gradient(135deg, #ff7d29 0%, #ff914d 100%);
+            --secondary-color: #ecf0f1;
+            --light-color: #ffffff;
+            --success-color: #2ecc71;
+            --warning-color: #f39c12;
+            --accent-color: #e74c3c;
+            --dark-color: #2c3e50;
+            --shadow-sm: 0 2px 4px rgba(0,0,0,0.05);
+            --shadow-md: 0 4px 6px rgba(0,0,0,0.1);
+            --navbar-height: 60px;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        html, body {
+            overflow-x: hidden;
+            width: 100%;
+        }
+
+        body {
+            background-color: #f5f7fa;
+            line-height: 1.6;
+            color: var(--dark-color);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            padding-top: var(--navbar-height);
+        }
+
+        /* --- SIDEBAR & MENU STYLES --- */
+        .hamburger-btn {
+            background: transparent;
+            border: none;
+            color: var(--primary-color);
+            font-size: 1.8rem;
+            cursor: pointer;
+            padding: 5px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: transform 0.2s;
+            z-index: 1100;
+            margin-right: 15px;
+        }
+        
+        .hamburger-btn:hover {
+            transform: scale(1.1);
+        }
+
+        .sidebar-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 1099;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(3px);
+        }
+
+        .sidebar-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .sidebar {
+            position: fixed;
+            top: 0;
+            left: -280px;
+            width: 280px;
+            height: 100%;
+            background: white;
+            z-index: 1100;
+            box-shadow: 2px 0 15px rgba(0,0,0,0.1);
+            transition: left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex;
+            flex-direction: column;
+            padding: 2rem 1.5rem;
+        }
+
+        .sidebar.active {
+            left: 0;
+        }
+
+        .sidebar-header {
+            margin-bottom: 2rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid #eee;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .sidebar-brand {
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: var(--primary-color);
+        }
+
+        .close-sidebar-btn {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            color: #888;
+            cursor: pointer;
+        }
+
+        .sidebar-menu {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            flex: 1;
+        }
+
+        .sidebar-item {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 12px 15px;
+            text-decoration: none;
+            color: var(--dark-color);
+            font-weight: 600;
+            border-radius: 12px;
+            transition: background 0.2s;
+            border-left: 4px solid transparent;
+        }
+
+        .sidebar-item:hover {
+            background-color: #fff0e6;
+            color: var(--primary-color);
+        }
+
+        .sidebar-item.active {
+            background-color: #fff0e6;
+            color: var(--primary-color);
+            border-left: 4px solid var(--primary-color);
+            border-right: none;
+        }
+
+        .sidebar-item.highlight {
+            background: var(--primary-gradient);
+            color: white;
+            margin-top: 1rem;
+            justify-content: center;
+            box-shadow: 0 4px 10px rgba(255, 125, 41, 0.3);
+            border-left: none;
+        }
+        
+        .sidebar-item.highlight:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 15px rgba(255, 125, 41, 0.4);
+        }
+
+        .sidebar-footer {
+            margin-top: auto;
+            text-align: center;
+            font-size: 0.8rem;
+            color: #999;
+            border-top: 1px solid #eee;
+            padding-top: 1rem;
+        } 
+
+        /* Navbar FIJA */
+        .navbar {
+            background: white;
+            padding: 0.5rem 2rem;
+            display: flex;
+            justify-content: space-between; 
+            align-items: center;
+            box-shadow: var(--shadow-sm);
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: var(--navbar-height);
+            z-index: 100;
+        }
+
+        .navbar-left {
+            display: flex;
+            align-items: center;
+        }
+
+        .brand-logo {
+            font-weight: 800;
+            font-size: 1.5rem;
+            color: var(--primary-color);
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .btn-back {
+            background: transparent;
+            border: 1px solid var(--primary-color);
+            color: var(--primary-color);
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .btn-back:hover {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        /* Header */
+        .page-header {
+            background: var(--primary-gradient);
+            color: white;
+            padding: 3rem 1.5rem;
+            text-align: center;
+            margin-bottom: 2rem;
+            clip-path: polygon(0 0, 100% 0, 100% 90%, 0 100%);
+            width: 100%;
+        }
+
+        .page-header h1 {
+            font-size: 3.5rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            letter-spacing: -0.5px;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .page-header p {
+            opacity: 0.95;
+            font-size: 1.2rem;
+            max-width: 700px;
+            margin: 0 auto;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 0 2rem 2rem;
+            flex: 1;
+            width: 100%;
+        }
+
+        /* Tarjeta Genérica */
+        .data-card {
+            background: white;
+            border-radius: 16px;
+            padding: 2.5rem;
+            box-shadow: var(--shadow-md);
+            margin-bottom: 2rem;
+            position: relative;
+            overflow: hidden;
+            width: 100%;
+            border-top: 4px solid var(--primary-color);
+        }
+
+        .data-card h2 {
+            color: var(--primary-color);
+            margin-bottom: 1.5rem;
+            font-size: 1.8rem;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 0.5rem;
+        }
+        
+        .section-text {
+            color: #555;
+            font-size: 1.1rem;
+            margin-bottom: 2rem;
+            line-height: 1.8;
+        }
+
+        /* --- ESTILOS TYC Y SCROLL BOX --- */
+        .tyc-scroll-box {
+            max-height: 400px;
+            overflow-y: auto;
+            background: #fff;
+            border: 1px solid #eee;
+            padding: 1.5rem;
+            border-radius: 12px;
+            margin-bottom: 1rem;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.03);
+        }
+
+        .tyc-scroll-box h4 {
+            color: var(--dark-color);
+            margin-top: 1.5rem;
+            margin-bottom: 0.8rem;
+            font-size: 1.1rem;
+            border-bottom: 1px solid #f0f0f0;
+            padding-bottom: 5px;
+        }
+
+        .tyc-scroll-box p, .tyc-scroll-box li {
+            font-size: 0.95rem;
+            color: #555;
+            line-height: 1.6;
+            margin-bottom: 0.8rem;
+        }
+
+        .tyc-scroll-box ul {
+            padding-left: 20px;
+            margin-bottom: 1rem;
+        }
+
+        /* Scrollbar styling */
+        .tyc-scroll-box::-webkit-scrollbar {
+            width: 8px;
+        }
+        .tyc-scroll-box::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 4px;
+        }
+        .tyc-scroll-box::-webkit-scrollbar-thumb {
+            background: #d1d1d1;
+            border-radius: 4px;
+        }
+        .tyc-scroll-box::-webkit-scrollbar-thumb:hover {
+            background: #bbb;
+        }
+
+        /* Botones de acción dentro del TyC */
+        .btn {
+            padding: 0.8rem 1.5rem;
+            border-radius: 50px;
+            font-weight: 700;
+            cursor: pointer;
+            border: none;
+            transition: all 0.2s;
+            font-size: 1rem;
+            text-align: center;
+            display: inline-block;
+            text-decoration: none;
+        }
+
+        .btn-block {
+            width: 100%;
+            display: block;
+            color: white;
+            box-shadow: 0 4px 15px rgba(255, 125, 41, 0.3);
+        }
+        
+        .btn-block:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(255, 125, 41, 0.4);
+        }
+
+        .btn-outline-red {
+            background-color: transparent;
+            border: 1px solid #e74c3c;
+            color: #e74c3c;
+        }
+        
+        .btn-outline-red:hover {
+            background-color: #fff5f5;
+        }
+
+        /* Estilos lista resumida (header TyC) */
+        .tyc-list {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        .tyc-item {
+            display: flex;
+            gap: 1rem;
+            align-items: flex-start;
+        }
+
+        .tyc-icon {
+            background: #fff0e6;
+            color: var(--primary-color);
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            flex-shrink: 0;
+        }
+
+        .tyc-content h3 {
+            font-size: 1.2rem;
+            margin-bottom: 0.3rem;
+            color: var(--dark-color);
+        }
+
+        .tyc-content p {
+            color: #666;
+            font-size: 1rem;
+            margin: 0;
+        }
+
+        /* Estilos FAQ */
+        .faq-item {
+            margin-bottom: 1.5rem;
+            background: #f9f9f9;
+            padding: 1.5rem;
+            border-radius: 12px;
+            transition: transform 0.2s;
+        }
+
+        .faq-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+        }
+
+        .faq-question {
+            font-weight: 700;
+            color: var(--primary-color);
+            font-size: 1.1rem;
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .faq-question::before {
+            content: '?';
+            background: var(--primary-color);
+            color: white;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.9rem;
+            font-weight: 800;
+        }
+
+        .faq-answer {
+            color: #555;
+            margin-left: 34px;
+        }
+
+        /* Modal Colaborar */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.6);
+            z-index: 2000;
+            align-items: center;
+            justify-content: center;
+            backdrop-filter: blur(3px);
+        }
+        
+        .modal.active {
+            display: flex;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 2rem; 
+            border-radius: 16px;
+            width: 90%;
+            max-width: 500px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+            transform: scale(0.95);
+            animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+            max-height: 85vh; 
+            overflow-y: auto; 
+        }
+
+        @keyframes popIn {
+            to { transform: scale(1); }
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; } to { opacity: 1; }
+        }
+
+        .btn-donate {
+            background: linear-gradient(45deg, #FF416C, #FF4B2B);
+            color: white;
+            border: none;
+            padding: 0.8rem 1.5rem;
+            font-size: 1.1rem;
+            border-radius: 50px;
+            font-weight: 800;
+            letter-spacing: 0.5px;
+            box-shadow: 0 4px 15px rgba(255, 75, 43, 0.4);
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            width: 100%;
+            margin-top: 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            text-decoration: none;
+        }
+
+        .btn-donate:hover {
+            transform: scale(1.03) translateY(-2px);
+            box-shadow: 0 8px 25px rgba(255, 75, 43, 0.6);
+        }
+
+        .btn-outline {
+            background-color: transparent;
+            border: 1px solid #ddd;
+            color: #666;
+            padding: 0.6rem 1.2rem;
+            border-radius: 30px; 
+            cursor: pointer;
+            font-size: 0.9rem;
+            font-weight: 700;
+            transition: all 0.3s ease;
+            width: 100%;
+        }
+        
+        .btn-outline:hover {
+            background-color: #f8f9fa;
+            color: var(--dark-color);
+        }
+        
+        @media (max-width: 768px) {
+            .page-header h1 { font-size: 2.5rem; }
+            .navbar { padding: 0.5rem 1rem; }
+            .container { padding: 0 1rem 2rem; }
+            .tyc-item { flex-direction: column; align-items: center; text-align: center; }
+            .faq-answer { margin-left: 0; margin-top: 10px; }
+            .modal-actions { flex-direction: column; }
+        }
     </style>
 </head>
 <body>
-    <a href="index.html" class="back-link">← Volver al Hub</a>
 
-    <div class="card">
-        <h1>Contrato Social</h1>
-        <p>Gino Social es una herramienta construida por y para estudiantes. Para mantener este espacio útil y seguro, necesitamos que todos respeten estas normas básicas:</p>
-        <ul>
-            <li><strong>Respeto ante todo:</strong> Las críticas son bienvenidas, los insultos no. Recuerda que los docentes también son personas.</li>
-            <li><strong>Veracidad:</strong> Comparte experiencias reales. Tu opinión ayuda a otros a decidir su futuro académico.</li>
-            <li><strong>Identidad:</strong> Fomentamos el uso de nombres reales para dar peso y responsabilidad a las opiniones.</li>
-        </ul>
-    </div>
-
-    <div class="card">
-        <h2>Preguntas Frecuentes (FAQ)</h2>
+    <!-- SIDEBAR DE NAVEGACIÓN -->
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+    <div class="sidebar" id="mainSidebar">
+        <div class="sidebar-header">
+            <span class="sidebar-brand">Gino Social</span>
+            <button class="close-sidebar-btn" id="closeSidebar">✕</button>
+        </div>
         
-        <div class="question">¿Mis datos son anónimos?</div>
-        <p>Tus reseñas son públicas y llevan tu nombre. Sin embargo, tu correo electrónico y datos de acceso son totalmente privados y están protegidos por Firebase de Google.</p>
+        <div class="sidebar-menu">
+            <!-- Apunta a la raíz (Página Principal) -->
+            <a href="https://ginosocial.ar" class="sidebar-item">
+                <span>💬</span> Reseñas
+            </a>
+            <a href="https://ginosocial.ar/datos" class="sidebar-item">
+                <span>📊</span> Centro de Datos
+            </a>
+            <!-- Enlace activo para Contrato Social -->
+            <a href="#" class="sidebar-item active">
+                <span>⚖️</span> Contrato Social
+            </a>
+            <a href="https://ginosocial.ar/bitacora" class="sidebar-item">
+                <span>📓</span> Bitácora
+            </a>
+            <a href="https://ginosocial.ar/quienessomos" class="sidebar-item">
+                <span>👥</span> ¿Quienes somos?
+            </a>
+            <a href="#" id="sidebarCollaborateBtn" class="sidebar-item highlight">
+                <span>🤝</span> Colaborar
+            </a>
+        </div>
 
-        <div class="question">¿Cómo se generan los "Datos"?</div>
-        <p>Utilizamos un algoritmo que lee todas las reseñas públicas, filtra palabras comunes (como "el", "la", "de") y cuenta la frecuencia de los términos más usados para generar las nubes de palabras.</p>
-
-        <div class="question">¿Puedo colaborar con el proyecto?</div>
-        <p>¡Sí! Gino es de código abierto en espíritu. Si sabes programar o tienes ideas de diseño, contáctanos a través de nuestras redes sociales.</p>
+        <div class="sidebar-footer">
+            <p>© 2025 Gino Social</p>
+            <p style="font-size: 0.7rem; margin-top: 5px;">Hecho con ❤️ por estudiantes</p>
+        </div>
     </div>
+
+    <!-- NAVBAR -->
+    <nav class="navbar">
+        <div class="navbar-left">
+            <button id="menuBtn" class="hamburger-btn" title="Menú">
+                ☰
+            </button>
+            <a href="https://ginosocial.ar" class="brand-logo">
+                <span>Gino</span> <span style="color: var(--dark-color); font-weight: 400;">Info</span>
+            </a>
+        </div>
+        <a href="../index.html" class="btn-back">
+            <span>↩ Volver</span>
+        </a>
+    </nav>
+
+    <!-- HEADER -->
+    <header class="page-header">
+        <h1>Contrato Social</h1>
+        <p>Gino Social es una herramienta construida por y para estudiantes. Para mantener este espacio útil y seguro, necesitamos que todos respeten estas normas básicas.</p>
+    </header>
+
+    <!-- CONTENIDO PRINCIPAL -->
+    <div class="container">
+        
+        <!-- Tarjeta: Puntos Clave -->
+        <div class="data-card">
+            <h2>Nuestras Normas (Resumen)</h2>
+            <div class="section-text">
+                <p>Al registrarte en Gino Social, aceptas cumplir con los siguientes puntos fundamentales para la convivencia en nuestra comunidad:</p>
+            </div>
+
+            <ul class="tyc-list">
+                <li class="tyc-item">
+                    <div class="tyc-icon">🤝</div>
+                    <div class="tyc-content">
+                        <h3>Respeto ante todo</h3>
+                        <p>Las críticas constructivas son bienvenidas, los insultos no. Recuerda siempre que los docentes, ayudantes y compañeros también son personas.</p>
+                    </div>
+                </li>
+                <li class="tyc-item">
+                    <div class="tyc-icon">✅</div>
+                    <div class="tyc-content">
+                        <h3>Veracidad</h3>
+                        <p>Comparte experiencias reales. Tu opinión tiene un impacto directo y ayuda a otros estudiantes a tomar decisiones sobre su futuro académico.</p>
+                    </div>
+                </li>
+                <li class="tyc-item">
+                    <div class="tyc-icon">🆔</div>
+                    <div class="tyc-content">
+                        <h3>Identidad</h3>
+                        <p>Fomentamos el uso de nombres reales para dar peso y responsabilidad a las opiniones vertidas en la plataforma.</p>
+                    </div>
+                </li>
+            </ul>
+        </div>
+
+        <!-- NUEVA TARJETA: Documento Completo TyC -->
+        <div class="data-card">
+            <h2>Documentación Legal</h2>
+            
+            <div class="tyc-scroll-box">
+                <h3 style="text-align: center; color: var(--primary-color);">TÉRMINOS Y CONDICIONES DE USO – GINOSOCIAL.AR</h3>
+                <p style="text-align: center; font-size: 0.8rem; color: #888;">Última actualización: 21 de diciembre de 2025</p>
+                <br>
+                <p>Los presentes Términos y Condiciones regulan el acceso y uso de la plataforma Gino Social (en adelante, "la Plataforma"), un sistema de Gestión de Información, Noticias y Opinión Social desarrollado por el colectivo conformado por Helecho Social y CrisisPuntoCom.</p>
+                <p>El acceso, registro y uso de la Plataforma atribuye la condición de Usuario e implica la aceptación plena y sin reservas de todas y cada una de las disposiciones incluidas en este documento.</p>
+
+                <h4>1. NATURALEZA DEL SERVICIO</h4>
+                <p>Gino Social es una herramienta colaborativa de acceso público y gratuito, gestionada por estudiantes, cuyo objetivo es el intercambio de experiencias académicas y la visualización de datos mediante el "Centro de Datos" (Gino Datos). La Plataforma facilita un espacio para la publicación de reseñas sobre cátedras, programas y contenidos pedagógicos de la carrera de Sociología de la Universidad de Buenos Aires (UBA).</p>
+
+                <h4>2. REGISTRO Y VERACIDAD DE LA INFORMACIÓN</h4>
+                <ul>
+                    <li><strong>Identidad del Usuario:</strong> De acuerdo con el compromiso ético de la Plataforma, se incentiva el uso de nombres y apellidos reales para fomentar la responsabilidad en la opinión.</li>
+                    <li><strong>Verificación:</strong> El registro requiere una dirección de correo electrónico válida y está sujeto a un proceso de verificación.</li>
+                    <li><strong>Responsabilidad de Cuenta:</strong> El Usuario es el único responsable de la custodia de su contraseña y de cualquier actividad realizada bajo su cuenta.</li>
+                </ul>
+
+                <h4>3. REGLAS DE CONDUCTA Y "CONTRATO SOCIAL"</h4>
+                <p>El Usuario se compromete a utilizar la Plataforma bajo los principios de buena fe y respeto a la comunidad académica. Queda estrictamente prohibido:</p>
+                <ul>
+                    <li>Publicar contenido difamatorio, injurioso, discriminatorio o que incite al odio.</li>
+                    <li>Realizar ataques personales hacia docentes, estudiantes o personal no docente que excedan la crítica pedagógica o académica.</li>
+                    <li>Proporcionar información falsa sobre la cursada o evaluaciones.</li>
+                    <li>Publicar contenido que vulnere derechos de propiedad intelectual o datos de carácter personal de terceros.</li>
+                </ul>
+
+                <h4>4. SISTEMA DE RESEÑAS Y MODERACIÓN</h4>
+                <ul>
+                    <li><strong>Propiedad del Contenido:</strong> El Usuario conserva los derechos sobre sus reseñas, pero otorga a Gino Social una licencia gratuita para mostrar, procesar estadísticamente y anonimizar dicho contenido para su sección de datos.</li>
+                    <li><strong>Derecho de Remoción:</strong> La administración se reserva el derecho de retirar cualquier contenido que reciba denuncias por infracción a estos términos o que sea considerado inapropiado mediante el sistema de "Denuncia" integrado.</li>
+                    <li><strong>Votación y Respuestas:</strong> Los Usuarios pueden interactuar con las reseñas mediante votos y respuestas, debiendo mantener el mismo estándar ético en dichas interacciones.</li>
+                </ul>
+
+                <h4>5. EXENCIÓN DE RESPONSABILIDAD</h4>
+                <p><strong>Contenido de Terceros:</strong> Gino Social funciona como un mero intermediario. Las opiniones vertidas son de exclusiva responsabilidad de los Usuarios y no reflejan necesariamente la postura de los administradores ni de las revistas Helecho Social y CrisisPuntoCom.</p>
+                <p><strong>Veracidad de los Datos:</strong> Si bien la Plataforma procesa datos estadísticos (Gino Datos), no se garantiza la exactitud absoluta de los mismos, ya que dependen de la carga manual realizada por terceros.</p>
+                <p><strong>Disponibilidad:</strong> La Plataforma no garantiza el acceso ininterrumpido al servicio, pudiendo verse afectado por tareas de mantenimiento o fallos técnicos ajenos a su control.</p>
+
+                <h4>6. DONACIONES Y COLABORACIÓN</h4>
+                <p>Gino Social es un proyecto autogestionado. Las donaciones realizadas a través de los canales oficiales (Mercado Pago/Ginosocio) tienen carácter voluntario y no oneroso, destinándose exclusivamente al sostenimiento técnico y alojamiento del sitio.</p>
+
+                <h4>7. PROTECCIÓN DE DATOS (POLÍTICA DE PRIVACIDAD)</h4>
+                <p>La Plataforma utiliza servicios de infraestructura de terceros (Firebase) para el almacenamiento de datos. Gino Social se compromete a no comercializar los datos personales de los Usuarios y a utilizarlos únicamente para las finalidades funcionales de la Plataforma.</p>
+
+                <h4>8. MODIFICACIONES Y JURISDICCIÓN</h4>
+                <p>Los administradores podrán modificar estos Términos y Condiciones en cualquier momento. La continuación en el uso de la Plataforma implicará la aceptación de los nuevos términos. Para cualquier controversia, las partes se someten a la jurisdicción de los tribunales ordinarios de la Ciudad Autónoma de Buenos Aires, Argentina.</p>
+                <br>
+                <p style="font-style: italic; text-align: center;">Nota para el Usuario: "De lo que no se puede hablar es mejor callar." El respeto es la base de nuestra construcción colectiva.</p>
+            </div>
+
+            <div class="modal-actions" style="margin-top: 1.5rem; display: flex; gap: 1rem;">
+           </div>
+        </div>
+
+        <!-- Tarjeta: FAQ -->
+        <div class="data-card">
+            <h2>Preguntas Frecuentes (FAQ)</h2>
+            
+            <div class="faq-item">
+                <div class="faq-question">¿Mis datos son anónimos?</div>
+                <div class="faq-answer">
+                    Tus reseñas son públicas y llevan tu nombre para garantizar la transparencia. Sin embargo, tu correo electrónico, contraseña y datos de acceso son totalmente privados y están protegidos de forma segura por la infraestructura de Google Firebase.
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <div class="faq-question">¿Cómo se generan los "Datos"?</div>
+                <div class="faq-answer">
+                    Utilizamos un algoritmo propio que lee todas las reseñas públicas, filtra palabras comunes (conectores como "el", "la", "de") y cuenta la frecuencia de los términos más significativos para generar las nubes de palabras y estadísticas que ves en el Centro de Datos.
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <div class="faq-question">¿Puedo colaborar con el proyecto?</div>
+                <div class="faq-answer">
+                    ¡Sí! Gino es de código abierto en espíritu. Si sabes programar, tienes ideas de diseño o simplemente quieres ayudar a cargar data, contáctanos a través de  <a href="mailto:ginosocial.contacto@gmail.com" style="color: var(--primary-color); font-weight: bold; text-decoration: none;">ginosocial.contacto@gmail.com</a><br>
+                </div>
+            </div>
+        </div>
+        
+    </div>
+
+    <!-- MODAL COLABORAR -->
+    <div class="modal" id="collaborateModal">
+        <div class="modal-content">
+            <h2 style="color: var(--primary-color); margin-bottom: 1rem; text-align: center;">🤝 Colaborar</h2>
+            
+            <div style="text-align: left; color: #444; font-size: 1rem; line-height: 1.7;">
+                <p style="margin-bottom: 1rem;">
+                    Este proyecto está llevado a cabo por <strong>Helecho Social</strong> y <strong>CrisisPuntoCom</strong>, 
+                    dos revistas partes de un colectivo conformado por estudiantes de la carrera de Sociología de la UBA.
+                </p>
+                <p style="margin-bottom: 1rem;">
+                    Porque alguien tiene que hacerle la vida más fácil al pueblo. Para hacerlo no tuvimos que pedirle permiso a nadie, 
+                    pero por la misma razón necesitamos tu colaboración.
+                </p>
+                <p style="margin-bottom: 1rem; background: #f9f9f9; padding: 10px; border-radius: 8px; border-left: 4px solid var(--primary-color);">
+                    ¿Faltan materias o prácticos? ¿Hay materias que ya no existen? Podés contactarnos a <br>
+                    <a href="mailto:ginosocial.contacto@gmail.com" style="color: var(--primary-color); font-weight: bold; text-decoration: none;">ginosocial.contacto@gmail.com</a><br>
+                    <span style="font-size: 0.9rem; color: #666;">(Comentanos errores, sugerencias, críticas o reseñas).</span>
+                </p>
+                <p>Siempre estamos abiertos al diálogo.</p>
+                <p style="margin-top: 1rem;">También aceptamos donaciones, porque lamentablemente alojar todo esto no es gratis y nos vendría muy bien una ayuda.</p>
+            </div>
+
+            <a href="https://link.mercadopago.com.ar/ginosocio" target="_blank" style="text-decoration: none;">
+                <button class="btn-donate">
+                    <span>☕</span> Donar una ayuda
+                </button>
+            </a>
+
+            <div class="modal-actions" style="margin-top: 1.5rem; display: block;">
+                <button type="button" id="closeCollaborate" class="btn btn-outline" style="width: 100%;">Cerrar</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- CONFIGURACIÓN UI (SIDEBAR) ---
+        function configurarSidebar() {
+            const menuBtn = document.getElementById('menuBtn');
+            const sidebar = document.getElementById('mainSidebar');
+            const overlay = document.getElementById('sidebarOverlay');
+            const closeBtn = document.getElementById('closeSidebar');
+            const sidebarCollaborateBtn = document.getElementById('sidebarCollaborateBtn');
+            const collaborateModal = document.getElementById('collaborateModal');
+            const closeCollaborate = document.getElementById('closeCollaborate');
+
+            function openSidebar() {
+                sidebar.classList.add('active');
+                overlay.classList.add('active');
+                document.body.style.overflow = 'hidden'; 
+            }
+
+            function closeSidebar() {
+                sidebar.classList.remove('active');
+                overlay.classList.remove('active');
+                document.body.style.overflow = ''; 
+            }
+
+            menuBtn.addEventListener('click', openSidebar);
+            closeBtn.addEventListener('click', closeSidebar);
+            overlay.addEventListener('click', closeSidebar);
+
+            sidebarCollaborateBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                closeSidebar();
+                collaborateModal.classList.add('active');
+            });
+
+            closeCollaborate.addEventListener('click', () => {
+                collaborateModal.classList.remove('active');
+            });
+
+            window.addEventListener('click', (e) => {
+                if (e.target === collaborateModal) collaborateModal.classList.remove('active');
+            });
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            configurarSidebar();
+        });
+    </script>
 </body>
 </html>
