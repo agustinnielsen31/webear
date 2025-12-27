@@ -877,11 +877,13 @@
                 const topWords = datosGlobales.topPalabras || [];
                 
                 const realTotalResenas = stats.totalResenas || 0;
+                const totalUsuarios = stats.totalUsuarios || 0;
                 const startResenas = Math.max(0, realTotalResenas - 5);
 
                 const statsItems = [
                     { label: "Palabras Analizadas", value: formateaNumero(stats.totalPalabras || 0) },
                     { label: "Reseñas Procesadas", value: startResenas, isReviewCounter: true },
+                    { label: "Usuarios Participantes", value: stats.totalUsuarios || "-" },
                     { label: "Palabra #1", value: topWords[0] ? topWords[0].text : "-" },
                     { label: "Palabra #2", value: topWords[1] ? topWords[1].text : "-" },
                     { label: "Palabra #3", value: topWords[2] ? topWords[2].text : "-" },
@@ -930,7 +932,8 @@
                 
                 inicializarFiltros();
                 
-                document.getElementById('cloudSubtitle').textContent = `En base a ${realTotalResenas} reseñas de toda la carrera`;
+                const usuariosText = totalUsuarios > 0 ? `, escritas por ${totalUsuarios} estudiantes` : '';
+                document.getElementById('cloudSubtitle').textContent = `En base a ${realTotalResenas} reseñas de toda la carrera${usuariosText}`;
                 renderizarNube(topWords, container);
 
             } catch (error) {
@@ -1003,7 +1006,9 @@
                     document.getElementById('cloudTitle').textContent = "Vocabulario Social (Global)";
                     
                     const totalGlobal = datosGlobales.stats ? (datosGlobales.stats.totalResenas || datosGlobales.totalResenas) : 0;
-                    subtitle.textContent = `En base a ${totalGlobal} reseñas de toda la carrera`;
+                    const totalUsuarios = datosGlobales.stats ? (datosGlobales.stats.totalUsuarios || 0) : 0;
+                    const usuariosText = totalUsuarios > 0 ? `, escritas por ${totalUsuarios} estudiantes` : '';
+                    subtitle.textContent = `En base a ${totalGlobal} reseñas de toda la carrera${usuariosText}`;
                     
                     renderizarNube(datosGlobales.topPalabras, cloudContainer);
                 } else {
