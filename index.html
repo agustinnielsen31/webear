@@ -75,7 +75,8 @@
             opacity: 0;
             visibility: hidden;
             transition: all 0.3s ease;
-            backdrop-filter: blur(3px);
+            /* OPTIMIZACIÓN: Se elimina backdrop-filter porque causa lag severo en animaciones */
+            /* backdrop-filter: blur(3px); */
         }
 
         .sidebar-overlay.active {
@@ -86,20 +87,25 @@
         .sidebar {
             position: fixed;
             top: 0;
-            left: -280px;
+            /* OPTIMIZACIÓN: Usar transform en lugar de left para mejor rendimiento */
+            left: 0; 
+            transform: translateX(-100%);
             width: 280px;
             height: 100%;
             background: white;
             z-index: 1100;
             box-shadow: 2px 0 15px rgba(0,0,0,0.1);
-            transition: left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            /* OPTIMIZACIÓN: Transición en transform */
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            will-change: transform; /* Sugerencia al navegador para optimizar */
             display: flex;
             flex-direction: column;
             padding: 2rem 1.5rem;
         }
 
         .sidebar.active {
-            left: 0;
+            /* OPTIMIZACIÓN: Activar con transform */
+            transform: translateX(0);
         }
 
         .sidebar-header {
@@ -141,7 +147,7 @@
             color: var(--dark-color);
             font-weight: 600;
             border-radius: 12px;
-            transition: background 0.2s;
+            transition: background-color 0.2s, color 0.2s; /* Optimizado para ser específico */
             border-left: 4px solid transparent;
         }
 
@@ -163,6 +169,7 @@
             justify-content: center;
             box-shadow: 0 4px 10px rgba(255, 125, 41, 0.3);
             border-left: none;
+            transition: transform 0.2s, box-shadow 0.2s;
         }
         
         .sidebar-item.highlight:hover {
@@ -2756,6 +2763,3 @@ add_comment
     </script>
 </body>
 </html>
-
-
-
