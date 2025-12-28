@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet" 
+     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet" />
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Contrato Social - Gino</title>
@@ -79,7 +79,8 @@
             opacity: 0;
             visibility: hidden;
             transition: all 0.3s ease;
-            backdrop-filter: blur(3px);
+            /* OPTIMIZACIÓN: Se elimina backdrop-filter porque causa lag severo en animaciones */
+            /* backdrop-filter: blur(3px); */
         }
 
         .sidebar-overlay.active {
@@ -90,20 +91,25 @@
         .sidebar {
             position: fixed;
             top: 0;
-            left: -280px;
+            /* OPTIMIZACIÓN: Usar transform en lugar de left */
+            left: 0;
+            transform: translateX(-100%);
             width: 280px;
             height: 100%;
             background: white;
             z-index: 1100;
             box-shadow: 2px 0 15px rgba(0,0,0,0.1);
-            transition: left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            /* OPTIMIZACIÓN: Transición en transform */
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            will-change: transform; /* Sugerencia al navegador */
             display: flex;
             flex-direction: column;
             padding: 2rem 1.5rem;
         }
 
         .sidebar.active {
-            left: 0;
+            /* OPTIMIZACIÓN: Activar con transform */
+            transform: translateX(0);
         }
 
         .sidebar-header {
