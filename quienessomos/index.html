@@ -727,14 +727,18 @@ send_money</span> Donar una ayuda
         </div>
     </div>
     <script>
-        // Lógica de navegación e interfaz (sin Firebase)
+        // Lógica de navegación e interfaz
         const menuBtn = document.getElementById('menuBtn');
         const sidebar = document.getElementById('mainSidebar');
         const overlay = document.getElementById('sidebarOverlay');
         const closeBtn = document.getElementById('closeSidebar');
         const sidebarCollaborateBtn = document.getElementById('sidebarCollaborateBtn');
+        
+        // Modal de colaborar
         const collaborateModal = document.getElementById('collaborateModal');
+        const closeCollaborateBtn = document.getElementById('closeCollaborate');
 
+        // Funciones Sidebar
         function openSidebar() {
             sidebar.classList.add('active');
             overlay.classList.add('active');
@@ -747,16 +751,34 @@ send_money</span> Donar una ayuda
             document.body.style.overflow = ''; 
         }
 
+        // Event Listeners Sidebar
         menuBtn.addEventListener('click', openSidebar);
         closeBtn.addEventListener('click', closeSidebar);
         overlay.addEventListener('click', closeSidebar);
 
+        // Abrir Modal
         sidebarCollaborateBtn.addEventListener('click', (e) => {
             e.preventDefault();
             closeSidebar();
             collaborateModal.classList.add('active');
         });
 
+        // Funciones Modal Colaborar
+        function closeCollab() {
+            collaborateModal.classList.remove('active');
+        }
+
+        // Cerrar al clickear el botón "Cerrar"
+        closeCollaborateBtn.addEventListener('click', closeCollab);
+
+        // Cerrar al clickear afuera (backdrop)
+        collaborateModal.addEventListener('click', (e) => {
+            if (e.target === collaborateModal) {
+                closeCollab();
+            }
+        });
+
+        // Scroll Navbar
         window.addEventListener('scroll', () => {
             const nav = document.getElementById('mainNav');
             if (window.scrollY > 50) nav.classList.add('scrolled');
