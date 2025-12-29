@@ -667,19 +667,40 @@
     </div>
 
     <!-- MODAL COLABORAR -->
-    <div class="modal" id="collaborateModal">
-        <div class="modal-content">
-            <h2 style="color: var(--primary-color); text-align: center; margin-bottom: 1rem;"><span class="material-symbols-outlined">
+       <div class="modal" id="collaborateModal">
+        <div class="modal-content" style="max-width: 500px;">
+            <h2 style="color: var(--primary-color); margin-bottom: 1rem;"><span class="material-symbols-outlined">
 handshake
 </span> Colaborar</h2>
-            <p style="margin-bottom: 1rem; color: #555;">¿Faltan materias? ¿Encontraste un error? Escribinos a <a href="mailto:ginosocial.contacto@gmail.com" style="color:var(--primary-color); font-weight:bold;">ginosocial.contacto@gmail.com</a></p>
-            <p style="color: #555;">También aceptamos donaciones para mantener el servidor:</p>
-            <a href="https://link.mercadopago.com.ar/ginosocio" target="_blank" class="btn-donate-modal"> <span class="material-symbols-outlined">
-send_money</span> Donar una ayuda</a>
-            <button class="btn" style="width:100%; margin-top:1rem; border:1px solid #ddd; color:#666;" onclick="document.getElementById('collaborateModal').classList.remove('active')">Cerrar</button>
+            <div style="text-align: left; color: #444; font-size: 1rem; line-height: 1.7;">
+                <p style="margin-bottom: 1rem;">
+                    Este proyecto está llevado a cabo por <strong>Helecho Social</strong> y <strong>CrisisPuntoCom</strong>, 
+                    dos revistas partes de un colectivo conformado por estudiantes de la carrera de Sociología de la UBA.
+                </p>
+                <p style="margin-bottom: 1rem;">
+                    Porque alguien tiene que hacerle la vida más fácil al pueblo. Para hacerlo no tuvimos que pedirle permiso a nadie, 
+                    pero por la misma razón necesitamos tu colaboración.
+                </p>
+                <p style="margin-bottom: 1rem; background: #f9f9f9; padding: 10px; border-radius: 8px; border-left: 4px solid var(--primary-color);">
+                    ¿Faltan materias o prácticos? ¿Hay materias que ya no existen? Podés contactarnos a <br>
+                    <a href="mailto:ginosocial.contacto@gmail.com" style="color: var(--primary-color); font-weight: bold; text-decoration: none;">ginosocial.contacto@gmail.com</a><br>
+                    <span style="font-size: 0.9rem; color: #666;">(Comentanos errores, sugerencias, críticas o reseñas).</span>
+                </p>
+                <p>Siempre estamos abiertos al diálogo.</p>
+                <p style="margin-top: 1rem;">También aceptamos donaciones, porque lamentablemente alojar todo esto no es gratis y nos vendría muy bien una ayuda.</p>
+            </div>
+
+            <a href="https://link.mercadopago.com.ar/ginosocio" target="_blank" style="text-decoration: none;">
+                <button class="btn-donate">
+                   <span class="material-symbols-outlined">
+send_money</span> Donar una ayuda
+                </button>
+            </a>
+            <div class="modal-actions" style="margin-top: 1.5rem;">
+                <button type="button" id="closeCollaborate" class="btn btn-outline" style="background:transparent; border:1px solid #ddd; color: #666; width: 100%;">Cerrar</button>
+            </div>
         </div>
     </div>
-
     <script>
         // Lógica de navegación e interfaz (sin Firebase)
         const menuBtn = document.getElementById('menuBtn');
