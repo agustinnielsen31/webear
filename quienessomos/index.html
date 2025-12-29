@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
+        <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet" />
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Quiénes Somos - Gino Social</title>
@@ -61,7 +62,8 @@
             opacity: 0;
             visibility: hidden;
             transition: all 0.3s ease;
-            backdrop-filter: blur(3px);
+            /* OPTIMIZACIÓN: Se elimina backdrop-filter porque causa lag severo en animaciones */
+            /* backdrop-filter: blur(3px); */
         }
 
         .sidebar-overlay.active {
@@ -72,20 +74,25 @@
         .sidebar {
             position: fixed;
             top: 0;
-            left: -280px;
+            /* OPTIMIZACIÓN: Usar transform en lugar de left */
+            left: 0;
+            transform: translateX(-100%);
             width: 280px;
             height: 100%;
             background: white;
             z-index: 1100;
             box-shadow: 2px 0 15px rgba(0,0,0,0.1);
-            transition: left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            /* OPTIMIZACIÓN: Transición en transform */
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            will-change: transform; /* Sugerencia al navegador */
             display: flex;
             flex-direction: column;
             padding: 2rem 1.5rem;
         }
 
         .sidebar.active {
-            left: 0;
+            /* OPTIMIZACIÓN: Activar con transform */
+            transform: translateX(0);
         }
 
         .sidebar-header {
@@ -534,23 +541,23 @@
         <div class="sidebar-menu">
             <!-- Nuevo enlace movido arriba -->
             <a href="https://ginosocial.ar" class="sidebar-item">
-                <span>💬</span> Reseñas
+                <span class="material-symbols-outlined"> comment_bank </span> Reseñas
             </a>
             <a href="index.html" class="sidebar-item">
-                <span>📊</span> Centro de Datos
+                 <span class="material-symbols-outlined">graph_3</span> Centro de Datos
             </a>
             <a href="datos/info.html" class="sidebar-item">
-                <span>⚖️</span> Contrato Social (FAQ y Reglas)
+                 <span class="material-symbols-outlined"> diversity_3 </span> Contrato Social
             </a>
             <a href="#" class="sidebar-item">
-                <span>📓</span> Bitácora
+                 <span class="material-symbols-outlined"> book_5 </span> Bitácora
             </a>
             <!-- Enlace activo -->
             <a href="#" class="sidebar-item active">
-                <span>👥</span> ¿Quienes somos?
+                <span class="material-symbols-outlined"> co_present </span> ¿Quienes somos?
             </a>
             <a href="#" id="sidebarCollaborateBtn" class="sidebar-item highlight">
-                <span>🤝</span> Colaborar / Donar
+                <span class="material-symbols-outlined"> handshake </span> Colaborar / Donar
             </a>
         </div>
 
@@ -662,10 +669,13 @@
     <!-- MODAL COLABORAR -->
     <div class="modal" id="collaborateModal">
         <div class="modal-content">
-            <h2 style="color: var(--primary-color); text-align: center; margin-bottom: 1rem;">🤝 Colaborar</h2>
+            <h2 style="color: var(--primary-color); text-align: center; margin-bottom: 1rem;"><span class="material-symbols-outlined">
+handshake
+</span> Colaborar</h2>
             <p style="margin-bottom: 1rem; color: #555;">¿Faltan materias? ¿Encontraste un error? Escribinos a <a href="mailto:ginosocial.contacto@gmail.com" style="color:var(--primary-color); font-weight:bold;">ginosocial.contacto@gmail.com</a></p>
             <p style="color: #555;">También aceptamos donaciones para mantener el servidor:</p>
-            <a href="https://link.mercadopago.com.ar/ginosocio" target="_blank" class="btn-donate-modal">☕ Donar una ayuda</a>
+            <a href="https://link.mercadopago.com.ar/ginosocio" target="_blank" class="btn-donate-modal"> <span class="material-symbols-outlined">
+send_money</span> Donar una ayuda</a>
             <button class="btn" style="width:100%; margin-top:1rem; border:1px solid #ddd; color:#666;" onclick="document.getElementById('collaborateModal').classList.remove('active')">Cerrar</button>
         </div>
     </div>
