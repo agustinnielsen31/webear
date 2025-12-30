@@ -2245,8 +2245,13 @@ send_money</span> Donar una ayuda
             
             const catSel = mod('catedra');
             const fCatSel = mod('filterCatedra');
-            catSel.innerHTML = '<option value="">Selecciona cátedra</option>';
-            fCatSel.innerHTML = '<option value="">Todas</option>';
+            const fPracSel = mod('filterPractico'); // Elemento del filtro de prácticos
+
+            // Resetear selects
+            catSel.innerHTML = '<option value="">Selecciona una cátedra</option>';
+            fCatSel.innerHTML = '<option value="">Todas las cátedras</option>';
+            fPracSel.innerHTML = '<option value="">Todos los prácticos</option>';
+
             m.catedras?.forEach(c => {
                 const opt = new Option(c.nombre, c.nombre);
                 catSel.add(opt.cloneNode(true));
@@ -2255,18 +2260,45 @@ send_money</span> Donar una ayuda
 
             const pracGroup = mod('practico-form-group');
             const fPracGroup = mod('practico-filter-group');
-            if (m.tipo === 'materias') { pracGroup.style.display = fPracGroup.style.display = 'block'; mod('practico').required = true; }
-            else { pracGroup.style.display = fPracGroup.style.display = 'none'; mod('practico').required = false; }
+            if (m.tipo === 'materias') { 
+                pracGroup.style.display = fPracGroup.style.display = 'block'; 
+                mod('practico').required = true; 
+            } else { 
+                pracGroup.style.display = fPracGroup.style.display = 'none'; 
+                mod('practico').required = false; 
+            }
             
+            // Lógica para el formulario de NUEVA reseña
             catSel.onchange = () => {
                 const sel = catSel.value;
                 const pSel = mod('practico');
-                pSel.innerHTML = '<option value="">Selecciona práctico</option>';
+                pSel.innerHTML = '<option value="">Selecciona un práctico</option>';
                 m.catedras?.find(x => x.nombre === sel)?.practicos?.forEach(p => pSel.add(new Option(p, p)));
             };
 
+            // Lógica para el FILTRO de reseñas (Esta es la parte corregida)
+            fCatSel.onchange = () => {
+                const sel = fCatSel.value;
+                fPracSel.innerHTML = '<option value="">Todos los prácticos</option>'; // Limpiar anteriores
+                
+                if (sel) {
+                    // Buscar la cátedra seleccionada en los datos
+                    const catedraData = m.catedras?.find(x => x.nombre === sel);
+                    // Llenar el filtro de prácticos con los datos de esa cátedra
+                    catedraData?.practicos?.forEach(p => {
+                        fPracSel.add(new Option(p, p));
+                    });
+                }
+                // Importante: Actualizar la lista de reseñas visible
+                cargarresenasEnUI();
+            };
+
             await cargarresenas(id);
-            if (catName) { mod('filterCatedra').value = catName; cargarresenasEnUI(); }
+            if (catName) { 
+                mod('filterCatedra').value = catName; 
+                // Disparar manualmente el cambio para cargar los prácticos de la cátedra preseleccionada
+                fCatSel.onchange(); 
+            }
             window.scrollTo({ top: mod(catName ? 'resenasList' : 'reviewForm').offsetTop - 120, behavior: 'smooth' });
         }
 
@@ -2283,7 +2315,7 @@ send_money</span> Donar una ayuda
             const fRat = mod('filterRating').value;
             
             const res = appState.resenas.filter(r => (!fCat || r.catedra === fCat) && (!fPrac || r.practico === fPrac) && (!fRat || r.calificacionGeneral >= fRat));
-            list.innerHTML = res.length ? '' : '<div class="no-resenas">No hay reseñas.</div>';
+            list.innerHTML = res.length ? '' : '<div class="no-resenas">No hay reseñas que coincidan con los filtros.</div>';
             
             res.forEach(r => {
                 const card = crearElemento('div', 'review-card');
@@ -2697,4 +2729,3 @@ add_comment
     </script>
 </body>
 </html>
-
