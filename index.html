@@ -1094,6 +1094,11 @@
 
         .btn-submit-reply:hover { background-color: #e67e22; }
 
+        /* Reply Menu */
+        .reply-menu-container {
+            position: relative;
+        }
+
         /* =========================================
            10. MODALS & OVERLAYS
            ========================================= */
@@ -1853,6 +1858,17 @@ send_money</span> Donar una ayuda
         </div>
     </div>
 
+    <div class="modal" id="deleteReplyModal">
+        <div class="modal-content">
+            <h2 style="color: var(--accent-color);">⚠️ Borrar Respuesta</h2>
+            <p style="text-align: center; margin-bottom: 1.5rem; color: #666;">¿Estás seguro de que quieres borrar esta respuesta? Esta acción no se puede deshacer.</p>
+            <div class="modal-actions">
+                <button type="button" id="cancelDeleteReply" class="btn btn-outline" style="background:transparent; border:1px solid #ddd; color: #666;" data-dismiss="modal">Cancelar</button>
+                <button type="button" id="confirmDeleteReplyBtn" class="btn btn-block" style="background-color: var(--accent-color); border: none;">Borrar</button>
+            </div>
+        </div>
+    </div>
+
     <div id="ginoEasterEgg" class="gino-overlay">
         <img src="168358-gino.jpeg" alt="Gino Germani" onerror="this.style.display='none';">
         <p>¡Gino vive!</p>
@@ -1889,6 +1905,7 @@ send_money</span> Donar una ayuda
         };
         
         let pendingDelete = null;
+        let pendingReplyDelete = null;
         let currentSort = 'carrera';
         let currentSearch = '';
 
@@ -1916,6 +1933,7 @@ send_money</span> Donar una ayuda
             
             if (id === 'tycModal') pendingRegistrationData = null;
             if (id === 'deleteConfirmModal') pendingDelete = null;
+            if (id === 'deleteReplyModal') pendingReplyDelete = null;
         }
 
         function init() {
@@ -1937,7 +1955,7 @@ send_money</span> Donar una ayuda
             configurarSidebar(); 
             
             document.addEventListener('click', (e) => {
-                if (!e.target.closest('.review-menu-container')) {
+                if (!e.target.closest('.review-menu-container') && !e.target.closest('.reply-menu-container')) {
                     document.querySelectorAll('.dropdown-menu.active').forEach(m => m.classList.remove('active'));
                 }
             });
@@ -1997,6 +2015,13 @@ send_money</span> Donar una ayuda
             document.querySelectorAll('.dropdown-menu.active').forEach(m => m.classList.remove('active'));
             if (!isActive) menu.classList.add('active');
         }
+        
+        function toggleReplyMenu(replyId) {
+            const menu = mod(`reply-menu-${replyId}`);
+            const isActive = menu.classList.contains('active');
+            document.querySelectorAll('.dropdown-menu.active').forEach(m => m.classList.remove('active'));
+            if (!isActive) menu.classList.add('active');
+        }
 
         function toggleRespuestas(reviewId) {
             const container = mod(`replies-container-${reviewId}`);
@@ -2011,14 +2036,81 @@ send_money</span> Donar una ayuda
                 .orderBy('fecha', 'asc')
                 .onSnapshot(snapshot => {
                     listContainer.innerHTML = '';
+                    if (snapshot.empty) {
+                        listContainer.innerHTML = '<div style="text-align:center;color:#999;font-size:0.8rem;padding:5px;">Aún no hay respuestas.</div>';
+                        return;
+                    }
                     snapshot.docs.forEach(doc => {
                         const reply = doc.data();
+                        const replyId = doc.id;
                         const card = crearElemento('div', 'reply-card');
                         let fecha = reply.fecha ? reply.fecha.toDate().toLocaleDateString() : "Reciente";
-                        card.innerHTML = `<div class="reply-header"><span class="reply-author">${reply.usuarioNombre || 'Anónimo'}</span><span>${fecha}</span></div><div>${reply.texto}</div>`;
+                        
+                        let menuItems = '';
+                        if (appState.user) {
+                            menuItems += `
+                                <div class="dropdown-item danger" onclick="denunciarRespuesta('${reviewId}')">
+                                    <span class="material-symbols-outlined">flag</span> Denunciar
+                                </div>
+                            `;
+                            
+                            if (appState.user.uid === reply.usuarioId) {
+                                menuItems += `
+                                    <div class="dropdown-item danger" onclick="borrarRespuesta('${reviewId}', '${replyId}')">
+                                       <span class="material-symbols-outlined">delete</span> Borrar
+                                    </div>
+                                `;
+                            }
+                        }
+                        
+                        let menuHTML = '';
+                        if (menuItems) {
+                            menuHTML = `
+                                <div class="reply-menu-container" style="position: relative;">
+                                    <button class="menu-dots" onclick="toggleReplyMenu('${replyId}')">⋮</button>
+                                    <div class="dropdown-menu" id="reply-menu-${replyId}" style="right: 0; min-width: 140px;">
+                                        ${menuItems}
+                                    </div>
+                                </div>
+                            `;
+                        }
+
+                        card.innerHTML = `
+                            <div class="reply-header">
+                                <span class="reply-author">${reply.usuarioNombre || 'Anónimo'}</span>
+                                <div style="display:flex;align-items:center;gap:5px;">
+                                    <span>${fecha}</span>
+                                    ${menuHTML}
+                                </div>
+                            </div>
+                            <div>${reply.texto}</div>
+                        `;
                         listContainer.appendChild(card);
                     });
                 });
+        }
+
+        function borrarRespuesta(reviewId, replyId) {
+            pendingReplyDelete = { reviewId, replyId };
+            abrirModal('deleteReplyModal');
+        }
+
+        async function denunciarRespuesta(reviewId) {
+            if (!appState.user) {
+                mostrarNotificacion('Inicia sesión para denunciar.', 'error');
+                return;
+            }
+            
+            try {
+                await db.collection('resenas').doc(reviewId).update({
+                    denuncia: firebase.firestore.FieldValue.increment(1)
+                });
+                mostrarNotificacion('Respuesta reportada. Un administrador revisará el hilo.', 'success');
+                document.querySelectorAll('.dropdown-menu.active').forEach(m => m.classList.remove('active'));
+            } catch (error) {
+                console.error("Error al denunciar:", error);
+                mostrarNotificacion('Error al procesar la denuncia.', 'error');
+            }
         }
 
         async function enviarRespuesta(reviewId) {
@@ -2536,6 +2628,34 @@ add_comment
                     console.error("Error al borrar:", error);
                     mostrarNotificacion('Error al borrar la reseña.', 'error');
                     cerrarModal('deleteConfirmModal');
+                } finally {
+                    btn.disabled = false;
+                    btn.textContent = originalText;
+                }
+            };
+
+            mod('confirmDeleteReplyBtn').onclick = async () => {
+                if (!pendingReplyDelete) return;
+                const { reviewId, replyId } = pendingReplyDelete;
+                
+                const btn = mod('confirmDeleteReplyBtn');
+                const originalText = btn.textContent;
+                btn.disabled = true;
+                btn.textContent = "Borrando...";
+
+                try {
+                    await db.collection('resenas').doc(reviewId).collection('respuestas').doc(replyId).delete();
+                    
+                    await db.collection('resenas').doc(reviewId).update({
+                        replies_count: firebase.firestore.FieldValue.increment(-1)
+                    });
+                    
+                    mostrarNotificacion('Respuesta eliminada', 'success');
+                    cerrarModal('deleteReplyModal');
+                } catch (error) {
+                    console.error("Error eliminando respuesta: ", error);
+                    mostrarNotificacion('Error al eliminar respuesta', 'error');
+                    cerrarModal('deleteReplyModal');
                 } finally {
                     btn.disabled = false;
                     btn.textContent = originalText;
