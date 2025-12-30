@@ -4,8 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Bitácora - Gino Social</title>
+    <!-- Importar Material Symbols para los íconos de la barra lateral -->
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet" />
+    
     <style>
-        /* --- ESTILOS GENERALES Y VARIABLES (Importados de Datos) --- */
+        /* --- ESTILOS GENERALES Y VARIABLES --- */
         :root { 
             --primary-color: #ff7d29;
             --primary-gradient: linear-gradient(135deg, #ff7d29 0%, #ff914d 100%);
@@ -24,10 +27,10 @@
             background: #f5f7fa; 
             color: #333; 
             margin: 0;
-            padding-top: var(--navbar-height); /* Espacio para la navbar fija */
+            padding-top: var(--navbar-height);
         }
         
-        /* --- SIDEBAR & MENU STYLES --- */
+        /* --- SIDEBAR & MENU STYLES (Estilo Moderno igual a Contrato Social/Datos) --- */
         .hamburger-btn {
             background: transparent;
             border: none;
@@ -42,36 +45,45 @@
             z-index: 1100;
             margin-right: 15px;
         }
+        
         .hamburger-btn:hover { transform: scale(1.1); }
 
         .sidebar-overlay {
             position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
             background: rgba(0,0,0,0.5);
             z-index: 1099;
             opacity: 0; visibility: hidden;
             transition: all 0.3s ease;
-            backdrop-filter: blur(3px);
+            /* Se evita backdrop-filter para mejor rendimiento, igual que en Datos */
         }
+
         .sidebar-overlay.active { opacity: 1; visibility: visible; }
 
         .sidebar {
-            position: fixed; top: 0; left: -280px;
+            position: fixed;
+            top: 0;
+            left: 0;
+            transform: translateX(-100%); /* Animación optimizada con transform */
             width: 280px; height: 100%;
             background: white;
             z-index: 1100;
             box-shadow: 2px 0 15px rgba(0,0,0,0.1);
-            transition: left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            will-change: transform;
             display: flex; flex-direction: column;
             padding: 2rem 1.5rem;
         }
-        .sidebar.active { left: 0; }
+
+        .sidebar.active { transform: translateX(0); }
 
         .sidebar-header {
             margin-bottom: 2rem; padding-bottom: 1rem;
             border-bottom: 1px solid #eee;
             display: flex; justify-content: space-between; align-items: center;
         }
+
         .sidebar-brand { font-size: 1.5rem; font-weight: 800; color: var(--primary-color); }
         .close-sidebar-btn { background: none; border: none; font-size: 1.5rem; color: #888; cursor: pointer; }
 
@@ -85,18 +97,22 @@
             transition: background 0.2s;
             border-left: 4px solid transparent;
         }
+        
         .sidebar-item:hover { background-color: #fff0e6; color: var(--primary-color); }
+        
         .sidebar-item.active {
             background-color: #fff0e6; color: var(--primary-color);
             border-left: 4px solid var(--primary-color);
             border-right: none;
         }
+
         .sidebar-item.highlight {
             background: var(--primary-gradient); color: white;
             margin-top: 1rem; justify-content: center;
             box-shadow: 0 4px 10px rgba(255, 125, 41, 0.3);
             border-left: none;
         }
+        
         .sidebar-item.highlight:hover { transform: translateY(-2px); box-shadow: 0 6px 15px rgba(255, 125, 41, 0.4); }
 
         .sidebar-footer {
@@ -108,7 +124,7 @@
         /* --- NAVBAR --- */
         .navbar { 
             background: white; 
-            padding: 0 2rem; /* Ajustado para alinear altura */
+            padding: 0 2rem;
             display: flex; 
             justify-content: space-between; 
             align-items: center; 
@@ -139,7 +155,7 @@
         .content { 
             line-height: 1.6; 
             background: white; 
-            padding: 2.5rem; /* Aumentado de 1.5rem */
+            padding: 2.5rem; 
             border-radius: 8px; 
             box-shadow: 0 2px 5px rgba(0,0,0,0.05); 
         }
@@ -147,12 +163,10 @@
         .content ul {
             margin-top: 1rem;
             margin-bottom: 1.5rem;
-            padding-left: 2rem; /* Indentación para las viñetas */
+            padding-left: 2rem;
         }
 
-        .content li {
-            margin-bottom: 0.5rem; /* Separación entre elementos de lista */
-        }
+        .content li { margin-bottom: 0.5rem; }
         
         .tag { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 0.8rem; font-weight: 600; margin-right: 5px; }
         .tag.new { background: #d4edda; color: #155724; }
@@ -203,7 +217,7 @@
 </head>
 <body>
 
-    <!-- SIDEBAR DE NAVEGACIÓN -->
+    <!-- SIDEBAR DE NAVEGACIÓN (Actualizada con Material Symbols) -->
     <div class="sidebar-overlay" id="sidebarOverlay"></div>
     <div class="sidebar" id="mainSidebar">
         <div class="sidebar-header">
@@ -213,23 +227,23 @@
         
         <div class="sidebar-menu">
             <a href="https://ginosocial.ar" class="sidebar-item">
-                <span>💬</span> Reseñas
+                <span class="material-symbols-outlined"> comment_bank </span> Reseñas
             </a>
             <a href="https://ginosocial.ar/datos" class="sidebar-item">
-                <span>📊</span> Centro de Datos
+                <span class="material-symbols-outlined">graph_3</span> Centro de Datos
             </a>
             <a href="https://ginosocial.ar/ContratoSocial" class="sidebar-item">
-                <span>⚖️</span> Contrato Social
+                <span class="material-symbols-outlined"> diversity_3 </span> Contrato Social
             </a>
-            <!-- Activo en esta página -->
+            <!-- Elemento Activo -->
             <a href="https://ginosocial.ar/bitacora" class="sidebar-item active">
-                <span>📓</span> Bitácora
+                <span class="material-symbols-outlined"> book_5 </span> Bitácora
             </a>
             <a href="https://ginosocial.ar/quienessomos" class="sidebar-item">
-                <span>👥</span> ¿Quienes somos?
+                <span class="material-symbols-outlined"> co_present </span> ¿Quienes somos?
             </a>
             <a href="#" id="sidebarCollaborateBtn" class="sidebar-item highlight">
-                <span>🤝</span> Colaborar
+                <span class="material-symbols-outlined"> handshake </span> Colaborar
             </a>
         </div>
 
@@ -243,14 +257,14 @@
     <nav class="navbar">
         <div class="navbar-left">
             <button id="menuBtn" class="hamburger-btn" title="Menú">☰</button>
-            <span style="font-weight: 800; font-size: 1.2rem; color: var(--primary-color);">🛠️ Bitácora</span>
+            <span style="font-weight: 800; font-size: 1.2rem; color: var(--primary-color);"> Bitácora</span>
         </div>
    </nav>
 
     <!-- CONTENT -->
     <div class="container">
         <h1>Bitácora de Desarrollo</h1>
-        <p>Aquí registramos los cambios y mejoras de Gino Social.</p>
+        <p>Para registar los cambios de Gino Social.</p>
 
         <div class="timeline">
             <!-- Entrada Ejemplo 1 -->
@@ -264,15 +278,15 @@
                         <li> ¡Barra lateral con nuevas páginas! Centro de datos, contrato social, bitácora y ¿quienes somos?</li>
                         <li>Centro de datos: Emancipamos al dato de su atadura burocrática, para una carrera más democrática y transparente. Nubes de palabras y otras estadísticas para nerds...</li>
                         <li>Respuestas a las reseñas.</li>
-                        <li>Denuncia a reseñas</li>
-                        <li>Borrar reseñas</li>
-                        <li>Creamos términos y condiciones para hacer una comunidad más segura</li>
+                        <li>Denuncia a reseñas.</li>
+                        <li>Borrar reseñas.</li>
+                        <li>Creamos términos y condiciones para hacer una comunidad más segura.</li>
                     </ul>
                     <span class="tag fix">Fix</span>
                     <ul>
                         <li>El panel para dejar una reseña ocupaba demasiado espacio y lo volvimos desplegable.</li>
-                        <li>Hubo controversias sobre la categoría "Dificultad", por lo que añadimos una aclaración (Si, 5 estrellas significa muy dificil)</li>
-                        <li>Solucionado el bug en el que los datos del formulario de reseñas se mantenían al cambiar de materia</li>
+                        <li>Hubo controversias sobre la categoría "Dificultad", por lo que añadimos una aclaración (Si, 5 estrellas significa muy dificil).</li>
+                        <li>Solucionado el bug en el que los datos del formulario de reseñas se mantenían al cambiar de materia.</li>
                     </ul>
                 </div>
             </div>
@@ -292,7 +306,7 @@
     <!-- MODAL COLABORAR -->
     <div class="modal" id="collaborateModal">
         <div class="modal-content">
-            <h2 style="color: var(--primary-color); margin-bottom: 1rem; text-align: center;">🤝 Colaborar</h2>
+            <h2 style="color: var(--primary-color); margin-bottom: 1rem; text-align: center;"><span class="material-symbols-outlined">handshake</span> Colaborar</h2>
             
             <div style="text-align: left; color: #444; font-size: 1rem; line-height: 1.7;">
                 <p style="margin-bottom: 1rem;">
@@ -314,7 +328,7 @@
 
             <a href="https://link.mercadopago.com.ar/ginosocio" target="_blank" style="text-decoration: none;">
                 <button class="btn-donate">
-                    <span>☕</span> Donar una ayuda
+                    <span class="material-symbols-outlined">send_money</span> Donar una ayuda
                 </button>
             </a>
 
