@@ -980,6 +980,44 @@
         
         .aspect-rating:last-child { border-bottom: none; }
 
+        /* Estilos para el layout horizontal de aspectos */
+        .aspects-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            align-items: flex-start;
+        }
+        
+        .aspects-row .aspect-rating {
+            flex: 1;
+            min-width: 140px; /* Asegura que envuelva en pantallas muy pequeñas */
+            text-align: center;
+            border-bottom: none;
+            padding-bottom: 0;
+            margin-bottom: 0;
+            background: #f9f9f9; /* Agrupamiento visual */
+            padding: 10px;
+            border-radius: 8px;
+        }
+        
+        .aspects-row .aspect-rating label {
+            font-size: 0.85rem;
+            height: 40px; /* Altura fija para alineación */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            line-height: 1.2;
+        }
+        
+        .aspects-row .aspect-rating .rating-input {
+            justify-content: center;
+            margin-bottom: 0;
+        }
+        
+        .aspects-row .aspect-rating .star {
+            font-size: 1.5rem; /* Estrellas un poco más pequeñas */
+        }
+
         /* Votes & Replies */
         .vote-control {
             display: flex;
@@ -1570,24 +1608,26 @@ collections_bookmark
                     <div class="form-group">
                         <h3>Calificación por Aspectos</h3>
                         <br>
-                        <div class="aspect-rating">
-                            <label>Claridad de la explicación (Pedagogía)</label>
-                            <div class="rating-input" id="claridadRating"></div>
-                        </div>
-                        
-                        <div class="aspect-rating">
-                            <label>Programa y contenidos</label>
-                            <div class="rating-input" id="programaRating"></div>
-                        </div>
+                        <div class="aspects-row">
+                            <div class="aspect-rating">
+                                <label>Claridad de la explicación (Pedagogía)</label>
+                                <div class="rating-input" id="claridadRating"></div>
+                            </div>
+                            
+                            <div class="aspect-rating">
+                                <label>Programa y contenidos</label>
+                                <div class="rating-input" id="programaRating"></div>
+                            </div>
 
-                        <div class="aspect-rating">
-                            <label>Dificultad <span id="dificultadLabel" style="color: var(--primary-color); font-weight: bold; margin-left: 5px;"></span></label>
-                            <div class="rating-input" id="dificultadRating"></div>
-                        </div>
-                        
-                        <div class="aspect-rating">
-                            <label>Oferta horaria</label>
-                            <div class="rating-input" id="ofertaRating"></div>
+                            <div class="aspect-rating">
+                                <label>Dificultad <span id="dificultadLabel" style="color: var(--primary-color); font-weight: bold; margin-left: 5px;"></span></label>
+                                <div class="rating-input" id="dificultadRating"></div>
+                            </div>
+                            
+                            <div class="aspect-rating">
+                                <label>Oferta horaria</label>
+                                <div class="rating-input" id="ofertaRating"></div>
+                            </div>
                         </div>
                     </div>
                                     <div class="form-group">
@@ -2050,7 +2090,7 @@ send_money</span> Donar una ayuda
                         if (appState.user) {
                             menuItems += `
                                 <div class="dropdown-item danger" onclick="denunciarRespuesta('${reviewId}')">
-                                     <span class="material-symbols-outlined"> report </span> Denunciar
+                                    <span class="material-symbols-outlined">flag</span> Denunciar
                                 </div>
                             `;
                             
@@ -2243,23 +2283,45 @@ send_money</span> Donar una ayuda
             mod('reviewForm').classList.add('active');
             document.querySelector('.resenas-container').classList.add('active');
             
-            const catSel = mod('catedra');
             const fCatSel = mod('filterCatedra');
-            const fPracSel = mod('filterPractico'); // Elemento del filtro de prácticos
-
-            // Resetear selects
-            catSel.innerHTML = '<option value="">Selecciona una cátedra</option>';
+            const fPracSel = mod('filterPractico');
+            const catSel = mod('catedra');
+            
+            // Reset filter values
             fCatSel.innerHTML = '<option value="">Todas las cátedras</option>';
             fPracSel.innerHTML = '<option value="">Todos los prácticos</option>';
+            catSel.innerHTML = '<option value="">Selecciona una cátedra</option>';
 
+            // Define helper to populate Práctico filter
+            const updatePracticoFilter = () => {
+                const sel = fCatSel.value;
+                fPracSel.innerHTML = '<option value="">Todos los prácticos</option>';
+                
+                if (sel) {
+                    const catObj = m.catedras?.find(x => x.nombre === sel);
+                    catObj?.practicos?.forEach(p => {
+                        fPracSel.add(new Option(p, p));
+                    });
+                }
+            };
+
+            // Populate Catedra dropdowns
             m.catedras?.forEach(c => {
                 const opt = new Option(c.nombre, c.nombre);
                 catSel.add(opt.cloneNode(true));
                 fCatSel.add(opt);
             });
 
+            // Set listeners
+            fCatSel.onchange = () => {
+                updatePracticoFilter();
+                cargarresenasEnUI();
+            };
+
+            // Set form listeners
             const pracGroup = mod('practico-form-group');
             const fPracGroup = mod('practico-filter-group');
+            
             if (m.tipo === 'materias') { 
                 pracGroup.style.display = fPracGroup.style.display = 'block'; 
                 mod('practico').required = true; 
@@ -2268,37 +2330,22 @@ send_money</span> Donar una ayuda
                 mod('practico').required = false; 
             }
             
-            // Lógica para el formulario de NUEVA reseña
             catSel.onchange = () => {
                 const sel = catSel.value;
                 const pSel = mod('practico');
-                pSel.innerHTML = '<option value="">Selecciona un práctico</option>';
+                pSel.innerHTML = '<option value="">Selecciona práctico</option>';
                 m.catedras?.find(x => x.nombre === sel)?.practicos?.forEach(p => pSel.add(new Option(p, p)));
             };
 
-            // Lógica para el FILTRO de reseñas (Esta es la parte corregida)
-            fCatSel.onchange = () => {
-                const sel = fCatSel.value;
-                fPracSel.innerHTML = '<option value="">Todos los prácticos</option>'; // Limpiar anteriores
-                
-                if (sel) {
-                    // Buscar la cátedra seleccionada en los datos
-                    const catedraData = m.catedras?.find(x => x.nombre === sel);
-                    // Llenar el filtro de prácticos con los datos de esa cátedra
-                    catedraData?.practicos?.forEach(p => {
-                        fPracSel.add(new Option(p, p));
-                    });
-                }
-                // Importante: Actualizar la lista de reseñas visible
-                cargarresenasEnUI();
-            };
-
             await cargarresenas(id);
+            
+            // Handle pre-selection from card click
             if (catName) { 
-                mod('filterCatedra').value = catName; 
-                // Disparar manualmente el cambio para cargar los prácticos de la cátedra preseleccionada
-                fCatSel.onchange(); 
+                fCatSel.value = catName; 
+                updatePracticoFilter(); // Populate practicos for this catedra
+                cargarresenasEnUI(); 
             }
+            
             window.scrollTo({ top: mod(catName ? 'resenasList' : 'reviewForm').offsetTop - 120, behavior: 'smooth' });
         }
 
@@ -2315,7 +2362,7 @@ send_money</span> Donar una ayuda
             const fRat = mod('filterRating').value;
             
             const res = appState.resenas.filter(r => (!fCat || r.catedra === fCat) && (!fPrac || r.practico === fPrac) && (!fRat || r.calificacionGeneral >= fRat));
-            list.innerHTML = res.length ? '' : '<div class="no-resenas">No hay reseñas que coincidan con los filtros.</div>';
+            list.innerHTML = res.length ? '' : '<div class="no-resenas">No hay reseñas.</div>';
             
             res.forEach(r => {
                 const card = crearElemento('div', 'review-card');
