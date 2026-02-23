@@ -625,10 +625,9 @@
         const auth = firebase.auth();
         const db = firebase.firestore();
         
-        let appState = { materias: [], resenas: [], resumenes: [], materiaSeleccionada: null, user: null, currentCategory: 'materias' };
+        let appState = { materias: [], resenas: [], resumenes: [], materiaSeleccionada: null, user: null, currentCategory: 'materias', resumenesCargados: false };
         let pendingRegistrationData = null;
         let respuestasListeners = {}; 
-        let resumenesListener = null;
         let yaCargadas = { materias: false, especiales: false, teorias: false, horasdeinv: false, idiomas: false };
         let pendingDelete = null;
         let pendingReplyDelete = null;
@@ -707,8 +706,6 @@
             } else {
                 actualizarVistaMaterias();
             }
-            
-            if(resumenesListener) { resumenesListener(); resumenesListener = null; }
         }
 
         function mostrarVistaMateria(materia) {
@@ -721,7 +718,6 @@
             const categoryNames = { materias: "Materia Obligatoria", especiales: "Sociología Especial", teorias: "Teoría Sociológica", horasdeinv: "Taller / Seminario", idiomas: "Idioma" };
             mod('materiaCategoriaDisplay').textContent = categoryNames[materia.tipo] || "Materia";
             mod('materiaResenasCount').textContent = materia.numresenas || 0;
-            mod('materiaResumenesCount').textContent = "...";
 
             const catedrasList = mod('materiaCatedrasList');
             if (materia.catedras && materia.catedras.length > 0) {
@@ -812,6 +808,11 @@
                 contR.classList.add('hidden');
                 contR.classList.remove('block');
                 filtros.classList.add('hidden');
+                
+                // Carga perezosa de los resúmenes solo si no se descargaron antes
+                if (!appState.resumenesCargados && appState.materiaSeleccionada) {
+                    cargarResumenesBiblioteca(appState.materiaSeleccionada.id);
+                }
             }
         }
 
@@ -828,10 +829,13 @@
             }
 
             appState.materiaSeleccionada = materia;
+            appState.resumenesCargados = false; // Se resetea el estado de carga al cambiar de materia
+            mod('materiaResumenesCount').textContent = "...";
+            mod('resumenesList').innerHTML = '';
+            
             mostrarVistaMateria(materia);
             prepararFormularioMateria(materia, catedraSeleccionada);
             await cargarresenas(materiaId);
-            cargarResumenesEnTiempoReal(materiaId);
             
             if (catedraSeleccionada) {
                 const fCatSel = mod('filterCatedra');
@@ -951,6 +955,7 @@
                 setTimeout(() => {
                     mod('formSummarySuccessMsg').classList.add('hidden');
                     toggleSummaryForm();
+                    appState.resumenesCargados = false; // Forzamos una nueva descarga al cambiar a la pestaña para ver lo nuevo
                     switchTab('resumenes');
                 }, 2000);
 
@@ -964,76 +969,74 @@
             }
         }
 
-        function cargarResumenesEnTiempoReal(materiaId) {
+        async function cargarResumenesBiblioteca(materiaId) {
             const list = mod('resumenesList');
             const loader = mod('loaderResumenes');
-            
-            if(resumenesListener) { resumenesListener(); }
             
             loader.classList.remove('hidden');
             list.innerHTML = '';
             
-            resumenesListener = db.collection('resumenes')
-                .where('materiaId', '==', materiaId)
-                .onSnapshot((querySnapshot) => {
-                    loader.classList.add('hidden');
+            try {
+                const querySnapshot = await db.collection('resumenes').where('materiaId', '==', materiaId).get();
+                loader.classList.add('hidden');
+                appState.resumenesCargados = true;
+                
+                if (querySnapshot.empty) {
+                    mod('materiaResumenesCount').textContent = "0";
+                    list.innerHTML = `
+                        <div class="bg-blue-50 border border-blue-100 rounded-2xl p-8 text-center flex flex-col items-center justify-center">
+                            <span class="material-symbols-outlined text-5xl text-blue-300 mb-3">folder_open</span>
+                            <h3 class="text-lg font-bold text-blue-800 mb-1">La biblioteca está vacía</h3>
+                            <p class="text-blue-600 text-sm">Todavía no hay aportes para esta materia. ¡Sé el primero en compartir un resumen!</p>
+                        </div>`;
+                    return;
+                }
+
+                const docs = querySnapshot.docs.map(d => ({id: d.id, ...d.data()}));
+                docs.sort((a,b) => (b.fecha?.toMillis() || 0) - (a.fecha?.toMillis() || 0));
+                
+                mod('materiaResumenesCount').textContent = docs.length;
+
+                list.innerHTML = docs.map((data) => {
+                    const fechaTxt = data.fecha ? data.fecha.toDate().toLocaleDateString() : 'Reciente';
+                    const isPdf = data.titulo.toLowerCase().includes('pdf') || data.link.includes('view');
+                    const isDoc = data.titulo.toLowerCase().includes('doc') || data.titulo.toLowerCase().includes('apunte');
                     
-                    if (querySnapshot.empty) {
-                        mod('materiaResumenesCount').textContent = "0";
-                        list.innerHTML = `
-                            <div class="bg-blue-50 border border-blue-100 rounded-2xl p-8 text-center flex flex-col items-center justify-center">
-                                <span class="material-symbols-outlined text-5xl text-blue-300 mb-3">folder_open</span>
-                                <h3 class="text-lg font-bold text-blue-800 mb-1">La biblioteca está vacía</h3>
-                                <p class="text-blue-600 text-sm">Todavía no hay aportes para esta materia. ¡Sé el primero en compartir un resumen!</p>
-                            </div>`;
-                        return;
-                    }
+                    let icon = 'folder';
+                    let colorClass = 'bg-yellow-50 text-yellow-500';
+                    if(isPdf) { icon = 'picture_as_pdf'; colorClass = 'bg-red-50 text-red-500'; }
+                    else if(isDoc) { icon = 'description'; colorClass = 'bg-blue-50 text-blue-600'; }
 
-                    const docs = querySnapshot.docs.map(d => ({id: d.id, ...d.data()}));
-                    docs.sort((a,b) => (b.fecha?.toMillis() || 0) - (a.fecha?.toMillis() || 0));
-                    
-                    mod('materiaResumenesCount').textContent = docs.length;
+                    const origenStr = data.origen || 'Propio';
+                    const origenBadgeColor = origenStr === 'Propio' ? 'bg-purple-100 text-purple-700' : 'bg-teal-100 text-teal-700';
+                    const origenIcon = origenStr === 'Propio' ? 'edit_document' : 'public';
 
-                    list.innerHTML = docs.map((data) => {
-                        const fechaTxt = data.fecha ? data.fecha.toDate().toLocaleDateString() : 'Reciente';
-                        const isPdf = data.titulo.toLowerCase().includes('pdf') || data.link.includes('view');
-                        const isDoc = data.titulo.toLowerCase().includes('doc') || data.titulo.toLowerCase().includes('apunte');
-                        
-                        let icon = 'folder';
-                        let colorClass = 'bg-yellow-50 text-yellow-500';
-                        if(isPdf) { icon = 'picture_as_pdf'; colorClass = 'bg-red-50 text-red-500'; }
-                        else if(isDoc) { icon = 'description'; colorClass = 'bg-blue-50 text-blue-600'; }
-
-                        const origenStr = data.origen || 'Propio';
-                        const origenBadgeColor = origenStr === 'Propio' ? 'bg-purple-100 text-purple-700' : 'bg-teal-100 text-teal-700';
-                        const origenIcon = origenStr === 'Propio' ? 'edit_document' : 'public';
-
-                        return `
-                            <div class="bg-white rounded-2xl p-4 md:p-6 shadow-sm border border-gray-100 flex flex-col md:flex-row md:items-center justify-between gap-4 hover:shadow-md transition-shadow cursor-pointer" onclick="abrirResumenDrive('${data.link}')">
-                                <div class="flex items-center gap-4">
-                                    <div class="w-12 h-12 ${colorClass} rounded-xl flex items-center justify-center shrink-0">
-                                        <span class="material-symbols-outlined text-2xl">${icon}</span>
-                                    </div>
-                                    <div>
-                                        <h4 class="font-bold text-dark text-base md:text-lg">${data.titulo}</h4>
-                                        <p class="text-xs md:text-sm text-gray-500 mt-0.5">Subido por <strong>${data.usuarioNombre || 'Anónimo'}</strong> • ${fechaTxt}</p>
-                                        <div class="mt-2 flex flex-wrap gap-2">
-                                            <span class="inline-block bg-gray-100 text-gray-600 text-[10px] px-2 py-1 rounded font-bold uppercase tracking-wider">${data.catedra}</span>
-                                            <span class="inline-flex items-center gap-1 ${origenBadgeColor} text-[10px] px-2 py-1 rounded font-bold uppercase tracking-wider"><span class="material-symbols-outlined text-[12px]">${origenIcon}</span> ${origenStr}</span>
-                                        </div>
+                    return `
+                        <div class="bg-white rounded-2xl p-4 md:p-6 shadow-sm border border-gray-100 flex flex-col md:flex-row md:items-center justify-between gap-4 hover:shadow-md transition-shadow cursor-pointer" onclick="abrirResumenDrive('${data.link}')">
+                            <div class="flex items-center gap-4">
+                                <div class="w-12 h-12 ${colorClass} rounded-xl flex items-center justify-center shrink-0">
+                                    <span class="material-symbols-outlined text-2xl">${icon}</span>
+                                </div>
+                                <div>
+                                    <h4 class="font-bold text-dark text-base md:text-lg">${data.titulo}</h4>
+                                    <p class="text-xs md:text-sm text-gray-500 mt-0.5">Subido por <strong>${data.usuarioNombre || 'Anónimo'}</strong> • ${fechaTxt}</p>
+                                    <div class="mt-2 flex flex-wrap gap-2">
+                                        <span class="inline-block bg-gray-100 text-gray-600 text-[10px] px-2 py-1 rounded font-bold uppercase tracking-wider">${data.catedra}</span>
+                                        <span class="inline-flex items-center gap-1 ${origenBadgeColor} text-[10px] px-2 py-1 rounded font-bold uppercase tracking-wider"><span class="material-symbols-outlined text-[12px]">${origenIcon}</span> ${origenStr}</span>
                                     </div>
                                 </div>
-                                <button class="w-full md:w-auto px-5 py-2.5 border border-blue-200 bg-white rounded-full text-sm font-semibold text-blue-700 hover:border-blue-300 hover:bg-blue-50 transition-colors flex items-center justify-center gap-2 shrink-0">
-                                    <span class="material-symbols-outlined text-lg">travel_explore</span> Explorar Link
-                                </button>
                             </div>
-                        `;
-                    }).join('');
-                }, (error) => {
-                    loader.classList.add('hidden');
-                    console.error("Error cargando biblioteca: ", error);
-                    list.innerHTML = '<p class="text-center text-red-500 py-4">Error al consultar la biblioteca.</p>';
-                });
+                            <button class="w-full md:w-auto px-5 py-2.5 border border-blue-200 bg-white rounded-full text-sm font-semibold text-blue-700 hover:border-blue-300 hover:bg-blue-50 transition-colors flex items-center justify-center gap-2 shrink-0">
+                                <span class="material-symbols-outlined text-lg">travel_explore</span> Explorar Link
+                            </button>
+                        </div>
+                    `;
+                }).join('');
+            } catch (error) {
+                loader.classList.add('hidden');
+                console.error("Error cargando biblioteca: ", error);
+                list.innerHTML = '<p class="text-center text-red-500 py-4">Error al consultar la biblioteca.</p>';
+            }
         }
 
         const API_BASE_URL = "http://localhost:5000/api/carpeta";
