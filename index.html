@@ -24,11 +24,13 @@
     </script>
 
     <!-- Firebase Libraries -->
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-functions-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
     
+    <!-- Ads & Analytics -->
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6430126392523501" crossorigin="anonymous"></script>
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-8BZFCJBMY6"></script>
     <script>
       window.dataLayer = window.dataLayer || [];
       function gtag(){dataLayer.push(arguments);}
@@ -622,7 +624,6 @@
         firebase.initializeApp(firebaseConfig);
         const auth = firebase.auth();
         const db = firebase.firestore();
-        const functions = firebase.functions();
         
         let appState = { materias: [], resenas: [], resumenes: [], materiaSeleccionada: null, user: null, currentCategory: 'materias', resumenesCargados: false };
         let pendingRegistrationData = null;
@@ -1037,85 +1038,86 @@
                 list.innerHTML = '<p class="text-center text-red-500 py-4">Error al consultar la biblioteca.</p>';
             }
         }
-        
-// --- LÓGICA DE EXPLORADOR DRIVE (CON CLOUD FUNCTIONS) ---
-const gestionarBibliotecaCloud = functions.httpsCallable('gestionar_biblioteca');
-let historialNavegacion = [];
 
-// Esta función es la que llaman los botones del HTML, ¡no hay que borrarla!
-function abrirResumenDrive(link) {
-    abrirModal('explorerModal');
-    iniciarCargaUrlDrive(link);
-}
+        const API_BASE_URL = "http://localhost:5000/api/carpeta";
+        let historialNavegacion = [];
 
-async function iniciarCargaUrlDrive(url) {
-    if (!url) return;
-    mostrarLoaderDrive();
-    
-    try {
-        const result = await gestionarBibliotecaCloud({ input: url, accion: 'explorar' });
-        const data = result.data;
-
-        if (data.success) {
-            historialNavegacion = [{ id: data.folder_id, nombre: "Carpeta Raíz" }];
-            renderizarMigasDrive();
-            renderizarArchivosDrive(data.archivos);
-        } else {
-            mostrarErrorDrive(data.error || "No se pudo leer el link. Asegúrate de que sea público.");
+        function abrirResumenDrive(link) {
+            abrirModal('explorerModal');
+            iniciarCargaUrlDrive(link);
         }
-    } catch (error) {
-        console.error("Error en Firebase Function:", error);
-        mostrarErrorDrive("Error al conectar con el servidor de Gino Social.");
-    }
-}
 
-async function abrirSubcarpetaDrive(folderId, folderName) {
-    mostrarLoaderDrive();
-    
-    try {
-        const result = await gestionarBibliotecaCloud({ input: folderId, accion: 'explorar' });
-        const data = result.data;
+        async function iniciarCargaUrlDrive(url) {
+            if (!url) return;
+            mostrarLoaderDrive();
+            
+            try {
+                const response = await fetch(`${API_BASE_URL}/url`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ url: url })
+                });
+                const data = await response.json();
 
-        if (data.success) {
-            historialNavegacion.push({ id: folderId, nombre: folderName });
-            renderizarMigasDrive();
-            renderizarArchivosDrive(data.archivos);
-        } else {
-            mostrarErrorDrive("No se pudo abrir la subcarpeta.");
+                if (data.success) {
+                    historialNavegacion = [{ id: data.folder_id, nombre: "Carpeta Raíz" }];
+                    renderizarMigasDrive();
+                    renderizarArchivosDrive(data.archivos);
+                } else {
+                    mostrarErrorDrive(data.error || "No se pudo leer el link. Asegúrate de que sea público.");
+                }
+            } catch (error) {
+                console.error(error);
+                mostrarErrorDrive("Error de conexión. ¿Está encendido tu servidor Flask en localhost:5000?");
+            }
         }
-    } catch (error) {
-        console.error(error);
-        mostrarErrorDrive("Error de conexión con la biblioteca.");
-    }
-}
 
-async function navegarADrive(index) {
-    if (index === historialNavegacion.length - 1) return;
+        async function abrirSubcarpetaDrive(folderId, folderName) {
+            mostrarLoaderDrive();
+            
+            try {
+                const response = await fetch(`${API_BASE_URL}/${folderId}`);
+                const data = await response.json();
 
-    const targetFolder = historialNavegacion[index];
-    historialNavegacion = historialNavegacion.slice(0, index + 1);
-    
-    mostrarLoaderDrive();
-
-    try {
-        const result = await gestionarBibliotecaCloud({ input: targetFolder.id, accion: 'explorar' });
-        const data = result.data;
-
-        if (data.success) {
-            renderizarMigasDrive();
-            renderizarArchivosDrive(data.archivos);
-        } else {
-            mostrarErrorDrive("Error al retroceder de carpeta.");
+                if (data.success) {
+                    historialNavegacion.push({ id: folderId, nombre: folderName });
+                    renderizarMigasDrive();
+                    renderizarArchivosDrive(data.archivos);
+                } else {
+                    mostrarErrorDrive("No se pudo abrir la subcarpeta.");
+                }
+            } catch (error) {
+                console.error(error);
+                mostrarErrorDrive("Error al conectar con el servidor.");
+            }
         }
-    } catch (error) {
-        console.error(error);
-        mostrarErrorDrive("Error de comunicación.");
-    }
-}
 
-// (Y a partir de acá sigue renderizarArchivosDrive y el resto del código que tenías intacto)
-function renderizarArchivosDrive(archivos) {
-    const grid = mod('explorerFilesGrid');
+        async function navegarADrive(index) {
+            if (index === historialNavegacion.length - 1) return;
+
+            const targetFolder = historialNavegacion[index];
+            historialNavegacion = historialNavegacion.slice(0, index + 1);
+            
+            mostrarLoaderDrive();
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/${targetFolder.id}`);
+                const data = await response.json();
+
+                if (data.success) {
+                    renderizarMigasDrive();
+                    renderizarArchivosDrive(data.archivos);
+                } else {
+                    mostrarErrorDrive("Error al retroceder de carpeta.");
+                }
+            } catch (error) {
+                console.error(error);
+                mostrarErrorDrive("Error al conectar con el servidor.");
+            }
+        }
+
+        function renderizarArchivosDrive(archivos) {
+            const grid = mod('explorerFilesGrid');
             grid.innerHTML = '';
             
             mod('explorerLoader').classList.add('hidden');
@@ -1304,7 +1306,7 @@ function renderizarArchivosDrive(archivos) {
                     p.style.transform = `translate(calc(-50% + ${Math.cos(angle)*dist}px), calc(-50% + ${Math.sin(angle)*dist}px))`;
                 });
             };
-        } -----------------------------
+        }
 
         function configurarEasterEgg() { let c = 0; mod('ginoTitle').onclick = () => { c++; if(c>=15){mod('ginoEasterEgg').classList.add('active'); c=0; setTimeout(()=>mod('ginoEasterEgg').classList.remove('active'),5000);} }; }
         function configurarNavScroll() { window.addEventListener('scroll', () => mod('mainNav').classList.toggle('scrolled', window.scrollY > 50)); }
@@ -1564,4 +1566,3 @@ function renderizarArchivosDrive(archivos) {
     </script>
 </body>
 </html>
-
