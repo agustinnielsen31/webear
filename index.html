@@ -27,6 +27,7 @@
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-functions-compat.js"></script>
     
     <!-- Ads & Analytics -->
     <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6430126392523501" crossorigin="anonymous"></script>
@@ -624,6 +625,7 @@
         firebase.initializeApp(firebaseConfig);
         const auth = firebase.auth();
         const db = firebase.firestore();
+        const functions = firebase.functions();
         
         let appState = { materias: [], resenas: [], resumenes: [], materiaSeleccionada: null, user: null, currentCategory: 'materias', resumenesCargados: false };
         let pendingRegistrationData = null;
@@ -1038,27 +1040,23 @@
                 list.innerHTML = '<p class="text-center text-red-500 py-4">Error al consultar la biblioteca.</p>';
             }
         }
-
-        const API_BASE_URL = "http://localhost:5000/api/carpeta";
+        // Reemplazamos el fetch local por la función de Firebase
+        const gestionarBibliotecaCloud = functions.httpsCallable('gestionar_biblioteca');
         let historialNavegacion = [];
-
-        function abrirResumenDrive(link) {
-            abrirModal('explorerModal');
-            iniciarCargaUrlDrive(link);
-        }
-
+        
         async function iniciarCargaUrlDrive(url) {
             if (!url) return;
             mostrarLoaderDrive();
             
             try {
-                const response = await fetch(`${API_BASE_URL}/url`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ url: url })
+                // Llamamos a la función de Firebase
+                const result = await gestionarBibliotecaCloud({ 
+                    input: url, 
+                    accion: 'explorar' 
                 });
-                const data = await response.json();
-
+                
+                const data = result.data;
+        
                 if (data.success) {
                     historialNavegacion = [{ id: data.folder_id, nombre: "Carpeta Raíz" }];
                     renderizarMigasDrive();
@@ -1067,18 +1065,23 @@
                     mostrarErrorDrive(data.error || "No se pudo leer el link. Asegúrate de que sea público.");
                 }
             } catch (error) {
-                console.error(error);
-                mostrarErrorDrive("Error de conexión. ¿Está encendido tu servidor Flask en localhost:5000?");
+                console.error("Error en Firebase Function:", error);
+                mostrarErrorDrive("Error al conectar con el servidor de Gino Social.");
             }
         }
-
+        
         async function abrirSubcarpetaDrive(folderId, folderName) {
             mostrarLoaderDrive();
             
             try {
-                const response = await fetch(`${API_BASE_URL}/${folderId}`);
-                const data = await response.json();
-
+                // Usamos la misma función pasando el ID de la subcarpeta
+                const result = await gestionarBibliotecaCloud({ 
+                    input: folderId, 
+                    accion: 'explorar' 
+                });
+                
+                const data = result.data;
+        
                 if (data.success) {
                     historialNavegacion.push({ id: folderId, nombre: folderName });
                     renderizarMigasDrive();
@@ -1088,22 +1091,27 @@
                 }
             } catch (error) {
                 console.error(error);
-                mostrarErrorDrive("Error al conectar con el servidor.");
+                mostrarErrorDrive("Error de conexión con la biblioteca.");
             }
         }
-
+        
+        // Actualizamos también la navegación por migas de pan (breadcrumbs)
         async function navegarADrive(index) {
             if (index === historialNavegacion.length - 1) return;
-
+        
             const targetFolder = historialNavegacion[index];
             historialNavegacion = historialNavegacion.slice(0, index + 1);
             
             mostrarLoaderDrive();
-
+        
             try {
-                const response = await fetch(`${API_BASE_URL}/${targetFolder.id}`);
-                const data = await response.json();
-
+                const result = await gestionarBibliotecaCloud({ 
+                    input: targetFolder.id, 
+                    accion: 'explorar' 
+                });
+                
+                const data = result.data;
+        
                 if (data.success) {
                     renderizarMigasDrive();
                     renderizarArchivosDrive(data.archivos);
@@ -1112,7 +1120,7 @@
                 }
             } catch (error) {
                 console.error(error);
-                mostrarErrorDrive("Error al conectar con el servidor.");
+                mostrarErrorDrive("Error de comunicación.");
             }
         }
 
@@ -1566,3 +1574,4 @@
     </script>
 </body>
 </html>
+
