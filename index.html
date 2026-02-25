@@ -364,7 +364,10 @@
                                     </div>
                                 </div>
                                 <div>
-                                    <label class="block font-semibold text-dark text-sm mb-1">Enlace público de Drive</label>
+                                    <label class="block font-semibold text-dark text-sm mb-1 flex flex-col md:flex-row md:items-center gap-2 flex-wrap">
+                                        Enlace público de Drive
+                                        <span class="text-xs font-normal text-amber-600 bg-amber-50 px-2 py-0.5 rounded-md border border-amber-100">Recuerda configurar la visibilidad de la carpeta para que cualquier usuario con el vínculo pueda verla</span>
+                                    </label>
                                     <input type="url" id="resumenLink" placeholder="https://drive.google.com/..." class="w-full p-3 border border-gray-300 rounded-lg focus:border-blue-600 outline-none transition-colors" required>
                                 </div>
                                 <div class="flex gap-4 pt-4 border-t border-gray-100">
@@ -596,6 +599,18 @@
         </div>
     </div>
 
+    <!-- Modal para borrar Resumen -->
+    <div class="modal fixed inset-0 bg-black/60 z-[2000] hidden items-center justify-center p-4" id="deleteResumenModal">
+        <div class="bg-white p-8 rounded-3xl w-full max-w-sm shadow-2xl modal-content-animated text-center">
+            <h2 class="text-2xl font-black text-red-500 mb-2">⚠️ Borrar Aporte</h2>
+            <p class="text-gray-600 mb-6">¿Seguro? Esta acción eliminará tu resumen de la biblioteca.</p>
+            <div class="flex gap-3">
+                <button type="button" class="flex-1 py-3 border text-gray-500 font-bold rounded-xl" data-dismiss="modal">Cancelar</button>
+                <button type="button" id="confirmDeleteResumenBtn" class="flex-1 py-3 bg-red-500 text-white font-bold rounded-xl">Borrar</button>
+            </div>
+        </div>
+    </div>
+
     <div class="modal fixed inset-0 bg-black/60 z-[2000] hidden items-center justify-center p-4" id="myReviewsModal">
         <div class="bg-white p-6 md:p-8 rounded-3xl w-full max-w-4xl shadow-2xl modal-content-animated flex flex-col h-[80vh]">
             <h2 class="text-2xl font-black text-primary mb-4 shrink-0">Mis Reseñas</h2>
@@ -633,6 +648,7 @@
         let yaCargadas = { materias: false, especiales: false, teorias: false, horasdeinv: false, idiomas: false };
         let pendingDelete = null;
         let pendingReplyDelete = null;
+        let pendingResumenDelete = null;
         let currentSort = 'carrera';
         let currentSearch = '';
 
@@ -652,6 +668,7 @@
             if (id === 'tycModal') pendingRegistrationData = null;
             if (id === 'deleteConfirmModal') pendingDelete = null;
             if (id === 'deleteReplyModal') pendingReplyDelete = null;
+            if (id === 'deleteResumenModal') pendingResumenDelete = null;
         }
 
         function init() {
@@ -811,7 +828,6 @@
                 contR.classList.remove('block');
                 filtros.classList.add('hidden');
                 
-                // Carga perezosa de los resúmenes solo si no se descargaron antes
                 if (!appState.resumenesCargados && appState.materiaSeleccionada) {
                     cargarResumenesBiblioteca(appState.materiaSeleccionada.id);
                 }
@@ -831,7 +847,7 @@
             }
 
             appState.materiaSeleccionada = materia;
-            appState.resumenesCargados = false; // Se resetea el estado de carga al cambiar de materia
+            appState.resumenesCargados = false; 
             mod('materiaResumenesCount').textContent = "...";
             mod('resumenesList').innerHTML = '';
             
@@ -944,6 +960,7 @@
                     catedra: catedra,
                     origen: origen,
                     link: link,
+                    usuarioId: user ? user.uid : null,
                     usuarioNombre: user ? (user.displayName || user.email.split('@')[0]) : 'Anónimo',
                     fecha: firebase.firestore.FieldValue.serverTimestamp()
                 });
@@ -957,7 +974,7 @@
                 setTimeout(() => {
                     mod('formSummarySuccessMsg').classList.add('hidden');
                     toggleSummaryForm();
-                    appState.resumenesCargados = false; // Forzamos una nueva descarga al cambiar a la pestaña para ver lo nuevo
+                    appState.resumenesCargados = false;
                     switchTab('resumenes');
                 }, 2000);
 
@@ -1012,6 +1029,9 @@
                     const origenStr = data.origen || 'Propio';
                     const origenBadgeColor = origenStr === 'Propio' ? 'bg-purple-100 text-purple-700' : 'bg-teal-100 text-teal-700';
                     const origenIcon = origenStr === 'Propio' ? 'edit_document' : 'public';
+                    
+                    const isOwner = appState.user && data.usuarioId === appState.user.uid;
+                    const deleteBtnHtml = isOwner ? `<button onclick="event.stopPropagation(); borrarResumen('${data.id}')" class="w-full md:w-auto px-4 py-2 border border-red-200 bg-white rounded-full text-sm font-semibold text-red-600 hover:border-red-300 hover:bg-red-50 transition-colors flex items-center justify-center gap-1 shrink-0" title="Borrar aporte"><span class="material-symbols-outlined text-lg">delete</span></button>` : '';
 
                     return `
                         <div class="bg-white rounded-2xl p-4 md:p-6 shadow-sm border border-gray-100 flex flex-col md:flex-row md:items-center justify-between gap-4 hover:shadow-md transition-shadow cursor-pointer" onclick="abrirResumenDrive('${data.link}')">
@@ -1028,9 +1048,9 @@
                                     </div>
                                 </div>
                             </div>
-                            <button class="w-full md:w-auto px-5 py-2.5 border border-blue-200 bg-white rounded-full text-sm font-semibold text-blue-700 hover:border-blue-300 hover:bg-blue-50 transition-colors flex items-center justify-center gap-2 shrink-0">
-                                <span class="material-symbols-outlined text-lg">travel_explore</span> Explorar Link
-                            </button>
+                            <div class="flex gap-2 w-full md:w-auto mt-2 md:mt-0 justify-end md:justify-start">
+                                ${deleteBtnHtml}
+                            </div>
                         </div>
                     `;
                 }).join('');
@@ -1040,7 +1060,7 @@
                 list.innerHTML = '<p class="text-center text-red-500 py-4">Error al consultar la biblioteca.</p>';
             }
         }
-        // Reemplazamos el fetch local por la función de Firebase
+        
         const gestionarBibliotecaCloud = functions.httpsCallable('gestionar_biblioteca');
         let historialNavegacion = [];
         function abrirResumenDrive(link) {
@@ -1052,7 +1072,6 @@
             mostrarLoaderDrive();
             
             try {
-                // Llamamos a la función de Firebase
                 const result = await gestionarBibliotecaCloud({ 
                     input: url, 
                     accion: 'explorar' 
@@ -1077,7 +1096,6 @@
             mostrarLoaderDrive();
             
             try {
-                // Usamos la misma función pasando el ID de la subcarpeta
                 const result = await gestionarBibliotecaCloud({ 
                     input: folderId, 
                     accion: 'explorar' 
@@ -1098,7 +1116,6 @@
             }
         }
         
-        // Actualizamos también la navegación por migas de pan (breadcrumbs)
         async function navegarADrive(index) {
             if (index === historialNavegacion.length - 1) return;
         
@@ -1212,7 +1229,6 @@
             }
         }
 
-
         function configurarSidebar() {
             const menuBtn = mod('menuBtn');
             const sidebar = mod('mainSidebar');
@@ -1239,6 +1255,12 @@
         }
 
         function borrarResena(reviewId, materiaId) { pendingDelete = { reviewId, materiaId }; abrirModal('deleteConfirmModal'); }
+        
+        function borrarResumen(resumenId) {
+            pendingResumenDelete = resumenId;
+            abrirModal('deleteResumenModal');
+        }
+
         function toggleReportMenu(reviewId) {
             const m = mod(`menu-${reviewId}`); const isA = m.classList.contains('active');
             document.querySelectorAll('.dropdown-menu.active').forEach(x => x.classList.remove('active'));
@@ -1549,6 +1571,25 @@
                     mostrarNotificacion('Respuesta borrada.', 'success'); cerrarModal('deleteReplyModal');
                 } catch(e) {} finally { btn.disabled = false; btn.textContent = "Borrar"; }
             };
+
+            mod('confirmDeleteResumenBtn').onclick = async () => {
+                if (!pendingResumenDelete) return; 
+                const btn = mod('confirmDeleteResumenBtn'); 
+                btn.disabled = true; 
+                btn.textContent = "...";
+                try {
+                    await db.collection('resumenes').doc(pendingResumenDelete).delete();
+                    mostrarNotificacion('Aporte borrado correctamente.', 'success'); 
+                    appState.resumenesCargados = false;
+                    cargarResumenesBiblioteca(appState.materiaSeleccionada.id); 
+                    cerrarModal('deleteResumenModal');
+                } catch(e) { 
+                    mostrarNotificacion('Error al borrar el aporte.', 'error'); 
+                } finally { 
+                    btn.disabled = false; 
+                    btn.textContent = "Borrar"; 
+                }
+            };
         }
 
         function configurarTogglePasswords() {
@@ -1577,7 +1618,3 @@
     </script>
 </body>
 </html>
-
-
-
-
