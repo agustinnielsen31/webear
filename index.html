@@ -934,7 +934,7 @@
             const user = auth.currentUser || appState.user;
 
             btn.disabled = true;
-            btn.innerHTML = '<span class="material-symbols-outlined text-sm md:text-base animate-spin">sync</span> Guardando...';
+            btn.innerHTML = '<span class="material-symbols-outlined text-sm md:text-base animate-spin " style="animation-direction: reverse;">sync</span> Guardando...';
 
             try {
                 await db.collection('resumenes').add({
@@ -1577,5 +1577,6 @@
     </script>
 </body>
 </html>
+
 
 
