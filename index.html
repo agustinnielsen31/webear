@@ -737,6 +737,7 @@
             const categoryNames = { materias: "Materia Obligatoria", especiales: "Sociología Especial", teorias: "Teoría Sociológica", horasdeinv: "Taller / Seminario", idiomas: "Idioma" };
             mod('materiaCategoriaDisplay').textContent = categoryNames[materia.tipo] || "Materia";
             mod('materiaResenasCount').textContent = materia.numresenas || 0;
+            mod('materiaResumenesCount').textContent = materia.numresumenes || 0;
 
             const catedrasList = mod('materiaCatedrasList');
             if (materia.catedras && materia.catedras.length > 0) {
@@ -848,7 +849,7 @@
 
             appState.materiaSeleccionada = materia;
             appState.resumenesCargados = false; 
-            mod('materiaResumenesCount').textContent = "...";
+            mod('materiaResumenesCount').textContent = materia.numresumenes || 0;
             mod('resumenesList').innerHTML = '';
             
             mostrarVistaMateria(materia);
@@ -965,6 +966,13 @@
                     fecha: firebase.firestore.FieldValue.serverTimestamp()
                 });
                 
+                await db.collection(appState.materiaSeleccionada.tipo).doc(appState.materiaSeleccionada.id).update({
+                    numresumenes: firebase.firestore.FieldValue.increment(1)
+                });
+                
+                appState.materiaSeleccionada.numresumenes = (appState.materiaSeleccionada.numresumenes || 0) + 1;
+                mod('materiaResumenesCount').textContent = appState.materiaSeleccionada.numresumenes;
+                
                 mod('resumenFormElement').reset();
                 mod('origenExternoInput').classList.add('hidden');
                 mod('resumenMateria').value = appState.materiaSeleccionada.nombre;
@@ -1002,6 +1010,7 @@
                 
                 if (querySnapshot.empty) {
                     mod('materiaResumenesCount').textContent = "0";
+                    appState.materiaSeleccionada.numresumenes = 0;
                     list.innerHTML = `
                         <div class="bg-blue-50 border border-blue-100 rounded-2xl p-8 text-center flex flex-col items-center justify-center">
                             <span class="material-symbols-outlined text-5xl text-blue-300 mb-3">folder_open</span>
@@ -1015,6 +1024,7 @@
                 docs.sort((a,b) => (b.fecha?.toMillis() || 0) - (a.fecha?.toMillis() || 0));
                 
                 mod('materiaResumenesCount').textContent = docs.length;
+                appState.materiaSeleccionada.numresumenes = docs.length;
 
                 list.innerHTML = docs.map((data) => {
                     const fechaTxt = data.fecha ? data.fecha.toDate().toLocaleDateString() : 'Reciente';
@@ -1579,6 +1589,15 @@
                 btn.textContent = "...";
                 try {
                     await db.collection('resumenes').doc(pendingResumenDelete).delete();
+                    
+                    // Actualizar el contador también al eliminar
+                    await db.collection(appState.materiaSeleccionada.tipo).doc(appState.materiaSeleccionada.id).update({
+                        numresumenes: firebase.firestore.FieldValue.increment(-1)
+                    });
+                    
+                    appState.materiaSeleccionada.numresumenes = Math.max(0, (appState.materiaSeleccionada.numresumenes || 0) - 1);
+                    mod('materiaResumenesCount').textContent = appState.materiaSeleccionada.numresumenes;
+                    
                     mostrarNotificacion('Aporte borrado correctamente.', 'success'); 
                     appState.resumenesCargados = false;
                     cargarResumenesBiblioteca(appState.materiaSeleccionada.id); 
@@ -1618,4 +1637,3 @@
     </script>
 </body>
 </html>
-
