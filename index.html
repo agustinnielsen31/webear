@@ -94,6 +94,24 @@
 <body class="bg-slate-50 text-dark flex flex-col min-h-screen font-sans">
 
     <!-- Sidebar & Overlay -->
+    <div class="modal fixed inset-0 bg-black/80 z-[3000] hidden items-center justify-center p-4 backdrop-blur-md" id="updateTycModal">
+        <div class="bg-white p-8 rounded-3xl w-full max-w-xl shadow-2xl modal-content-animated text-center">
+            <div class="w-16 h-16 bg-primary/10 text-primary rounded-full flex items-center justify-center mx-auto mb-4">
+                <span class="material-symbols-outlined text-3xl">gavel</span>
+            </div>
+            <h2 class="text-2xl font-black text-primary mb-2">Nuevos Términos y Condiciones</h2>
+            <p class="text-gray-600 mb-6">Hemos actualizado nuestras políticas para incluir la nueva <strong>Biblioteca Drive</strong>. Para seguir usando Gino Social, necesitas leer y aceptar los nuevos términos.</p>
+            
+            <div class="bg-gray-50 border border-gray-200 rounded-xl overflow-hidden h-48 mb-6 relative">
+                <iframe src="terminos.html" class="w-full h-full border-0" title="Nuevos Términos y Condiciones"></iframe>
+            </div>
+            
+            <div class="flex gap-3">
+                <button type="button" id="rejectUpdateTyC" class="flex-1 py-3 border border-gray-300 text-gray-500 font-bold rounded-xl hover:bg-gray-50 transition-colors">Cerrar Sesión</button>
+                <button type="button" id="acceptUpdateTyC" class="flex-[2] py-3 bg-gradient-to-r from-primary to-primaryDark text-white font-bold rounded-xl shadow-md hover:shadow-lg transition-all">He leído y acepto</button>
+            </div>
+        </div>
+    </div>
     <div class="sidebar-overlay fixed inset-0 bg-black/50 z-[1099]" id="sidebarOverlay"></div>
     <div class="sidebar fixed top-0 left-0 w-72 h-full bg-white z-[1100] shadow-xl p-8 flex flex-col" id="mainSidebar">
         <div class="flex justify-between items-center mb-8 border-b pb-4">
@@ -1366,7 +1384,7 @@
         }
 
         function configurarFirebaseAuth() {
-            auth.onAuthStateChanged(user => {
+            auth.onAuthStateChanged(async user => {
                 appState.user = user;
                 mod('userInfo').classList.toggle('hidden', !user); mod('userInfo').classList.toggle('flex', !!user);
                 mod('authButtons').classList.toggle('hidden', !!user);
@@ -1380,10 +1398,24 @@
                 if (user) {
                     mod('userName').textContent = (user.displayName || user.email).split(' ')[0];
                     mod('userAvatar').textContent = (user.displayName || 'U')[0].toUpperCase();
+                    try {
+                        const doc = await db.collection("usuarios").doc(user.uid).get();
+                        if (doc.exists) {
+                            const userData = doc.data();
+                            // Si no tiene fecha, o la fecha es anterior a la actualización (6 de marzo de 2026)
+                            const fechaAceptacion = userData.fechaAceptacionTyC ? userData.fechaAceptacionTyC.toDate() : new Date(0);
+                            const FECHA_ACTUALIZACION = new Date('2026-03-06T00:00:00'); 
+                            
+                            if (fechaAceptacion < FECHA_ACTUALIZACION) {
+                                abrirModal('updateTycModal');
+                            }
+                        }
+                    } catch (error) {
+                        console.error("Error al verificar TyC:", error);
+                    }
                 }
             });
         }
-
         async function cargarMaterias(cat) {
             if (yaCargadas[cat]) return actualizarVistaMaterias();
             mod('materiasGrid').innerHTML = '<div class="col-span-full text-center py-12 text-gray-500"><div class="inline-block w-8 h-8 border-4 border-gray-200 border-t-primary rounded-full animate-spin mb-4"></div><p>Cargando materias...</p></div>';
@@ -1536,7 +1568,13 @@
         function configurarModales() {
             document.querySelectorAll('[data-open]').forEach(btn => btn.onclick = e => { e.preventDefault(); abrirModal(btn.dataset.open); });
             document.querySelectorAll('[data-dismiss="modal"]').forEach(btn => btn.onclick = e => cerrarModal(e.target.closest('.modal').id));
-            window.onclick = e => { if (e.target.classList.contains('modal')) cerrarModal(e.target.id); };
+            window.onclick = e => { 
+                if (e.target.classList.contains('modal')) {
+                    // Prevenir que cierren el modal de actualización obligatorio haciendo clic afuera
+                    if (e.target.id === 'updateTycModal') return;
+                    cerrarModal(e.target.id); 
+                }
+            };
             mod('switchToRegister').onclick = e => { e.preventDefault(); cerrarModal('loginModal'); abrirModal('registerModal'); };
             mod('logoutBtn').onclick = () => auth.signOut();
             
@@ -1618,6 +1656,39 @@
             };
         }
 
+            const btnAcceptUpdate = mod('acceptUpdateTyC');
+            if (btnAcceptUpdate) {
+                btnAcceptUpdate.onclick = async () => {
+                    if (!appState.user) return;
+                    btnAcceptUpdate.disabled = true; 
+                    btnAcceptUpdate.textContent = "Procesando...";
+                    try {
+                        // Actualizamos la fecha de aceptación en Firestore
+                        await db.collection("usuarios").doc(appState.user.uid).update({ 
+                            tycAceptados: true, 
+                            fechaAceptacionTyC: firebase.firestore.FieldValue.serverTimestamp() 
+                        });
+                        cerrarModal('updateTycModal');
+                        mostrarNotificacion('¡Gracias por actualizar y aceptar los términos!', 'success');
+                    } catch (error) {
+                        console.error(error);
+                        mostrarNotificacion('Error al conectar con el servidor.', 'error');
+                    } finally { 
+                        btnAcceptUpdate.disabled = false; 
+                        btnAcceptUpdate.textContent = "He leído y acepto"; 
+                    }
+                };
+            }
+
+            const btnRejectUpdate = mod('rejectUpdateTyC');
+            if (btnRejectUpdate) {
+                btnRejectUpdate.onclick = () => {
+                    cerrarModal('updateTycModal');
+                    auth.signOut(); // Si no acepta, lo deslogueamos
+                };
+            }
+            // --------------------------------------
+
         function configurarTogglePasswords() {
             document.querySelectorAll('.toggle-password-btn').forEach(b => b.onclick = () => {
                 const i = mod(b.dataset.target); i.type = i.type === 'password' ? 'text' : 'password';
@@ -1644,3 +1715,4 @@
     </script>
 </body>
 </html>
+
