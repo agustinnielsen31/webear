@@ -1414,6 +1414,31 @@
                         console.error("Error al verificar TyC:", error);
                     }
                 }
+                try {
+                        const doc = await db.collection("usuarios").doc(user.uid).get();
+                        let requiereActualizar = false;
+
+                        // Ponemos 7 de marzo para que te obligue a aceptarlo HOY durante las pruebas
+                        const FECHA_ACTUALIZACION = new Date('2026-03-07T00:00:00'); 
+
+                        if (doc.exists) {
+                            const userData = doc.data();
+                            const fechaAceptacion = userData.fechaAceptacionTyC ? userData.fechaAceptacionTyC.toDate() : new Date(0);
+                            
+                            if (fechaAceptacion < FECHA_ACTUALIZACION) {
+                                requiereActualizar = true;
+                            }
+                        } else {
+                            // Si el usuario es tan antiguo que no tiene documento en Firestore, también debe aceptar
+                            requiereActualizar = true;
+                        }
+
+                        if (requiereActualizar) {
+                            abrirModal('updateTycModal');
+                        }
+                    } catch (error) {
+                        console.error("Error al verificar TyC:", error);
+                    }
             });
         }
         async function cargarMaterias(cat) {
@@ -1714,6 +1739,7 @@
     </script>
 </body>
 </html>
+
 
 
 
