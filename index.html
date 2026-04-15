@@ -102,7 +102,7 @@
         </div>
         
         <div class="flex flex-col gap-2 flex-1">
-            <a href="#/" class="sidebar-item active flex items-center gap-3 p-3 font-semibold rounded-xl text-dark hover:bg-orange-50 hover:text-primary transition-colors border-l-4 border-transparent" id="menu-home-link">
+            <a href="javascript:void(0)" onclick="cambiarRuta('#/')" class="sidebar-item active flex items-center gap-3 p-3 font-semibold rounded-xl text-dark hover:bg-orange-50 hover:text-primary transition-colors border-l-4 border-transparent" id="menu-home-link">
                 <span class="material-symbols-outlined"> home </span> Inicio
             </a>
             <a href="https://ginosocial.ar/datos" class="sidebar-item flex items-center gap-3 p-3 font-semibold rounded-xl text-dark hover:bg-orange-50 hover:text-primary transition-colors border-l-4 border-transparent">
@@ -208,7 +208,7 @@
         <div id="materia-view" class="view-section">
             <div class="bg-primary pt-24 pb-6 px-6 md:px-12 text-white shadow-inner mb-6">
                 <div class="max-w-6xl mx-auto flex flex-col gap-4">
-                    <a href="javascript:void(0)" onclick="window.location.hash='#/'" class="inline-flex items-center gap-2 bg-white/20 hover:bg-white/30 px-4 py-2 rounded-full font-semibold w-fit transition-colors">
+                    <a href="javascript:void(0)" onclick="cambiarRuta('#/')" class="inline-flex items-center gap-2 bg-white/20 hover:bg-white/30 px-4 py-2 rounded-full font-semibold w-fit transition-colors">
                         <span class="material-symbols-outlined text-sm">arrow_back</span> Volver al listado
                     </a>
                     <h1 id="materiaPageTitle" class="text-4xl md:text-5xl font-black drop-shadow-sm">Cargando Materia...</h1>
@@ -374,13 +374,10 @@
                                         <span class="text-xs font-normal text-amber-600 bg-amber-50 px-2 py-0.5 rounded-md border border-amber-100">Recuerda configurar la visibilidad para que cualquier usuario con el vínculo pueda verlo</span>
                                     </label>
                                     <div class="relative">
-                                  <input type="url" id="resumenLink"
-                                    placeholder="Pegá el link de Drive o OneDrive..."
-                                    class="w-full p-3 border border-gray-300 rounded-lg focus:border-blue-600 outline-none transition-colors pr-32"
-                                    required>
-                                  <span id="plataformaBadge" class="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-bold px-2 py-1 rounded-full hidden"></span>
-                                </div>
-                                <p id="linkWarning" class="hidden text-amber-600 text-xs mt-1">⚠️ No reconocemos este link. Asegurate de que sea público.</p>
+                                        <input type="url" id="resumenLink" placeholder="Pegá el link de Drive o OneDrive..." class="w-full p-3 border border-gray-300 rounded-lg focus:border-blue-600 outline-none transition-colors pr-32" required>
+                                        <span id="plataformaBadge" class="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-bold px-2 py-1 rounded-full hidden"></span>
+                                    </div>
+                                    <p id="linkWarning" class="hidden text-amber-600 text-xs mt-1">⚠️ No reconocemos este link. Asegurate de que sea público.</p>
                                 </div>
                                 <div class="flex gap-4 pt-4 border-t border-gray-100">
                                     <button type="button" onclick="toggleSummaryForm()" class="flex-1 py-2 md:py-3 border border-gray-300 text-gray-600 font-bold rounded-xl hover:bg-gray-50 transition-colors">Cancelar</button>
@@ -666,6 +663,7 @@
         let pendingResumenDelete = null;
         let currentSort = 'carrera';
         let currentSearch = '';
+        let rutaActual = '#/'; // Variable para manejar el ruteo manual internamente
 
         const materiasData = ["Sociología General", "Filosofía", "Economía 2", "Epistemología de las Ciencias Sociales", "Historia Social Moderna y Contemporánea", "Historia Social Latinoamericana", "Historia Social Argentina", "Análisis de la sociedad Argentina", "Historia del Conocimiento Sociológico 1", "Historia del Conocimiento Sociológico 2", "Sociología Sistemática", "Metodología 1", "Metodología 2", "Metodología 3", "Sociología política", "Psicología Social"];
 
@@ -702,8 +700,15 @@
             configurarOjosGino(); 
             configurarMisResenas(); 
             configurarSidebar(); 
+            configurarIntegracionDrive();
             
-            window.addEventListener('hashchange', handleRoute);
+            // Reemplazo del listener de hashchange para evitar fallos de seguridad en sandboxes
+            window.addEventListener('hashchange', () => {
+                try {
+                    if(window.location.hash === rutaActual) return;
+                } catch(e) {}
+                handleRoute();
+            });
             handleRoute();
             
             document.addEventListener('click', (e) => {
@@ -712,42 +717,72 @@
                 }
             });
         }
-        mod('resumenLink').addEventListener('input', function() {
-          const url = this.value.trim();
-          const plataforma = detectarPlataforma(url);
-          const badge = mod('plataformaBadge');
-          const warning = mod('linkWarning');
-        
-          if (!url) {
-            badge.classList.add('hidden');
-            warning.classList.add('hidden');
-            return;
-          }
-        
-          if (plataforma === 'drive') {
-            badge.textContent = '📁 Google Drive';
-            badge.className = 'absolute right-3 top-1/2 -translate-y-1/2 text-xs font-bold px-2 py-1 rounded-full bg-green-100 text-green-700';
-            badge.classList.remove('hidden');
-            warning.classList.add('hidden');
-          } else if (plataforma === 'onedrive') {
-            badge.textContent = '☁️ OneDrive';
-            badge.className = 'absolute right-3 top-1/2 -translate-y-1/2 text-xs font-bold px-2 py-1 rounded-full bg-blue-100 text-blue-700';
-            badge.classList.remove('hidden');
-            warning.classList.add('hidden');
-          } else {
-            badge.classList.add('hidden');
-            warning.classList.remove('hidden');
-          }
-        });
-        async function handleRoute() {
-            const hash = window.location.hash.replace(/^#\/?/, '');
+
+        // Nueva función global para navegar protegiendo de errores de "Location.hash setter"
+        function cambiarRuta(nuevaRuta) {
+            rutaActual = nuevaRuta;
+            try {
+                window.location.hash = nuevaRuta;
+            } catch (e) {
+                console.warn("Navegación manual activada debido a restricciones del entorno virtual.", e);
+            }
+            handleRoute(nuevaRuta);
+        }
+
+        function configurarIntegracionDrive() {
+            const inputLink = mod('resumenLink');
+            if(inputLink) {
+                inputLink.addEventListener('input', function() {
+                    const url = this.value.trim();
+                    const plataforma = detectarPlataforma(url);
+                    const badge = mod('plataformaBadge');
+                    const warning = mod('linkWarning');
+                    
+                    if (!url) {
+                        badge.classList.add('hidden');
+                        warning.classList.add('hidden');
+                        return;
+                    }
+                    
+                    if (plataforma === 'drive') {
+                        badge.textContent = '📁 Google Drive';
+                        badge.className = 'absolute right-3 top-1/2 -translate-y-1/2 text-xs font-bold px-2 py-1 rounded-full bg-green-100 text-green-700';
+                        badge.classList.remove('hidden');
+                        warning.classList.add('hidden');
+                    } else if (plataforma === 'onedrive') {
+                        badge.textContent = '☁️ OneDrive';
+                        badge.className = 'absolute right-3 top-1/2 -translate-y-1/2 text-xs font-bold px-2 py-1 rounded-full bg-blue-100 text-blue-700';
+                        badge.classList.remove('hidden');
+                        warning.classList.add('hidden');
+                    } else {
+                        badge.classList.add('hidden');
+                        warning.classList.remove('hidden');
+                    }
+                });
+            }
+        }
+
+        async function handleRoute(rutaManual) {
+            let hashStr = typeof rutaManual === 'string' ? rutaManual : null;
+            if (hashStr === null) {
+                try {
+                    hashStr = window.location.hash || rutaActual;
+                } catch(e) {
+                    hashStr = rutaActual; // Fallback al estado virtual si el navegador lo bloquea
+                }
+            }
+            
+            const hash = hashStr.replace(/^#\/?/, '');
             const parts = hash.split('/');
             
             if (parts[0] === 'materia' && parts[1] && parts[2]) {
                 const tipo = parts[1];
                 const materiaId = decodeURIComponent(parts[2].split('?')[0]);
-                const paramsString = window.location.hash.split('?')[1];
-                const catedraParam = paramsString ? new URLSearchParams(paramsString).get('cat') : null;
+                let catedraParam = null;
+                if (hashStr.includes('?')) {
+                    const paramsString = hashStr.split('?')[1];
+                    catedraParam = new URLSearchParams(paramsString).get('cat');
+                }
                 await cargarMateriaEspecifica(materiaId, tipo, catedraParam);
             } else {
                 mostrarVistaHome();
@@ -787,14 +822,22 @@
                 
                 catedrasList.querySelectorAll('.catedra-link').forEach(link => {
                     link.onclick = (e) => {
+                        e.stopPropagation();
                         const catName = e.target.dataset.name;
                         const fCatSel = mod('filterCatedra');
                         if (fCatSel) {
                             fCatSel.value = catName;
                             fCatSel.dispatchEvent(new Event('change'));
-                            const url = new URL(window.location);
-                            url.hash = `#/materia/${materia.tipo}/${encodeURIComponent(materia.id)}?cat=${encodeURIComponent(catName)}`;
-                            window.history.replaceState(null, '', url);
+                            
+                            const nuevaRuta = `#/materia/${materia.tipo}/${encodeURIComponent(materia.id)}?cat=${encodeURIComponent(catName)}`;
+                            rutaActual = nuevaRuta;
+                            try {
+                                const url = new URL(window.location);
+                                url.hash = nuevaRuta;
+                                window.history.replaceState(null, '', url);
+                            } catch(err) {
+                                console.warn("Sandbox blocked history rewrite", err);
+                            }
                             
                             switchTab('resenas');
                             const resenasContainer = document.querySelector('.resenas-container');
@@ -812,12 +855,14 @@
             switchTab('resenas');
             window.scrollTo(0, 0);
         }
+
         function detectarPlataforma(url) {
           if (!url) return null;
           if (url.includes('drive.google.com')) return 'drive';
           if (url.includes('1drv.ms') || url.includes('onedrive.live.com') || url.includes('sharepoint.com')) return 'onedrive';
           return 'otro';
         }
+
         function toggleReviewForm() {
             const revForm = mod('reviewForm');
             const sumForm = mod('summaryForm');
@@ -889,8 +934,8 @@
                     if (doc.exists) {
                         materia = { id: doc.id, ...doc.data(), tipo: tipo };
                         appState.materias.push(materia);
-                    } else { window.location.hash = '#/'; return; }
-                } catch (error) { window.location.hash = '#/'; return; }
+                    } else { cambiarRuta('#/'); return; }
+                } catch (error) { cambiarRuta('#/'); return; }
             }
 
             appState.materiaSeleccionada = materia;
@@ -916,11 +961,13 @@
                 mod('summaryForm').classList.add('hidden');
             }
         }
+
         function iconoPlataforma(plataforma) {
           if (plataforma === 'drive') return '<span title="Google Drive" class="text-green-600 font-bold text-xs bg-green-50 px-2 py-0.5 rounded-full border border-green-200">📁 Drive</span>';
           if (plataforma === 'onedrive') return '<span title="OneDrive" class="text-blue-600 font-bold text-xs bg-blue-50 px-2 py-0.5 rounded-full border border-blue-200">☁️ OneDrive</span>';
           return '<span class="text-gray-500 font-bold text-xs bg-gray-50 px-2 py-0.5 rounded-full border border-gray-200">🔗 Link</span>';
         }
+
         function prepararFormularioMateria(m, catName) {
             mod('reviewFormElement').reset();
             mod('resumenFormElement').reset();
@@ -1029,6 +1076,8 @@
                 mod('resumenMateria').value = appState.materiaSeleccionada.nombre;
                 mod('formSummarySuccessMsg').classList.remove('hidden');
                 mod('formSummaryErrorMsg').classList.add('hidden');
+                mod('plataformaBadge').classList.add('hidden');
+                mod('linkWarning').classList.add('hidden');
                 
                 setTimeout(() => {
                     mod('formSummarySuccessMsg').classList.add('hidden');
@@ -1077,13 +1126,11 @@
                 mod('materiaResumenesCount').textContent = docs.length;
                 appState.materiaSeleccionada.numresumenes = docs.length;
 
-list.innerHTML = docs.map((data) => {
+                list.innerHTML = docs.map((data) => {
                     const fechaTxt = data.fecha ? data.fecha.toDate().toLocaleDateString() : 'Reciente';
                     
-                    // 1. Identificamos la plataforma (por si hay datos viejos que no la tienen)
                     const plataforma = data.plataforma || detectarPlataforma(data.link) || 'otro';
                     
-                    // 2. Solo abrimos en el modal interno si es una carpeta de Google Drive explícitamente
                     const isDriveFolder = plataforma === 'drive' && data.link.includes('/folders/');
                     const isFolderLink = isDriveFolder; 
                     const isFileLink = !isFolderLink;
@@ -1104,10 +1151,7 @@ list.innerHTML = docs.map((data) => {
                     const isOwner = appState.user && data.usuarioId === appState.user.uid;
                     const deleteBtnHtml = isOwner ? `<button onclick="event.stopPropagation(); borrarResumen('${data.id}')" class="w-full md:w-auto px-4 py-2 border border-red-200 bg-white rounded-full text-sm font-semibold text-red-600 hover:border-red-300 hover:bg-red-50 transition-colors flex items-center justify-center gap-1 shrink-0" title="Borrar aporte"><span class="material-symbols-outlined text-lg">delete</span></button>` : '';
 
-                    // 3. OneDrive y otros siempre abren en _blank. Solo carpetas de Drive van al modal.
                     const clickAction = isFolderLink ? `abrirResumenDrive('${data.link}')` : `window.open('${data.link}', '_blank')`;
-                    
-                    // 4. Generamos el badge usando la función que habías creado
                     const plataformaBadgeHtml = iconoPlataforma(plataforma);
 
                     return `
@@ -1132,6 +1176,13 @@ list.innerHTML = docs.map((data) => {
                         </div>
                     `;
                 }).join('');
+            } catch (error) {
+                loader.classList.add('hidden');
+                console.error("Error cargando biblioteca: ", error);
+                list.innerHTML = '<p class="text-center text-red-500 py-4">Error al consultar la biblioteca.</p>';
+            }
+        }
+        
         const gestionarBibliotecaCloud = functions.httpsCallable('gestionar_biblioteca');
         let historialNavegacion = [];
         function abrirResumenDrive(link) {
@@ -1454,7 +1505,7 @@ list.innerHTML = docs.map((data) => {
             const map = { 'reviews-desc':(a,b)=>(b.numresenas||0)-(a.numresenas||0), 'reviews-asc':(a,b)=>(a.numresenas||0)-(b.numresenas||0), 'alpha-asc':(a,b)=>a.nombre.localeCompare(b.nombre), 'alpha-desc':(a,b)=>b.nombre.localeCompare(a.nombre), 'carrera':(a,b)=>materiasData.indexOf(a.nombre)-materiasData.indexOf(b.nombre) };
             list.sort(map[currentSort]);
             mod('materiasGrid').innerHTML = list.length ? list.map(m => `
-                <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 hover:-translate-y-1 hover:shadow-xl transition-all cursor-pointer flex flex-col justify-between" onclick="const l=event.target.closest('[data-name]'); location.hash='#/materia/${m.tipo}/${encodeURIComponent(m.id)}'+(l?'?cat='+encodeURIComponent(l.dataset.name):'')">
+                <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 hover:-translate-y-1 hover:shadow-xl transition-all cursor-pointer flex flex-col justify-between" onclick="const l=event.target.closest('[data-name]'); cambiarRuta('#/materia/${m.tipo}/${encodeURIComponent(m.id)}'+(l?'?cat='+encodeURIComponent(l.dataset.name):''))">
                     <div>
                         <h3 class="text-xl font-bold text-dark mb-3">${m.nombre}</h3>
                         <div class="flex flex-wrap gap-2 mb-4">${m.catedras?.map(c => `<span class="bg-gray-100 px-3 py-1 rounded-full text-xs font-semibold text-gray-600 hover:bg-primary hover:text-white transition-colors" data-name="${c.nombre}">${c.nombre}</span>`).join('') || '<span class="text-sm text-gray-400">Sin cátedras</span>'}</div>
