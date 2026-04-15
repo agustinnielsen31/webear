@@ -373,7 +373,7 @@
                                         Enlace público de Drive
                                         <span class="text-xs font-normal text-amber-600 bg-amber-50 px-2 py-0.5 rounded-md border border-amber-100">Recuerda configurar la visibilidad para que cualquier usuario con el vínculo pueda verlo</span>
                                     </label>
-                                    div class="relative">
+                                    <div class="relative">
                                   <input type="url" id="resumenLink"
                                     placeholder="Pegá el link de Drive o OneDrive..."
                                     class="w-full p-3 border border-gray-300 rounded-lg focus:border-blue-600 outline-none transition-colors pr-32"
@@ -1077,10 +1077,15 @@
                 mod('materiaResumenesCount').textContent = docs.length;
                 appState.materiaSeleccionada.numresumenes = docs.length;
 
-                list.innerHTML = docs.map((data) => {
+list.innerHTML = docs.map((data) => {
                     const fechaTxt = data.fecha ? data.fecha.toDate().toLocaleDateString() : 'Reciente';
                     
-                    const isFolderLink = data.link.includes('/folders/');
+                    // 1. Identificamos la plataforma (por si hay datos viejos que no la tienen)
+                    const plataforma = data.plataforma || detectarPlataforma(data.link) || 'otro';
+                    
+                    // 2. Solo abrimos en el modal interno si es una carpeta de Google Drive explícitamente
+                    const isDriveFolder = plataforma === 'drive' && data.link.includes('/folders/');
+                    const isFolderLink = isDriveFolder; 
                     const isFileLink = !isFolderLink;
                     
                     const isPdf = data.titulo.toLowerCase().includes('pdf') || data.link.includes('.pdf') || (isFileLink && data.link.includes('/file/d/'));
@@ -1099,7 +1104,11 @@
                     const isOwner = appState.user && data.usuarioId === appState.user.uid;
                     const deleteBtnHtml = isOwner ? `<button onclick="event.stopPropagation(); borrarResumen('${data.id}')" class="w-full md:w-auto px-4 py-2 border border-red-200 bg-white rounded-full text-sm font-semibold text-red-600 hover:border-red-300 hover:bg-red-50 transition-colors flex items-center justify-center gap-1 shrink-0" title="Borrar aporte"><span class="material-symbols-outlined text-lg">delete</span></button>` : '';
 
+                    // 3. OneDrive y otros siempre abren en _blank. Solo carpetas de Drive van al modal.
                     const clickAction = isFolderLink ? `abrirResumenDrive('${data.link}')` : `window.open('${data.link}', '_blank')`;
+                    
+                    // 4. Generamos el badge usando la función que habías creado
+                    const plataformaBadgeHtml = iconoPlataforma(plataforma);
 
                     return `
                         <div class="bg-white rounded-2xl p-4 md:p-6 shadow-sm border border-gray-100 flex flex-col md:flex-row md:items-center justify-between gap-4 hover:shadow-md transition-shadow cursor-pointer w-full overflow-hidden" onclick="${clickAction}">
@@ -1110,8 +1119,9 @@
                                 <div class="min-w-0">
                                     <h4 class="font-bold text-dark text-base md:text-lg line-clamp-2 break-all">${data.titulo}</h4>
                                     <p class="text-xs md:text-sm text-gray-500 mt-0.5 truncate">Subido por <strong>${data.usuarioNombre || 'Anónimo'}</strong> • ${fechaTxt}</p>
-                                    <div class="mt-2 flex flex-wrap gap-2">
+                                    <div class="mt-2 flex flex-wrap items-center gap-2">
                                         <span class="inline-block bg-gray-100 text-gray-600 text-[10px] px-2 py-1 rounded font-bold uppercase tracking-wider truncate max-w-full">${data.catedra}</span>
+                                        ${plataformaBadgeHtml}
                                         <span class="inline-flex items-center gap-1 ${origenBadgeColor} text-[10px] px-2 py-1 rounded font-bold uppercase tracking-wider truncate max-w-full"><span class="material-symbols-outlined text-[12px]">${origenIcon}</span> ${origenStr}</span>
                                     </div>
                                 </div>
@@ -1122,13 +1132,6 @@
                         </div>
                     `;
                 }).join('');
-            } catch (error) {
-                loader.classList.add('hidden');
-                console.error("Error cargando biblioteca: ", error);
-                list.innerHTML = '<p class="text-center text-red-500 py-4">Error al consultar la biblioteca.</p>';
-            }
-        }
-        
         const gestionarBibliotecaCloud = functions.httpsCallable('gestionar_biblioteca');
         let historialNavegacion = [];
         function abrirResumenDrive(link) {
