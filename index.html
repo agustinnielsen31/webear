@@ -840,6 +840,1778 @@
                             }
                             
                             switchTab('resenas');
+                            const resenasContainer = mod('resenasContainer');
+                            if (resenasContainer) {
+                                const y = resenasContainer.getBoundingClientRect().top + window.pageYOffset - 100;
+                                window.scrollTo({top: y, behavior: 'smooth'});
+                            }
+                        }
+                    };
+                });
+            } else {
+                catedrasList.innerHTML = 'Sin información de cátedras.';
+            }
+            
+            switchTab('resenas');
+            window.scrollTo(0, 0);
+        }
+
+        function detectarPlataforma(url) {
+          if (!url) return null;
+          if (url.includes('drive.google.com')) return 'drive';
+          if (url.includes('1drv.ms') || url.includes('onedrive.live.com') || url.includes('sharepoint.com')) return 'onedrive';
+          return 'otro';
+        }
+
+        function toggleReviewForm() {
+            const revForm = mod('reviewForm');
+            const sumForm = mod('summaryForm');
+            
+            sumForm.classList.add('hidden');
+            revForm.classList.toggle('hidden');
+            
+            if(!revForm.classList.contains('hidden')) {
+                const content = mod('reviewFormContent');
+                content.classList.remove('collapsed');
+                window.scrollTo({top: revForm.getBoundingClientRect().top + window.pageYOffset - 100, behavior: 'smooth'});
+            }
+        }
+        
+        function cerrarFormularioResena() {
+            mod('reviewFormContent').classList.add('collapsed');
+            setTimeout(() => mod('reviewForm').classList.add('hidden'), 400);
+        }
+
+        function toggleSummaryForm() {
+            const revForm = mod('reviewForm');
+            const sumForm = mod('summaryForm');
+            
+            revForm.classList.add('hidden');
+            sumForm.classList.toggle('hidden');
+            
+            if(!sumForm.classList.contains('hidden')) {
+                mod('formSummarySuccessMsg').classList.add('hidden');
+                mod('formSummaryErrorMsg').classList.add('hidden');
+                window.scrollTo({top: sumForm.getBoundingClientRect().top + window.pageYOffset - 100, behavior: 'smooth'});
+            }
+        }
+
+        function switchTab(tab) {
+            const tabR = mod('tabResenas');
+            const tabS = mod('tabResumenes');
+            const contR = mod('resenasContainer');
+            const contS = mod('resumenesContainer');
+            const filtros = mod('filtrosSidebar');
+
+            if(tab === 'resenas') {
+                tabR.className = "py-3 px-4 border-b-2 border-primary text-primary font-bold text-sm md:text-base transition-colors flex items-center gap-2";
+                tabS.className = "py-3 px-4 border-b-2 border-transparent text-gray-500 font-semibold hover:text-gray-700 text-sm md:text-base transition-colors flex items-center gap-2";
+                contR.classList.remove('hidden');
+                contR.classList.add('block');
+                contS.classList.add('hidden');
+                contS.classList.remove('block');
+                filtros.classList.remove('hidden');
+            } else {
+                tabS.className = "py-3 px-4 border-b-2 border-blue-600 text-blue-600 font-bold text-sm md:text-base transition-colors flex items-center gap-2";
+                tabR.className = "py-3 px-4 border-b-2 border-transparent text-gray-500 font-semibold hover:text-gray-700 text-sm md:text-base transition-colors flex items-center gap-2";
+                contS.classList.remove('hidden');
+                contS.classList.add('block');
+                contR.classList.add('hidden');
+                contR.classList.remove('block');
+                filtros.classList.add('hidden');
+                
+                if (!appState.resumenesCargados && appState.materiaSeleccionada) {
+                    cargarResumenesBiblioteca(appState.materiaSeleccionada.id);
+                }
+            }
+        }
+
+        async function cargarMateriaEspecifica(materiaId, tipo, catedraSeleccionada) {
+            let materia = appState.materias.find(m => m.id === materiaId);
+            if (!materia) {
+                try {
+                    const doc = await db.collection(tipo).doc(materiaId).get();
+                    if (doc.exists) {
+                        materia = { id: doc.id, ...doc.data(), tipo: tipo };
+                        appState.materias.push(materia);
+                    } else { cambiarRuta('#/'); return; }
+                } catch (error) { cambiarRuta('#/'); return; }
+            }
+
+            appState.materiaSeleccionada = materia;
+            appState.resumenesCargados = false; 
+            mod('materiaResumenesCount').textContent = materia.numresumenes || 0;
+            mod('resumenesList').innerHTML = '';
+            
+            mostrarVistaMateria(materia);
+            prepararFormularioMateria(materia, catedraSeleccionada);
+            await cargarresenas(materiaId);
+            
+            if (catedraSeleccionada) {
+                const fCatSel = mod('filterCatedra');
+                fCatSel.value = catedraSeleccionada;
+                fCatSel.dispatchEvent(new Event('change'));
+                setTimeout(() => {
+                    const resenasContainer = mod('resenasContainer');
+                    if (resenasContainer) window.scrollTo({top: resenasContainer.getBoundingClientRect().top + window.pageYOffset - 100, behavior: 'smooth'});
+                }, 100);
+            } else {
+                mod('reviewFormContent').classList.add('collapsed');
+                mod('reviewForm').classList.add('hidden');
+                mod('summaryForm').classList.add('hidden');
+            }
+        }
+
+        function iconoPlataforma(plataforma) {
+          if (plataforma === 'drive') return '<span title="Google Drive" class="text-green-600 font-bold text-xs bg-green-50 px-2 py-0.5 rounded-full border border-green-200">📁 Drive</span>';
+          if (plataforma === 'onedrive') return '<span title="OneDrive" class="text-blue-600 font-bold text-xs bg-blue-50 px-2 py-0.5 rounded-full border border-blue-200">☁️ OneDrive</span>';
+          return '<span class="text-gray-500 font-bold text-xs bg-gray-50 px-2 py-0.5 rounded-full border border-gray-200">🔗 Link</span>';
+        }
+
+        function prepararFormularioMateria(m, catName) {
+            mod('reviewFormElement').reset();
+            mod('resumenFormElement').reset();
+            if(mod('origenExternoInput')) mod('origenExternoInput').classList.add('hidden');
+            resetEstrellas();
+            
+            const fCatSel = mod('filterCatedra');
+            const fPracSel = mod('filterPractico');
+            const catSel = mod('catedra');
+            
+            const resCatSel = mod('resumenCatedra');
+            mod('resumenMateria').value = m.nombre;
+            
+            fCatSel.innerHTML = '<option value="">Todas las cátedras</option>';
+            fPracSel.innerHTML = '<option value="">Todos los prácticos</option>';
+            catSel.innerHTML = '<option value="">Selecciona una cátedra</option>';
+            resCatSel.innerHTML = '<option value="">Selecciona una cátedra</option>';
+
+            const updatePracticoFilter = () => {
+                const sel = fCatSel.value;
+                fPracSel.innerHTML = '<option value="">Todos los prácticos</option>';
+                if (sel) {
+                    const catObj = m.catedras?.find(x => x.nombre === sel);
+                    catObj?.practicos?.forEach(p => fPracSel.add(new Option(p, p)));
+                }
+            };
+
+            const catGroup = mod('catedra').closest('.space-y-2');
+            const fCatGroup = mod('filterCatedra').closest('.space-y-1');
+
+            if (m.catedras && m.catedras.length > 0) {
+                catGroup.classList.remove('hidden');
+                fCatGroup.classList.remove('hidden');
+                mod('catedra').required = true;
+                resCatSel.required = true;
+                m.catedras.forEach(c => {
+                    const opt = new Option(c.nombre, c.nombre);
+                    catSel.add(opt.cloneNode(true));
+                    fCatSel.add(opt.cloneNode(true));
+                    resCatSel.add(opt);
+                });
+            } else {
+                catGroup.classList.add('hidden');
+                fCatGroup.classList.add('hidden');
+                mod('catedra').required = false;
+                resCatSel.required = false;
+                resCatSel.closest('.grid > div:nth-child(2)').classList.add('hidden');
+                mod('resumenMateria').parentElement.classList.replace('md:col-span-1', 'md:col-span-2');
+            }
+
+            fCatSel.onchange = () => { updatePracticoFilter(); cargarresenasEnUI(); };
+
+            const pracGroup = mod('practico-form-group');
+            const fPracGroup = mod('practico-filter-group');
+            
+            if (m.tipo === 'materias') { 
+                pracGroup.classList.remove('hidden'); fPracGroup.classList.remove('hidden'); mod('practico').required = true; 
+            } else { 
+                pracGroup.classList.add('hidden'); fPracGroup.classList.add('hidden'); mod('practico').required = false; 
+            }
+            
+            catSel.onchange = () => {
+                const sel = catSel.value;
+                const pSel = mod('practico');
+                pSel.innerHTML = '<option value="">Selecciona práctico</option>';
+                m.catedras?.find(x => x.nombre === sel)?.practicos?.forEach(p => pSel.add(new Option(p, p)));
+            };
+        }
+
+        async function guardarResumen(event) {
+            event.preventDefault();
+            const btn = mod('submitResumenBtn');
+            const titulo = mod('resumenTitulo').value.trim();
+            const catedra = mod('resumenCatedra').value.trim() || 'General';
+            const link = mod('resumenLink').value.trim();
+            const esPropio = mod('origenPropio').checked;
+            const origen = esPropio ? 'Propio' : (mod('origenExternoTexto').value.trim() || 'Fuente externa');
+            const user = auth.currentUser || appState.user;
+
+            btn.disabled = true;
+            btn.innerHTML = '<span class="material-symbols-outlined text-sm md:text-base animate-spin " style="animation-direction: reverse;">sync</span> Guardando...';
+
+            try {
+                await db.collection('resumenes').add({
+                    materiaId: appState.materiaSeleccionada.id,
+                    materiaNombre: appState.materiaSeleccionada.nombre,
+                    titulo: titulo,
+                    catedra: catedra,
+                    origen: origen,
+                    link: link,
+                    usuarioId: user ? user.uid : null,
+                    usuarioNombre: user ? (user.displayName || user.email.split('@')[0]) : 'Anónimo',
+                    plataforma: detectarPlataforma(mod('resumenLink').value.trim()) || 'otro',
+                    fecha: firebase.firestore.FieldValue.serverTimestamp()
+                });
+                
+                await db.collection(appState.materiaSeleccionada.tipo).doc(appState.materiaSeleccionada.id).update({
+                    numresumenes: firebase.firestore.FieldValue.increment(1)
+                });
+                
+                appState.materiaSeleccionada.numresumenes = (appState.materiaSeleccionada.numresumenes || 0) + 1;
+                mod('materiaResumenesCount').textContent = appState.materiaSeleccionada.numresumenes;
+                
+                mod('resumenFormElement').reset();
+                mod('origenExternoInput').classList.add('hidden');
+                mod('resumenMateria').value = appState.materiaSeleccionada.nombre;
+                mod('formSummarySuccessMsg').classList.remove('hidden');
+                mod('formSummaryErrorMsg').classList.add('hidden');
+                mod('plataformaBadge').classList.add('hidden');
+                mod('linkWarning').classList.add('hidden');
+                
+                setTimeout(() => {
+                    mod('formSummarySuccessMsg').classList.add('hidden');
+                    toggleSummaryForm();
+                    appState.resumenesCargados = false;
+                    switchTab('resumenes');
+                }, 2000);
+
+            } catch (error) {
+                console.error("Error agregando documento: ", error);
+                mod('formSummaryErrorMsg').classList.remove('hidden');
+                mod('formSummarySuccessMsg').classList.add('hidden');
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '<span class="material-symbols-outlined text-sm md:text-base">cloud_upload</span> Subir aporte';
+            }
+        }
+
+        async function cargarResumenesBiblioteca(materiaId) {
+            const list = mod('resumenesList');
+            const loader = mod('loaderResumenes');
+            
+            loader.classList.remove('hidden');
+            list.innerHTML = '';
+            
+            try {
+                const querySnapshot = await db.collection('resumenes').where('materiaId', '==', materiaId).get();
+                loader.classList.add('hidden');
+                appState.resumenesCargados = true;
+                
+                if (querySnapshot.empty) {
+                    mod('materiaResumenesCount').textContent = "0";
+                    appState.materiaSeleccionada.numresumenes = 0;
+                    list.innerHTML = `
+                        <div class="bg-blue-50 border border-blue-100 rounded-2xl p-8 text-center flex flex-col items-center justify-center">
+                            <span class="material-symbols-outlined text-5xl text-blue-300 mb-3">folder_open</span>
+                            <h3 class="text-lg font-bold text-blue-800 mb-1">La biblioteca está vacía</h3>
+                            <p class="text-blue-600 text-sm">Todavía no hay aportes para esta materia. ¡Sé el primero en compartir un resumen!</p>
+                        </div>`;
+                    return;
+                }
+
+                const docs = querySnapshot.docs.map(d => ({id: d.id, ...d.data()}));
+                docs.sort((a,b) => (b.fecha?.toMillis() || 0) - (a.fecha?.toMillis() || 0));
+                
+                mod('materiaResumenesCount').textContent = docs.length;
+                appState.materiaSeleccionada.numresumenes = docs.length;
+
+                list.innerHTML = docs.map((data) => {
+                    const fechaTxt = data.fecha ? data.fecha.toDate().toLocaleDateString() : 'Reciente';
+                    
+                    const plataforma = data.plataforma || detectarPlataforma(data.link) || 'otro';
+                    
+                    const isDriveFolder = plataforma === 'drive' && data.link.includes('/folders/');
+                    const isFolderLink = isDriveFolder; 
+                    const isFileLink = !isFolderLink;
+                    
+                    const isPdf = data.titulo.toLowerCase().includes('pdf') || data.link.includes('.pdf') || (isFileLink && data.link.includes('/file/d/'));
+                    const isDoc = data.titulo.toLowerCase().includes('doc') || data.titulo.toLowerCase().includes('apunte') || (isFileLink && data.link.includes('document/d/'));
+                    
+                    let icon = isFolderLink ? 'folder' : 'description';
+                    let colorClass = isFolderLink ? 'bg-yellow-50 text-yellow-500' : 'bg-blue-50 text-blue-600';
+                    
+                    if(isPdf) { icon = 'picture_as_pdf'; colorClass = 'bg-red-50 text-red-500'; }
+                    else if(isDoc && !isFolderLink) { icon = 'description'; colorClass = 'bg-blue-50 text-blue-600'; }
+
+                    const origenStr = data.origen || 'Propio';
+                    const origenBadgeColor = origenStr === 'Propio' ? 'bg-purple-100 text-purple-700' : 'bg-teal-100 text-teal-700';
+                    const origenIcon = origenStr === 'Propio' ? 'edit_document' : 'public';
+                    
+                    const isOwner = appState.user && data.usuarioId === appState.user.uid;
+                    const deleteBtnHtml = isOwner ? `<button onclick="event.stopPropagation(); borrarResumen('${data.id}')" class="w-full md:w-auto px-4 py-2 border border-red-200 bg-white rounded-full text-sm font-semibold text-red-600 hover:border-red-300 hover:bg-red-50 transition-colors flex items-center justify-center gap-1 shrink-0" title="Borrar aporte"><span class="material-symbols-outlined text-lg">delete</span></button>` : '';
+
+                    const clickAction = isFolderLink ? `abrirResumenDrive('${data.link}')` : `window.open('${data.link}', '_blank')`;
+                    const plataformaBadgeHtml = iconoPlataforma(plataforma);
+
+                    return `
+                        <div class="bg-white rounded-2xl p-4 md:p-6 shadow-sm border border-gray-100 flex flex-col md:flex-row md:items-center justify-between gap-4 hover:shadow-md transition-shadow cursor-pointer w-full overflow-hidden" onclick="${clickAction}">
+                            <div class="flex items-center gap-4 min-w-0 flex-1">
+                                <div class="w-12 h-12 ${colorClass} rounded-xl flex items-center justify-center shrink-0">
+                                    <span class="material-symbols-outlined text-2xl">${icon}</span>
+                                </div>
+                                <div class="min-w-0">
+                                    <h4 class="font-bold text-dark text-base md:text-lg line-clamp-2 break-all">${data.titulo}</h4>
+                                    <p class="text-xs md:text-sm text-gray-500 mt-0.5 truncate">Subido por <strong>${data.usuarioNombre || 'Anónimo'}</strong> • ${fechaTxt}</p>
+                                    <div class="mt-2 flex flex-wrap items-center gap-2">
+                                        <span class="inline-block bg-gray-100 text-gray-600 text-[10px] px-2 py-1 rounded font-bold uppercase tracking-wider truncate max-w-full">${data.catedra}</span>
+                                        ${plataformaBadgeHtml}
+                                        <span class="inline-flex items-center gap-1 ${origenBadgeColor} text-[10px] px-2 py-1 rounded font-bold uppercase tracking-wider truncate max-w-full"><span class="material-symbols-outlined text-[12px]">${origenIcon}</span> ${origenStr}</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="flex gap-2 w-full md:w-auto mt-2 md:mt-0 justify-end md:justify-start shrink-0">
+                                ${deleteBtnHtml}
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+            } catch (error) {
+                loader.classList.add('hidden');
+                console.error("Error cargando biblioteca: ", error);
+                list.innerHTML = '<p class="text-center text-red-500 py-4">Error al consultar la biblioteca.</p>';
+            }
+        }
+        
+        const gestionarBibliotecaCloud = functions.httpsCallable('gestionar_biblioteca');
+        let historialNavegacion = [];
+        function abrirResumenDrive(link) {
+            abrirModal('explorerModal');
+            iniciarCargaUrlDrive(link);
+        }
+        async function iniciarCargaUrlDrive(url) {
+            if (!url) return;
+            mostrarLoaderDrive();
+            
+            try {
+                const result = await gestionarBibliotecaCloud({ 
+                    input: url, 
+                    accion: 'explorar' 
+                });
+                
+                const data = result.data;
+        
+                if (data.success) {
+                    historialNavegacion = [{ id: data.folder_id, nombre: "Carpeta Raíz" }];
+                    renderizarMigasDrive();
+                    renderizarArchivosDrive(data.archivos);
+                } else {
+                    mostrarErrorDrive(data.error || "No se pudo leer el link. Asegúrate de que sea público.");
+                }
+            } catch (error) {
+                console.error("Error en Firebase Function:", error);
+                mostrarErrorDrive("Error al conectar con el servidor de Gino Social.");
+            }
+        }
+        
+        async function abrirSubcarpetaDrive(folderId, folderName) {
+            mostrarLoaderDrive();
+            
+            try {
+                const result = await gestionarBibliotecaCloud({ 
+                    input: folderId, 
+                    accion: 'explorar' 
+                });
+                
+                const data = result.data;
+        
+                if (data.success) {
+                    historialNavegacion.push({ id: folderId, nombre: folderName });
+                    renderizarMigasDrive();
+                    renderizarArchivosDrive(data.archivos);
+                } else {
+                    mostrarErrorDrive("No se pudo abrir la subcarpeta.");
+                }
+            } catch (error) {
+                console.error(error);
+                mostrarErrorDrive("Error de conexión con la biblioteca.");
+            }
+        }
+        
+        async function navegarADrive(index) {
+            if (index === historialNavegacion.length - 1) return;
+        
+            const targetFolder = historialNavegacion[index];
+            historialNavegacion = historialNavegacion.slice(0, index + 1);
+            
+            mostrarLoaderDrive();
+        
+            try {
+                const result = await gestionarBibliotecaCloud({ 
+                    input: targetFolder.id, 
+                    accion: 'explorar' 
+                });
+                
+                const data = result.data;
+        
+                if (data.success) {
+                    renderizarMigasDrive();
+                    renderizarArchivosDrive(data.archivos);
+                } else {
+                    mostrarErrorDrive("Error al retroceder de carpeta.");
+                }
+            } catch (error) {
+                console.error(error);
+                mostrarErrorDrive("Error de comunicación.");
+            }
+        }
+
+        function renderizarArchivosDrive(archivos) {
+            const grid = mod('explorerFilesGrid');
+            grid.innerHTML = '';
+            
+            mod('explorerLoader').classList.add('hidden');
+            grid.classList.remove('hidden');
+
+            if (!archivos || archivos.length === 0) {
+                grid.innerHTML = '<p class="col-span-full text-center text-gray-400 py-10">Esta carpeta está vacía.</p>';
+                return;
+            }
+
+            archivos.sort((a, b) => {
+                if (a.tipo === "Carpeta" && b.tipo !== "Carpeta") return -1;
+                if (a.tipo !== "Carpeta" && b.tipo === "Carpeta") return 1;
+                return a.nombre.localeCompare(b.nombre);
+            });
+
+            archivos.forEach(item => {
+                const esCarpeta = item.tipo === "Carpeta";
+                const iconName = esCarpeta ? "folder" : (item.nombre.endsWith('.pdf') ? "picture_as_pdf" : "description");
+                const iconColorClass = esCarpeta ? "folder" : (item.nombre.endsWith('.pdf') ? "pdf" : "file");
+
+                const element = document.createElement(esCarpeta ? 'div' : 'a');
+                element.className = 'file-item';
+                
+                if (esCarpeta) {
+                    element.onclick = () => abrirSubcarpetaDrive(item.id, item.nombre);
+                } else {
+                    element.href = item.link;
+                    element.target = '_blank';
+                }
+
+                element.innerHTML = `
+                    <span class="material-symbols-outlined file-icon ${iconColorClass}">${iconName}</span>
+                    <span class="file-name" title="${item.nombre}">${item.nombre}</span>
+                `;
+                
+                grid.appendChild(element);
+            });
+        }
+
+        function renderizarMigasDrive() {
+            const breadcrumbsDiv = mod('explorerBreadcrumbs');
+            breadcrumbsDiv.innerHTML = '';
+
+            historialNavegacion.forEach((paso, index) => {
+                const isLast = index === historialNavegacion.length - 1;
+                
+                const span = document.createElement('span');
+                span.className = `crumb ${isLast ? 'active text-primary' : ''}`;
+                span.textContent = paso.nombre;
+                
+                if (!isLast) {
+                    span.onclick = () => navegarADrive(index);
+                }
+                
+                breadcrumbsDiv.appendChild(span);
+
+                if (!isLast) {
+                    const separator = document.createElement('span');
+                    separator.className = 'material-symbols-outlined text-gray-300 mx-1 text-sm';
+                    separator.textContent = 'chevron_right';
+                    breadcrumbsDiv.appendChild(separator);
+                }
+            });
+        }
+
+        function mostrarLoaderDrive() {
+            mod('explorerFilesGrid').classList.add('hidden');
+            mod('explorerErrorMsg').classList.add('hidden');
+            mod('explorerLoader').classList.remove('hidden');
+            mod('explorerLoader').classList.add('flex');
+        }
+
+        function mostrarErrorDrive(mensaje) {
+            mod('explorerLoader').classList.add('hidden');
+            mod('explorerFilesGrid').classList.add('hidden');
+            if(mensaje) {
+                const err = mod('explorerErrorMsg');
+                err.textContent = mensaje;
+                err.classList.remove('hidden');
+            }
+        }
+
+        function configurarSidebar() {
+            const menuBtn = mod('menuBtn');
+            const sidebar = mod('mainSidebar');
+            const overlay = mod('sidebarOverlay');
+            const closeBtn = mod('closeSidebar');
+            
+            menuBtn.onclick = () => { sidebar.classList.add('active'); overlay.classList.add('active'); document.body.style.overflow = 'hidden'; };
+            const close = () => { sidebar.classList.remove('active'); overlay.classList.remove('active'); document.body.style.overflow = ''; };
+            closeBtn.onclick = close; overlay.onclick = close;
+            
+            document.querySelectorAll('.sidebar-item').forEach(item => {
+                if(item.id !== 'sidebarCollaborateBtn') item.addEventListener('click', close);
+            });
+            mod('sidebarCollaborateBtn').onclick = (e) => { e.preventDefault(); close(); abrirModal('collaborateModal'); };
+        }
+
+        async function denunciarResena(reviewId) {
+            if (!appState.user) { mostrarNotificacion('Inicia sesión para denunciar.', 'error'); return; }
+            try {
+                await db.collection('resenas').doc(reviewId).update({ denuncia: firebase.firestore.FieldValue.increment(1) });
+                mostrarNotificacion('Reseña reportada.', 'success');
+                document.querySelectorAll('.dropdown-menu.active').forEach(m => m.classList.remove('active'));
+            } catch (error) { mostrarNotificacion('Error al procesar denuncia.', 'error'); }
+        }
+
+        function borrarResena(reviewId, materiaId) { pendingDelete = { reviewId, materiaId }; abrirModal('deleteConfirmModal'); }
+        
+        function borrarResumen(resumenId) {
+            pendingResumenDelete = resumenId;
+            abrirModal('deleteResumenModal');
+        }
+
+        function toggleReportMenu(reviewId) {
+            const m = mod(`menu-${reviewId}`); const isA = m.classList.contains('active');
+            document.querySelectorAll('.dropdown-menu.active').forEach(x => x.classList.remove('active'));
+            if (!isA) m.classList.add('active');
+        }
+        function toggleReplyMenu(replyId) {
+            const m = mod(`reply-menu-${replyId}`); const isA = m.classList.contains('active');
+            document.querySelectorAll('.dropdown-menu.active').forEach(x => x.classList.remove('active'));
+            if (!isA) m.classList.add('active');
+        }
+        function toggleRespuestas(reviewId) {
+            const c = mod(`replies-container-${reviewId}`);
+            if (c.classList.contains('active')) c.classList.remove('active');
+            else { c.classList.add('active'); if (!respuestasListeners[reviewId]) cargarRespuestas(reviewId); }
+        }
+
+        function cargarRespuestas(reviewId) {
+            const list = mod(`replies-list-${reviewId}`);
+            list.innerHTML = '<div class="text-center text-gray-400 text-sm py-2">Cargando...</div>';
+            respuestasListeners[reviewId] = db.collection('resenas').doc(reviewId).collection('respuestas').orderBy('fecha', 'asc').onSnapshot(snap => {
+                if (snap.empty) { list.innerHTML = '<div class="text-center text-gray-400 text-sm py-2">Aún no hay respuestas.</div>'; return; }
+                list.innerHTML = snap.docs.map(doc => {
+                    const r = doc.data(); const rId = doc.id;
+                    const fecha = r.fecha ? r.fecha.toDate().toLocaleDateString() : "Reciente";
+                    
+                    let menuItems = '';
+                    if (appState.user) {
+                        if (appState.user.uid === r.usuarioId) {
+                            menuItems += `<div class="p-3 text-sm text-red-600 hover:bg-red-50 cursor-pointer flex items-center gap-2 border-b border-gray-100 transition-colors" onclick="borrarRespuesta('${reviewId}', '${rId}')"><span class="material-symbols-outlined text-[18px]">delete</span> Borrar</div>`;
+                        }
+                        menuItems += `<div class="p-3 text-sm text-gray-700 hover:bg-gray-50 cursor-pointer flex items-center gap-2 transition-colors" onclick="denunciarRespuesta('${reviewId}')"><span class="material-symbols-outlined text-[18px]">flag</span> Denunciar</div>`;
+                    }
+                    
+                    const menuHTML = menuItems ? `
+                        <div class="relative reply-menu-container">
+                            <button class="text-gray-400 hover:text-dark px-2 text-lg font-bold transition-colors" onclick="toggleReplyMenu('${rId}')">⋮</button>
+                            <div class="dropdown-menu absolute right-0 top-full mt-1 bg-white shadow-xl border border-gray-100 rounded-xl overflow-hidden min-w-[150px] z-[100]" id="reply-menu-${rId}">${menuItems}</div>
+                        </div>` : '';
+                    return `
+                        <div class="bg-white p-4 rounded-xl shadow-sm border-l-4 border-primary mb-3">
+                            <div class="flex justify-between items-center mb-2 text-sm">
+                                <span class="font-bold text-dark">${r.usuarioNombre || 'Anónimo'}</span>
+                                <div class="flex items-center gap-2 text-gray-500"><span>${fecha}</span>${menuHTML}</div>
+                            </div>
+                            <div class="text-gray-700 text-sm">${r.texto}</div>
+                        </div>`;
+                }).join('');
+            });
+        }
+
+        function borrarRespuesta(reviewId, replyId) { pendingReplyDelete = { reviewId, replyId }; abrirModal('deleteReplyModal'); }
+        async function denunciarRespuesta(reviewId) {
+            if (!appState.user) return mostrarNotificacion('Inicia sesión para denunciar.', 'error');
+            try { await db.collection('resenas').doc(reviewId).update({ denuncia: firebase.firestore.FieldValue.increment(1) }); mostrarNotificacion('Respuesta reportada.', 'success'); } catch(e) {}
+        }
+        async function enviarRespuesta(reviewId) {
+            if (!appState.user) return mostrarNotificacion('Inicia sesión para responder.', 'error');
+            const input = mod(`reply-input-${reviewId}`); const texto = input.value.trim(); if (!texto) return;
+            try {
+                await db.collection('resenas').doc(reviewId).collection('respuestas').add({ texto, usuarioId: appState.user.uid, usuarioNombre: appState.user.displayName || 'Usuario', fecha: firebase.firestore.FieldValue.serverTimestamp() });
+                await db.collection('resenas').doc(reviewId).update({ replies_count: firebase.firestore.FieldValue.increment(1) });
+                input.value = ''; mostrarNotificacion('Respuesta enviada', 'success');
+            } catch(e) { mostrarNotificacion('Error al responder', 'error'); }
+        }
+
+        function configurarOjosGino() {
+            const eyes = mod('navEyes'); const pupils = document.querySelectorAll('.pupil'); const ta = mod('reviewText');
+            ta.onfocus = () => { eyes.classList.add('active', 'open'); mod('userName').classList.add('max-w-0','opacity-0'); };
+            ta.onblur = () => { eyes.classList.remove('open'); mod('userName').classList.remove('max-w-0','opacity-0'); setTimeout(()=>eyes.classList.remove('active'),300); };
+            document.onmousemove = e => {
+                if (!eyes.classList.contains('active')) return;
+                pupils.forEach(p => {
+                    const rect = p.parentElement.getBoundingClientRect();
+                    const angle = Math.atan2(e.clientY - (rect.top + rect.height/2), e.clientX - (rect.left + rect.width/2));
+                    const dist = Math.min(10, Math.hypot(e.clientX - (rect.left + rect.width/2), e.clientY - (rect.top + rect.height/2)) / 15);
+                    p.style.transform = `translate(calc(-50% + ${Math.cos(angle)*dist}px), calc(-50% + ${Math.sin(angle)*dist}px))`;
+                });
+            };
+        }
+
+        function configurarEasterEgg() { let c = 0; mod('ginoTitle').onclick = () => { c++; if(c>=15){mod('ginoEasterEgg').classList.add('active'); c=0; setTimeout(()=>mod('ginoEasterEgg').classList.remove('active'),5000);} }; }
+        function configurarNavScroll() { window.addEventListener('scroll', () => mod('mainNav').classList.toggle('scrolled', window.scrollY > 50)); }
+        function configurarScrollToTop() {
+            const btn = mod('scrollToTopBtn'); window.addEventListener('scroll', () => btn.classList.toggle('hidden', window.scrollY < 300));
+            btn.onclick = () => window.scrollTo({top:0, behavior:'smooth'});
+        }
+
+        function configurarFirebaseAuth() {
+            auth.onAuthStateChanged(user => {
+                appState.user = user;
+                mod('userInfo').classList.toggle('hidden', !user); mod('userInfo').classList.toggle('flex', !!user);
+                mod('authButtons').classList.toggle('hidden', !!user);
+                
+                mod('authRequiredMessage').classList.toggle('hidden', !!user);
+                mod('reviewFormElement').classList.toggle('hidden', !user);
+                
+                if (mod('authRequiredSummaryMessage')) mod('authRequiredSummaryMessage').classList.toggle('hidden', !!user);
+                if (mod('resumenFormElement')) mod('resumenFormElement').classList.toggle('hidden', !user);
+
+                if (user) {
+                    mod('userName').textContent = (user.displayName || user.email).split(' ')[0];
+                    mod('userAvatar').textContent = (user.displayName || 'U')[0].toUpperCase();
+                }
+            });
+        }
+
+        async function cargarMaterias(cat) {
+            if (yaCargadas[cat]) return actualizarVistaMaterias();
+            mod('materiasGrid').innerHTML = '<div class="col-span-full text-center py-12 text-gray-500"><div class="inline-block w-8 h-8 border-4 border-gray-200 border-t-primary rounded-full animate-spin mb-4"></div><p>Cargando materias...</p></div>';
+            try {
+                const snap = await db.collection(cat).get();
+                appState.materias.push(...snap.docs.map(doc => ({ id: doc.id, ...doc.data(), tipo: cat })));
+                yaCargadas[cat] = true; actualizarVistaMaterias();
+            } catch(e) { mod('materiasGrid').innerHTML = '<p class="col-span-full text-center text-red-500">Error al cargar.</p>'; }
+        }
+
+        function actualizarVistaMaterias() {
+            let list = appState.materias.filter(m => m.tipo === appState.currentCategory);
+            if (currentSearch) list = list.filter(m => m.nombre.toLowerCase().includes(currentSearch) || m.catedras?.some(c => c.nombre.toLowerCase().includes(currentSearch)));
+            const map = { 'reviews-desc':(a,b)=>(b.numresenas||0)-(a.numresenas||0), 'reviews-asc':(a,b)=>(a.numresenas||0)-(b.numresenas||0), 'alpha-asc':(a,b)=>a.nombre.localeCompare(b.nombre), 'alpha-desc':(a,b)=>b.nombre.localeCompare(a.nombre), 'carrera':(a,b)=>materiasData.indexOf(a.nombre)-materiasData.indexOf(b.nombre) };
+            list.sort(map[currentSort]);
+            mod('materiasGrid').innerHTML = list.length ? list.map(m => `
+                <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 hover:-translate-y-1 hover:shadow-xl transition-all cursor-pointer flex flex-col justify-between" onclick="const l=event.target.closest('[data-name]'); cambiarRuta('#/materia/${m.tipo}/${encodeURIComponent(m.id)}'+(l?'?cat='+encodeURIComponent(l.dataset.name):''))">
+                    <div>
+                        <h3 class="text-xl font-bold text-dark mb-3">${m.nombre}</h3>
+                        <div class="flex flex-wrap gap-2 mb-4">${m.catedras?.map(c => `<span class="bg-gray-100 px-3 py-1 rounded-full text-xs font-semibold text-gray-600 hover:bg-primary hover:text-white transition-colors" data-name="${c.nombre}">${c.nombre}</span>`).join('') || '<span class="text-sm text-gray-400">Sin cátedras</span>'}</div>
+                    </div>
+                    <div class="text-sm font-semibold text-gray-500 flex items-center gap-1 border-t border-gray-50 pt-3"><span class="material-symbols-outlined text-sm">chat_bubble</span> ${m.numresenas || 0} reseñas</div>
+                </div>
+            `).join('') : '<p class="col-span-full text-center py-12 text-gray-500">No hay resultados.</p>';
+        }
+
+        function resetEstrellas() {
+            document.querySelectorAll('.rating-input').forEach(group => { delete group.dataset.rating; group.querySelectorAll('.star').forEach(s => s.classList.remove('active')); });
+            if(mod('dificultadLabel')) mod('dificultadLabel').textContent = '';
+        }
+
+        async function cargarresenas(id) {
+            const snap = await db.collection('resenas').where('materiaId', '==', id).get();
+            appState.resenas = snap.docs.map(doc => ({ id: doc.id, ...doc.data() })).sort((a,b) => (b.fecha?.toMillis()||0) - (a.fecha?.toMillis()||0));
+            cargarresenasEnUI();
+        }
+
+        function cargarresenasEnUI() {
+            const fCat = mod('filterCatedra').value, fPrac = mod('filterPractico').value, fRat = mod('filterRating').value;
+            const res = appState.resenas.filter(r => (!fCat || r.catedra === fCat) && (!fPrac || r.practico === fPrac) && (!fRat || r.calificacionGeneral <= fRat));
+            mod('resenasList').innerHTML = res.length ? res.map(r => {
+                const isOwner = appState.user && appState.user.uid === r.usuarioId;
+                
+                let menuItems = '';
+                if (isOwner) {
+                    menuItems += `<div class="p-3 text-sm text-red-600 hover:bg-red-50 cursor-pointer flex items-center gap-2 border-b border-gray-100 transition-colors" onclick="borrarResena('${r.id}', '${r.materiaId}')"><span class="material-symbols-outlined text-[18px]">delete</span> Borrar</div>`;
+                }
+                menuItems += `<div class="p-3 text-sm text-gray-700 hover:bg-gray-50 cursor-pointer flex items-center gap-2 transition-colors" onclick="denunciarResena('${r.id}')"><span class="material-symbols-outlined text-[18px]">report</span> Denunciar</div>`;
+
+                return `
+                <div class="bg-white rounded-2xl p-4 md:p-8 shadow-sm border border-gray-100 relative">
+                    <div class="flex justify-between items-start mb-4">
+                        <div class="flex items-center gap-2 md:gap-3 overflow-hidden">
+                            <div class="w-10 h-10 md:w-12 md:h-12 rounded-full bg-orange-100 text-primary flex items-center justify-center font-black text-lg md:text-xl shrink-0">${(r.usuarioNombre||'A')[0]}</div>
+                            <div class="min-w-0 pr-2">
+                                <h4 class="font-bold text-dark text-sm md:text-base truncate">${r.usuarioNombre||'Anónimo'}</h4>
+                                <div class="text-[10px] md:text-xs text-gray-500 mt-0.5 flex flex-wrap gap-1">
+                                    <span class="bg-orange-50 text-primary px-1.5 md:px-2 py-0.5 rounded font-bold whitespace-nowrap">${r.catedra} ${r.practico !== 'Único' ? '- '+r.practico : ''}</span>
+                                    <span class="whitespace-nowrap flex items-center">${r.fecha?.toDate().toLocaleDateString()||"Reciente"} <span class="hidden md:inline">&nbsp;| Cursada ${r.anioCursada}</span> ${r.cursoVerano?'(V)':''}</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="relative review-menu-container shrink-0">
+                            <button class="text-gray-400 hover:text-dark text-lg md:text-xl px-1 md:px-2 font-bold transition-colors" onclick="toggleReportMenu('${r.id}')">⋮</button>
+                            <div class="dropdown-menu absolute right-0 top-full mt-1 bg-white shadow-xl border border-gray-100 rounded-xl overflow-hidden min-w-[150px] z-[100]" id="menu-${r.id}">${menuItems}</div>
+                        </div>
+                    </div>
+                    <div class="text-xl md:text-3xl tracking-widest text-yellow-500 mb-3 md:mb-4">${'★'.repeat(r.calificacionGeneral)}${'☆'.repeat(5-r.calificacionGeneral)}</div>
+                    <p class="text-gray-700 leading-relaxed text-sm md:text-base mb-4 md:mb-6 break-words">${r.texto}</p>
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4 bg-gray-50 p-4 rounded-xl mb-4 md:mb-6 text-xs md:text-sm">
+                        <div class="flex flex-col"><span class="text-gray-500 font-semibold mb-1">Pedagogía</span><span class="font-bold text-dark text-sm md:text-base">${r.claridad}/5</span></div>
+                        <div class="flex flex-col"><span class="text-gray-500 font-semibold mb-1">Contenidos</span><span class="font-bold text-dark text-sm md:text-base">${r.programa}/5</span></div>
+                        <div class="flex flex-col"><span class="text-gray-500 font-semibold mb-1">Dificultad</span><span class="font-bold text-dark text-sm md:text-base">${r.dificultad}/5</span></div>
+                        <div class="flex flex-col"><span class="text-gray-500 font-semibold mb-1">Oferta</span><span class="font-bold text-dark text-sm md:text-base">${r.oferta}/5</span></div>
+                    </div>
+                    <div class="flex flex-wrap justify-end items-center gap-2 md:gap-3 border-t border-gray-100 pt-3 md:pt-4">
+                        <button class="flex items-center gap-1 md:gap-2 px-3 md:px-4 py-1.5 md:py-2 rounded-full text-xs md:text-sm font-semibold transition-colors ${r.votes?.[appState.user?.uid]===1?'bg-green-100 text-green-700':'bg-gray-100 text-gray-600 hover:bg-gray-200'}" onclick="handleVote('${r.id}', 1)"><span class="material-symbols-outlined text-sm md:text-base">thumb_up</span> ${r.likes_count||0}</button>
+                        <button class="flex items-center gap-1 md:gap-2 px-3 md:px-4 py-1.5 md:py-2 rounded-full text-xs md:text-sm font-semibold transition-colors ${r.votes?.[appState.user?.uid]===-1?'bg-red-100 text-red-700':'bg-gray-100 text-gray-600 hover:bg-gray-200'}" onclick="handleVote('${r.id}', -1)"><span class="material-symbols-outlined text-sm md:text-base">thumb_down</span> ${r.dislikes_count||0}</button>
+                        <button class="flex items-center gap-1 md:gap-2 px-3 md:px-4 py-1.5 md:py-2 border border-gray-200 rounded-full text-xs md:text-sm font-semibold text-gray-600 hover:border-primary hover:text-primary transition-colors" onclick="toggleRespuestas('${r.id}')"><span class="material-symbols-outlined text-sm md:text-base">add_comment</span> ${r.replies_count||'0'}</button>
+                    </div>
+                    <div class="replies-container bg-gray-50 rounded-xl p-3 md:p-6 mt-3 md:mt-4 border border-gray-100" id="replies-container-${r.id}">
+                        <div id="replies-list-${r.id}" class="space-y-3 mb-4"></div>
+                        <div class="flex flex-col gap-2">
+                            <textarea id="reply-input-${r.id}" class="w-full p-2 md:p-3 border border-gray-300 rounded-lg outline-none focus:border-primary min-h-[60px] md:min-h-[80px] text-sm md:text-base" placeholder="Escribe una respuesta..."></textarea>
+                            <button class="self-end px-4 md:px-5 py-1.5 md:py-2 bg-primary text-white text-sm md:text-base font-bold rounded-full hover:bg-primaryDark transition-colors" onclick="enviarRespuesta('${r.id}')">Responder</button>
+                        </div>
+                    </div>
+                </div>`;
+            }).join('') : '<div class="col-span-full text-center py-12 bg-white rounded-2xl border border-gray-100 text-gray-500">No hay reseñas con estos filtros.</div>';
+            
+            const countEl = mod('materiaResenasCount');
+            if (countEl) countEl.textContent = appState.resenas.length;
+        }
+
+        async function handleVote(rid, type) {
+            if (!appState.user) return mostrarNotificacion('Inicia sesión para votar.', 'error');
+            const ref = db.collection('resenas').doc(rid);
+            const data = (await ref.get()).data();
+            const votes = data.votes || {};
+            votes[appState.user.uid] === type ? delete votes[appState.user.uid] : votes[appState.user.uid] = type;
+            const counts = Object.values(votes).reduce((acc, val) => { val === 1 ? acc.l++ : acc.d++; return acc; }, {l:0, d:0});
+            await ref.update({ votes, likes_count: counts.l, dislikes_count: counts.d });
+            cargarresenas(appState.materiaSeleccionada.id);
+        }
+
+        function configurarFormulario() {
+            mod('reviewFormElement').onsubmit = async (e) => {
+                e.preventDefault(); const btn = e.target.querySelector('button[type="submit"]'); btn.disabled = true;
+                const user = auth.currentUser || appState.user;
+                try {
+                    await db.collection('resenas').add({
+                        materiaId: appState.materiaSeleccionada.id, materiaNombre: appState.materiaSeleccionada.nombre,
+                        catedra: mod('catedra').value || "Única", practico: mod('practico').value || "Único",
+                        anioCursada: parseInt(mod('anioCursada').value), cursoVerano: mod('cursoVerano').checked,
+                        tomanAsistencia: mod('tomanAsistencia').value, calificacionGeneral: parseInt(mod('generalRating').dataset.rating),
+                        claridad: parseInt(mod('claridadRating').dataset.rating)||0, programa: parseInt(mod('programaRating').dataset.rating)||0,
+                        dificultad: parseInt(mod('dificultadRating').dataset.rating)||0, oferta: parseInt(mod('ofertaRating').dataset.rating)||0,
+                        texto: mod('reviewText').value, usuarioId: user.uid,
+                        usuarioNombre: user.displayName || (user.email ? user.email.split('@')[0].charAt(0).toUpperCase() + user.email.split('@')[0].slice(1) : 'Anónimo'), 
+                        fecha: firebase.firestore.FieldValue.serverTimestamp(), likes_count: 0, dislikes_count: 0, replies_count: 0, denuncia: 0
+                    });
+                    await db.collection(appState.materiaSeleccionada.tipo).doc(appState.materiaSeleccionada.id).update({ numresenas: firebase.firestore.FieldValue.increment(1) });
+                    mostrarNotificacion('¡Reseña enviada!', 'success'); e.target.reset(); resetEstrellas(); cerrarFormularioResena(); cargarresenas(appState.materiaSeleccionada.id);
+                } catch(err) { mostrarNotificacion('Error al enviar reseña', 'error'); } finally { btn.disabled = false; }
+            };
+        }
+
+        function configurarSistemaEstrellas() {
+            document.querySelectorAll('.rating-input').forEach(group => {
+                group.innerHTML = [1, 2, 3, 4, 5].map(i => `<span class="star cursor-pointer text-gray-300 hover:scale-110 transition-transform" data-value="${i}">★</span>`).join('');
+                group.querySelectorAll('.star').forEach(s => s.onclick = () => {
+                    const v = parseInt(s.dataset.value); group.dataset.rating = v;
+                    group.querySelectorAll('.star').forEach(x => x.classList.toggle('active', parseInt(x.dataset.value) <= v));
+                    if (group.id === 'dificultadRating') if(mod('dificultadLabel')) mod('dificultadLabel').textContent = ["", "Muy fácil", "Fácil", "Normal", "Difícil", "Muy difícil"][v] || "";
+                });
+            });
+        }
+
+        function configurarFiltros() { ['filterCatedra', 'filterPractico', 'filterRating'].forEach(id => mod(id).onchange = cargarresenasEnUI); }
+        function configurarBuscador() { mod('searchMaterias').oninput = e => { currentSearch = e.target.value.toLowerCase(); actualizarVistaMaterias(); }; }
+        function configurarSort() { mod('sortSelect').onchange = e => { currentSort = e.target.value; actualizarVistaMaterias(); }; }
+        function configurarFiltrosCategoria() {
+            document.querySelectorAll('.category-btn').forEach(b => b.onclick = () => {
+                appState.currentCategory = b.dataset.category;
+                document.querySelectorAll('.category-btn').forEach(x => x.classList.remove('active'));
+                b.classList.add('active'); mod('materiasGridTitle').textContent = b.textContent; cargarMaterias(b.dataset.category);
+            });
+        }
+
+        function configurarModales() {
+            document.querySelectorAll('[data-open]').forEach(btn => btn.onclick = e => { e.preventDefault(); abrirModal(btn.dataset.open); });
+            document.querySelectorAll('[data-dismiss="modal"]').forEach(btn => btn.onclick = e => cerrarModal(e.target.closest('.modal').id));
+            window.onclick = e => { if (e.target.classList.contains('modal')) cerrarModal(e.target.id); };
+            mod('switchToRegister').onclick = e => { e.preventDefault(); cerrarModal('loginModal'); abrirModal('registerModal'); };
+            mod('logoutBtn').onclick = () => auth.signOut();
+            
+            mod('loginForm').onsubmit = async e => {
+                e.preventDefault();
+                try {
+                    const cred = await auth.signInWithEmailAndPassword(mod('loginEmail').value, mod('loginPassword').value);
+                    if(!cred.user.emailVerified) { await auth.signOut(); mod('loginError').textContent = "Verifica tu email."; mod('loginError').classList.remove('hidden'); return; }
+                    cerrarModal('loginModal'); mod('loginError').classList.add('hidden');
+                } catch(err) { mod('loginError').textContent = "Credenciales incorrectas."; mod('loginError').classList.remove('hidden'); }
+            };
+
+            mod('forgotPasswordBtn').onclick = async () => {
+                const email = mod('loginEmail').value.trim();
+
+                if (!email) {
+                    mod('loginError').textContent = "Ingresa tu email para recuperar tu password.";
+                    mod('loginError').classList.remove('hidden');
+                    mod('loginEmail').focus();
+                    return;
+                }
+
+                try {
+                    await auth.sendPasswordResetEmail(email);
+                    mod('loginError').classList.add('hidden');
+                    mostrarNotificacion('Te enviamos un email para restablecer tu contraseña.', 'success');
+                } catch (err) {
+                    mod('loginError').textContent = err.code === 'auth/user-not-found'
+                        ? "No encontramos una cuenta con ese email."
+                        : "No pudimos enviar el email de recuperacion.";
+                    mod('loginError').classList.remove('hidden');
+                }
+            };
+
+            mod('registerForm').onsubmit = e => {
+                e.preventDefault();
+                pendingRegistrationData = { firstName: mod('registerFirstName').value, lastName: mod('registerLastName').value, email: mod('registerEmail').value, password: mod('registerPassword').value };
+                cerrarModal('registerModal'); abrirModal('tycModal');
+            };
+
+            mod('acceptTyC').onclick = async () => {
+                if (!pendingRegistrationData) return;
+                const btn = mod('acceptTyC'); const oText = btn.textContent; btn.disabled = true; btn.textContent = "Procesando...";
+                try {
+                    const cred = await auth.createUserWithEmailAndPassword(pendingRegistrationData.email, pendingRegistrationData.password);
+                    await cred.user.updateProfile({ displayName: `${pendingRegistrationData.firstName} ${pendingRegistrationData.lastName}` });
+                    await cred.user.sendEmailVerification();
+                    await db.collection("usuarios").doc(cred.user.uid).set({ nombre: pendingRegistrationData.firstName, apellido: pendingRegistrationData.lastName, email: pendingRegistrationData.email, tycAceptados: true, fechaAceptacionTyC: firebase.firestore.FieldValue.serverTimestamp() });
+                    mostrarNotificacion('Cuenta creada. Revisa tu email.', 'success'); cerrarModal('tycModal'); auth.signOut();
+                } catch (error) {
+                    cerrarModal('tycModal'); abrirModal('registerModal');
+                    mod('registerError').textContent = error.code === 'auth/email-already-in-use' ? "El email ya está registrado." : "Error al registrarse.";
+                    mod('registerError').classList.remove('hidden');
+                } finally { btn.disabled = false; btn.textContent = oText; }
+            };
+
+            mod('confirmDeleteBtn').onclick = async () => {
+                if (!pendingDelete) return; const btn = mod('confirmDeleteBtn'); btn.disabled = true; btn.textContent = "...";
+                try {
+                    await db.collection('resenas').doc(pendingDelete.reviewId).delete();
+                    await db.collection(appState.materiaSeleccionada.tipo).doc(pendingDelete.materiaId).update({ numresenas: firebase.firestore.FieldValue.increment(-1) });
+                    mostrarNotificacion('Reseña borrada.', 'success'); cargarresenas(pendingDelete.materiaId); cerrarModal('deleteConfirmModal');
+                } catch(e) { mostrarNotificacion('Error al borrar.', 'error'); } finally { btn.disabled = false; btn.textContent = "Borrar"; }
+            };
+
+            mod('confirmDeleteReplyBtn').onclick = async () => {
+                if (!pendingReplyDelete) return; const btn = mod('confirmDeleteReplyBtn'); btn.disabled = true;
+                try {
+                    await db.collection('resenas').doc(pendingReplyDelete.reviewId).collection('respuestas').doc(pendingReplyDelete.replyId).delete();
+                    await db.collection('resenas').doc(pendingReplyDelete.reviewId).update({ replies_count: firebase.firestore.FieldValue.increment(-1) });
+                    mostrarNotificacion('Respuesta borrada.', 'success'); cerrarModal('deleteReplyModal');
+                } catch(e) {} finally { btn.disabled = false; btn.textContent = "Borrar"; }
+            };
+
+            mod('confirmDeleteResumenBtn').onclick = async () => {
+                if (!pendingResumenDelete) return; 
+                const btn = mod('confirmDeleteResumenBtn'); 
+                btn.disabled = true; 
+                btn.textContent = "...";
+                try {
+                    await db.collection('resumenes').doc(pendingResumenDelete).delete();
+                    
+                    // Actualizar el contador también al eliminar
+                    await db.collection(appState.materiaSeleccionada.tipo).doc(appState.materiaSeleccionada.id).update({
+                        numresumenes: firebase.firestore.FieldValue.increment(-1)
+                    });
+                    
+                    appState.materiaSeleccionada.numresumenes = Math.max(0, (appState.materiaSeleccionada.numresumenes || 0) - 1);
+                    mod('materiaResumenesCount').textContent = appState.materiaSeleccionada.numresumenes;
+                    
+                    mostrarNotificacion('Aporte borrado correctamente.', 'success'); 
+                    appState.resumenesCargados = false;
+                    cargarResumenesBiblioteca(appState.materiaSeleccionada.id); 
+                    cerrarModal('deleteResumenModal');
+                } catch(e) { 
+                    mostrarNotificacion('Error al borrar el aporte.', 'error'); 
+                } finally { 
+                    btn.disabled = false; 
+                    btn.textContent = "Borrar"; 
+                }
+            };
+        }
+
+        function configurarTogglePasswords() {
+            document.querySelectorAll('.toggle-password-btn').forEach(b => b.onclick = () => {
+                const i = mod(b.dataset.target); i.type = i.type === 'password' ? 'text' : 'password';
+            });
+        }
+
+        function configurarMisResenas() {
+            mod('myReviewsBtn').onclick = async () => {
+                const list = mod('myReviewsList'); abrirModal('myReviewsModal'); list.innerHTML = '<div class="text-center text-gray-500 py-8">Cargando...</div>';
+                const snap = await db.collection('resenas').where('usuarioId', '==', appState.user.uid).get();
+                list.innerHTML = snap.empty ? '<div class="text-center text-gray-500 py-8">No tienes reseñas publicadas.</div>' : snap.docs.map(d => `<div class="bg-gray-50 p-6 rounded-2xl border border-gray-200"><h3 class="font-bold text-lg text-primary mb-2">${d.data().materiaNombre}</h3><p class="text-gray-700">${d.data().texto}</p></div>`).join('');
+            };
+            mod('closeMyReviews').onclick = () => cerrarModal('myReviewsModal');
+        }
+
+        function mostrarNotificacion(m, t) {
+            const colors = { success: 'bg-green-500', error: 'bg-red-500', info: 'bg-dark' };
+            const n = document.createElement('div');
+            n.className = `fixed top-6 right-6 px-6 py-4 rounded-xl text-white font-bold shadow-2xl z-[10000] animate-[slideIn_0.3s_ease] ${colors[t]||colors.info}`;
+            n.textContent = m; document.body.appendChild(n); setTimeout(() => n.remove(), 4000);
+        }
+
+        document.addEventListener('DOMContentLoaded', init);
+    </script>
+</body>
+</html><!DOCTYPE html>
+<html lang="es">
+<head>
+    <link rel="shortcut icon" href="GinoLogo.ico.png">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet" />
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gino Social</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#ff7d29',
+                        primaryDark: '#e66b1d',
+                        dark: '#2c3e50',
+                    }
+                }
+            }
+        }
+    </script>
+
+    <!-- Firebase Libraries -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-functions-compat.js"></script>
+    
+    <!-- Ads & Analytics -->
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6430126392523501" crossorigin="anonymous"></script>
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-8BZFCJBMY6"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-8BZFCJBMY6');
+    </script>
+
+    <style>
+        /* Estados y Animaciones Esenciales */
+        .sidebar { transform: translateX(-100%); transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+        .sidebar.active { transform: translateX(0); }
+        .sidebar-overlay { opacity: 0; visibility: hidden; transition: all 0.3s ease; }
+        .sidebar-overlay.active { opacity: 1; visibility: visible; }
+        .view-section { display: none; animation: fadeIn 0.4s ease-out; }
+        .view-section.active { display: block; }
+        .modal { display: none; }
+        .modal.active { display: flex; animation: fadeIn 0.3s ease; }
+        .dropdown-menu { display: none; }
+        .dropdown-menu.active { display: block; animation: fadeIn 0.2s ease; }
+        .replies-container { display: none; }
+        .replies-container.active { display: block; animation: fadeIn 0.3s ease; }
+        .form-collapsible-content { max-height: 2000px; opacity: 1; transition: all 0.4s ease-out; }
+        .form-collapsible-content.collapsed { max-height: 0; opacity: 0; overflow: hidden; margin: 0; padding: 0; border: none; }
+        .eyes-container { opacity: 0; transition: opacity 0.2s ease; }
+        .eyes-container.active { opacity: 1; }
+        .eyes-container.open .eyelid { height: 0%; }
+        .gino-overlay { display: none; }
+        .gino-overlay.active { display: flex; animation: fadeIn 0.5s ease; }
+        .category-btn.active, .category-btn.active:hover { background-color: #ff7d29 !important; color: white !important; border-color: #ff7d29 !important; box-shadow: 0 4px 10px rgba(255, 125, 41, 0.3); }
+        .category-btn.active:hover { transform: translateY(-2px); box-shadow: 0 6px 15px rgba(255, 125, 41, 0.4); }
+        .star.active { color: #f39c12; }
+        
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes popIn { from { transform: scale(0.95); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+        @keyframes spin { 100% { transform: rotate(360deg); } }
+        
+        .modal-content-animated { animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
+        .navbar.solid-bg { background-color: rgba(255, 125, 41, 0.95); padding-top: 0.5rem; padding-bottom: 0.5rem; box-shadow: 0 4px 10px rgba(0,0,0,0.15); backdrop-filter: blur(5px); }
+        .navbar.scrolled { background-color: rgba(255, 125, 41, 0.95); padding-top: 0.5rem; padding-bottom: 0.5rem; box-shadow: 0 4px 10px rgba(0,0,0,0.15); backdrop-filter: blur(5px); }
+        
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #f1f1f1; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb { background: #ccc; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #ff7d29; }
+        
+        /* Estilos del explorador Drive integrados */
+        .crumb { cursor: pointer; color: var(--primary-color); transition: color 0.2s; }
+        .crumb:hover { color: #e67e22; text-decoration: underline; }
+        .crumb.active { color: var(--dark-color); cursor: default; text-decoration: none; }
+        
+        .file-item { background: #f9f9f9; border: 1px solid #eee; border-radius: 12px; padding: 1rem 0.5rem; text-align: center; cursor: pointer; transition: all 0.2s; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; gap: 6px; text-decoration: none; color: #2c3e50; min-width: 0; overflow: hidden; width: 100%; height: 100%; min-height: 110px; }
+        .file-item:hover { transform: translateY(-5px); box-shadow: 0 4px 6px rgba(0,0,0,0.1); border-color: #ddd; background: white; }
+        .file-icon { font-size: 2.5rem; flex-shrink: 0; }
+        .file-icon.folder { color: #f39c12; }
+        .file-icon.file { color: #3498db; }
+        .file-icon.pdf { color: #e74c3c; }
+        .file-name { font-size: 0.8rem; line-height: 1.3; font-weight: 600; word-break: normal; overflow-wrap: break-word; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; text-overflow: ellipsis; width: 100%; padding: 0 4px; }
+    </style>
+</head>
+<body class="bg-slate-50 text-dark flex flex-col min-h-screen font-sans">
+
+    <!-- Sidebar & Overlay -->
+    <div class="sidebar-overlay fixed inset-0 bg-black/50 z-[1099]" id="sidebarOverlay"></div>
+    <div class="sidebar fixed top-0 left-0 w-72 h-full bg-white z-[1100] shadow-xl p-8 flex flex-col" id="mainSidebar">
+        <div class="flex justify-between items-center mb-8 border-b pb-4">
+            <span class="text-2xl font-black text-primary">Gino Social</span>
+            <button class="text-gray-400 hover:text-gray-600 text-2xl" id="closeSidebar">✕</button>
+        </div>
+        
+        <div class="flex flex-col gap-2 flex-1">
+            <a href="javascript:void(0)" onclick="cambiarRuta('#/')" class="sidebar-item active flex items-center gap-3 p-3 font-semibold rounded-xl text-dark hover:bg-orange-50 hover:text-primary transition-colors border-l-4 border-transparent" id="menu-home-link">
+                <span class="material-symbols-outlined"> home </span> Inicio
+            </a>
+            <a href="https://ginosocial.ar/datos" class="sidebar-item flex items-center gap-3 p-3 font-semibold rounded-xl text-dark hover:bg-orange-50 hover:text-primary transition-colors border-l-4 border-transparent">
+             <span class="material-symbols-outlined">graph_3</span> Centro de Datos
+            </a>
+            <a href="https://ginosocial.ar/ContratoSocial" class="sidebar-item flex items-center gap-3 p-3 font-semibold rounded-xl text-dark hover:bg-orange-50 hover:text-primary transition-colors border-l-4 border-transparent">
+                <span class="material-symbols-outlined"> diversity_3 </span> Contrato Social
+            </a>
+            <a href="https://ginosocial.ar/bitacora" class="sidebar-item flex items-center gap-3 p-3 font-semibold rounded-xl text-dark hover:bg-orange-50 hover:text-primary transition-colors border-l-4 border-transparent">
+                <span class="material-symbols-outlined"> book_5 </span> Bitácora
+            </a>
+            <a href="https://ginosocial.ar/quienessomos" class="sidebar-item flex items-center gap-3 p-3 font-semibold rounded-xl text-dark hover:bg-orange-50 hover:text-primary transition-colors border-l-4 border-transparent">
+                <span class="material-symbols-outlined"> co_present </span> ¿Quienes somos?
+            </a>
+            <a href="#" id="sidebarCollaborateBtn" data-open="collaborateModal" class="mt-4 p-3 bg-gradient-to-r from-primary to-primaryDark text-white rounded-xl shadow-lg hover:-translate-y-0.5 transition-transform flex justify-center items-center gap-2 font-bold">
+                <span class="material-symbols-outlined"> handshake </span> Colaborar
+            </a>
+        </div>
+
+        <div class="mt-auto text-center text-xs text-gray-400 border-t pt-4">
+            <p>© 2026 Gino Social</p>
+            <p class="mt-1">Hecho con ❤️ por estudiantes</p>
+        </div>
+    </div>
+
+    <!-- Navbar -->
+    <nav id="mainNav" class="navbar fixed top-0 left-0 w-full p-4 md:px-8 flex justify-between items-center z-[1000] bg-transparent transition-all duration-300">
+        <button id="menuBtn" class="text-white text-3xl hover:scale-110 transition-transform drop-shadow-md">☰</button>
+
+        <div class="eyes-container absolute left-1/2 -translate-x-1/2 flex gap-4 pointer-events-none" id="navEyes">
+            <div class="w-12 h-8 bg-white rounded-[50%] relative overflow-hidden shadow-inner eye">
+                <div class="w-[17px] h-[17px] bg-dark rounded-full absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 pupil"><div class="w-1.5 h-1.5 bg-white rounded-full absolute top-1 left-1 opacity-80"></div></div>
+                <div class="absolute inset-0 bg-primaryDark transition-all duration-300 eyelid z-10"></div>
+            </div>
+            <div class="w-12 h-8 bg-white rounded-[50%] relative overflow-hidden shadow-inner eye">
+                <div class="w-[17px] h-[17px] bg-dark rounded-full absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 pupil"><div class="w-1.5 h-1.5 bg-white rounded-full absolute top-1 left-1 opacity-80"></div></div>
+                <div class="absolute inset-0 bg-primaryDark transition-all duration-300 eyelid z-10"></div>
+            </div>
+        </div>
+
+        <div class="flex items-center gap-3">
+            <div id="userInfo" class="hidden items-center gap-2 bg-white/20 backdrop-blur-md p-1 pr-3 rounded-full text-white transition-all overflow-hidden">
+                <div id="userAvatar" class="w-8 h-8 bg-white text-primary flex items-center justify-center font-bold rounded-full shadow-sm shrink-0">U</div>
+                <span id="userName" class="text-sm font-semibold max-w-[100px] truncate transition-all">Usuario</span>
+                <button id="myReviewsBtn" title="Mis Reseñas" class="flex items-center justify-center p-1 border border-white/70 rounded-lg hover:bg-white/20 hover:scale-105 transition-all ml-1"><span class="material-symbols-outlined text-lg">collections_bookmark</span></button>
+                <button id="logoutBtn" class="ml-1 text-white/70 hover:text-white border border-white/50 w-6 h-6 flex items-center justify-center rounded-full text-xs hover:bg-white/10 transition-colors">✕</button>
+            </div>
+            <div id="authButtons" class="flex gap-2">
+                <button id="loginBtn" class="px-4 py-2 bg-white text-primary font-bold rounded-full shadow-md text-sm hover:-translate-y-0.5 transition-transform" data-open="loginModal">Iniciar sesión</button>
+                <button id="registerBtn" class="hidden md:block px-4 py-2 border-2 border-white text-white font-bold rounded-full shadow-md text-sm hover:bg-white hover:text-primary transition-colors" data-open="registerModal">Registrarse</button>
+            </div>
+        </div>
+    </nav>
+
+    <div class="bg-primary text-white text-center py-2 px-4 text-sm font-semibold z-[1500] relative drop-shadow-md">
+        ¡Lanzamos la Biblioteca Drive! Hemos actualizado nuestro <a href="https://ginosocial.ar/ContratoSocial" class="underline hover:text-gray-200">Contrato Social</a>. Al continuar navegando, aceptas las nuevas condiciones.
+        <button onclick="this.parentElement.style.display='none'" class="ml-4 font-bold hover:text-gray-200 text-lg leading-none">✕</button>
+    </div>
+    
+    <main id="app-content" class="flex-grow">
+        <!-- VISTA DE INICIO -->
+        <div id="home-view" class="view-section active">
+            <header class="bg-gradient-to-br from-[#ff7d29] to-[#ff914d] text-white pt-28 pb-16 px-6 text-center mb-8" style="clip-path: polygon(0 0, 100% 0, 100% 90%, 0 100%);">
+                <h1 id="ginoTitle" class="text-5xl md:text-7xl font-black mb-2 tracking-tighter drop-shadow-md cursor-pointer">Gino Social</h1>
+                <p class="max-w-2xl mx-auto text-lg opacity-90 leading-relaxed">Gestor de Información, Noticias y Opinión Social. Una herramienta del pueblo. Desarrollado por <a href="https://crisis-puntocom.substack.com/" target="_blank" class="border-b border-white/50 hover:border-white transition-colors">CrisisPuntoCom</a> y <a href="https://www.instagram.com/helecho.social/" target="_blank" class="border-b border-white/50 hover:border-white transition-colors">Helecho Social</a></p>
+            </header>
+            
+            <div class="max-w-7xl mx-auto px-4 md:px-8 pb-12">
+                <div class="flex flex-wrap justify-center md:justify-center gap-2 md:gap-3 mb-8 overflow-x-auto pt-2 pb-3 category-filters">
+                    <button class="category-btn active px-5 py-2.5 border border-gray-200 bg-white text-gray-600 rounded-full font-semibold hover:bg-gray-50 transition-all shadow-sm shrink-0" data-category="materias">Materias obligatorias</button>
+                    <button class="category-btn px-5 py-2.5 border border-gray-200 bg-white text-gray-600 rounded-full font-semibold hover:bg-gray-50 transition-all shadow-sm shrink-0" data-category="especiales">Sociologías especiales</button>
+                    <button class="category-btn px-5 py-2.5 border border-gray-200 bg-white text-gray-600 rounded-full font-semibold hover:bg-gray-50 transition-all shadow-sm shrink-0" data-category="teorias">Teorías sociológicas</button>
+                    <button class="category-btn px-5 py-2.5 border border-gray-200 bg-white text-gray-600 rounded-full font-semibold hover:bg-gray-50 transition-all shadow-sm shrink-0" data-category="horasdeinv">Talleres/Seminarios</button>
+                    <button class="category-btn px-5 py-2.5 border border-gray-200 bg-white text-gray-600 rounded-full font-semibold hover:bg-gray-50 transition-all shadow-sm shrink-0" data-category="idiomas">Idiomas</button>
+                </div>
+                
+                <div class="bg-white p-4 rounded-2xl shadow-sm mb-8 flex flex-col md:flex-row gap-4 items-center border border-gray-100">
+                    <div class="w-full md:flex-1">
+                        <input type="text" id="searchMaterias" placeholder="🔍 Buscar por materia o cátedra..." class="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl focus:border-primary focus:ring-2 focus:ring-primary/10 outline-none transition-all">
+                    </div>
+                    <div class="w-full md:w-auto">
+                        <select id="sortSelect" class="w-full p-3 bg-white border border-gray-200 rounded-xl font-semibold text-dark outline-none cursor-pointer hover:border-gray-300">
+                            <option value="carrera">Orden Carrera</option>
+                            <option value="reviews-desc">Más reseñas</option>
+                            <option value="reviews-asc">Menos reseñas</option>
+                            <option value="alpha-asc">A-Z</option>
+                            <option value="alpha-desc">Z-A</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <h2 id="materiasGridTitle" class="text-2xl font-bold text-dark mb-6">Materias obligatorias</h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="materiasGrid">
+                    <div class="col-span-full text-center py-12 text-gray-500">
+                        <div class="inline-block w-8 h-8 border-4 border-gray-200 border-t-primary rounded-full animate-spin mb-4"></div>
+                        <p>Cargando materias...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- VISTA DE MATERIA INDIVIDUAL -->
+        <div id="materia-view" class="view-section">
+            <div class="bg-primary pt-24 pb-6 px-6 md:px-12 text-white shadow-inner mb-6">
+                <div class="max-w-6xl mx-auto flex flex-col gap-4">
+                    <a href="javascript:void(0)" onclick="cambiarRuta('#/')" class="inline-flex items-center gap-2 bg-white/20 hover:bg-white/30 px-4 py-2 rounded-full font-semibold w-fit transition-colors">
+                        <span class="material-symbols-outlined text-sm">arrow_back</span> Volver al listado
+                    </a>
+                    <h1 id="materiaPageTitle" class="text-4xl md:text-5xl font-black drop-shadow-sm">Cargando Materia...</h1>
+                    <div id="materiaCatedrasList" class="flex flex-wrap gap-2 text-lg opacity-90 items-center"></div>
+                </div>
+            </div>
+
+            <div class="max-w-7xl mx-auto px-4 md:px-8 pb-12 flex flex-col md:grid md:grid-cols-3 gap-4 md:gap-8 items-start">
+                
+                <div class="contents md:block col-span-2 space-y-0 md:space-y-6">
+                    
+                    <!-- Botones de Acción Múltiples -->
+                    <div class="order-2 md:order-none flex flex-col sm:flex-row gap-3 w-full mb-4 md:mb-0">
+                        <button onclick="toggleReviewForm()" class="w-full sm:flex-1 bg-primary text-white font-black text-sm md:text-base py-3 md:py-4 px-4 md:px-6 rounded-xl md:rounded-2xl shadow-[0_4px_15px_rgba(255,125,41,0.3)] hover:shadow-[0_6px_20px_rgba(255,125,41,0.4)] hover:-translate-y-1 transition-all flex items-center justify-center gap-2 md:gap-3">
+                            <span class="material-symbols-outlined text-base md:text-xl">edit_square</span> Escribir una reseña
+                        </button>
+                        <button onclick="toggleSummaryForm()" class="w-full sm:flex-1 bg-blue-600 text-white font-black text-sm md:text-base py-3 md:py-4 px-4 md:px-6 rounded-xl md:rounded-2xl shadow-[0_4px_15px_rgba(37,99,235,0.3)] hover:shadow-[0_6px_20px_rgba(37,99,235,0.4)] hover:-translate-y-1 transition-all flex items-center justify-center gap-2 md:gap-3">
+                            <span class="material-symbols-outlined text-base md:text-xl">cloud_upload</span> Subir un resumen
+                        </button>
+                    </div>
+
+                    <!-- Formularios Desplegables -->
+                    
+                    <!-- Formulario de Reseñas -->
+                    <div id="reviewForm" class="hidden order-3 md:order-none w-full">
+                        <div id="reviewFormContent" class="form-collapsible-content collapsed bg-white rounded-xl md:rounded-2xl shadow-lg border border-gray-100 p-4 md:p-10 mb-4 md:mb-0">
+                            
+                            <div id="authRequiredMessage" class="hidden text-center p-4 md:p-8 bg-amber-50 rounded-xl border-l-4 border-amber-500 mb-6">
+                                <h3 class="font-bold text-lg mb-2">Inicia sesión para dejar una reseña</h3>
+                                <p class="text-gray-600 mb-4">Debes tener una cuenta para compartir tu experiencia.</p>
+                                <div class="flex justify-center gap-3">
+                                    <button type="button" class="py-2 px-6 border border-gray-300 bg-white text-gray-600 font-bold rounded-full hover:bg-gray-50 transition-colors" onclick="toggleReviewForm()">Cancelar</button>
+                                    <button id="loginFromReviewBtn" class="bg-primary text-white font-bold py-2 px-6 rounded-full hover:bg-primaryDark transition-colors" data-open="loginModal">Iniciar Sesión</button>
+                                </div>
+                            </div>
+                            
+                            <form id="reviewFormElement" class="hidden space-y-6">
+                                <h2 class="text-xl md:text-2xl font-black text-primary text-center mb-6">Tu experiencia importa</h2>
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    <div class="space-y-2">
+                                        <label for="catedra" class="block font-semibold text-dark">Cátedra</label>
+                                        <select id="catedra" class="w-full md:w-[80%] p-3 border border-gray-300 rounded-lg focus:border-primary outline-none bg-white" required></select>
+                                    </div>
+                                    <div class="space-y-2" id="practico-form-group">
+                                        <label for="practico" class="block font-semibold text-dark">Práctico</label>
+                                        <select id="practico" class="w-full p-3 border border-gray-300 rounded-lg focus:border-primary outline-none bg-white" required></select>
+                                    </div>
+                                </div>
+                                
+                                <div class="space-y-2">
+                                    <label for="anioCursada" class="block font-semibold text-dark">Año de cursada</label>
+                                    <div class="flex flex-wrap items-center gap-4">
+                                        <select id="anioCursada" class="w-24 p-3 border border-gray-300 rounded-lg focus:border-primary outline-none bg-white" required>
+                                            <option value="">Año</option><option value="2021">2021</option><option value="2022">2022</option><option value="2023">2023</option><option value="2024">2024</option><option value="2025">2025</option><option value="2026">2026</option>
+                                        </select>
+                                        <label class="flex items-center gap-2 bg-gray-50 px-4 py-2 rounded-lg border border-gray-200 cursor-pointer hover:bg-gray-100">
+                                            <input type="checkbox" id="cursoVerano" class="w-4 h-4 text-primary"> Curso de verano
+                                        </label>
+                                    </div>
+                                </div>
+                                
+                                <div class="space-y-2">
+                                    <label class="block font-semibold text-dark">Tipo de evaluación</label>
+                                    <div class="flex flex-wrap gap-3" id="tiposEvaluacionCheckboxes"> 
+                                        <label class="flex items-center gap-2 bg-gray-50 px-4 py-2 rounded-full border border-gray-200 cursor-pointer hover:bg-gray-100 text-sm"><input type="checkbox" id="evalParciales" value="Parcial presencial"> Parcial presencial</label>
+                                        <label class="flex items-center gap-2 bg-gray-50 px-4 py-2 rounded-full border border-gray-200 cursor-pointer hover:bg-gray-100 text-sm"><input type="checkbox" id="evalDomiciliario" value="Parcial domiciliario"> Parcial domiciliario</label>
+                                        <label class="flex items-center gap-2 bg-gray-50 px-4 py-2 rounded-full border border-gray-200 cursor-pointer hover:bg-gray-100 text-sm"><input type="checkbox" id="evalMonografia" value="Monografía"> Monografía</label>
+                                        <label class="flex items-center gap-2 bg-gray-50 px-4 py-2 rounded-full border border-gray-200 cursor-pointer hover:bg-gray-100 text-sm"><input type="checkbox" id="evalInvestigacion" value="Investigación"> Investigación</label>
+                                        <label class="flex items-center gap-2 bg-gray-50 px-4 py-2 rounded-full border border-gray-200 cursor-pointer hover:bg-gray-100 text-sm"><input type="checkbox" id="evalEnsayo" value="Ensayo"> Ensayo</label>
+                                        <label class="flex items-center gap-2 bg-gray-50 px-4 py-2 rounded-full border border-gray-200 cursor-pointer hover:bg-gray-100 text-sm"><input type="checkbox" id="evalColoquio" value="Coloquio/Oral"> Coloquio/Oral</label>
+                                    </div>
+                                </div>
+                                
+                                <div class="space-y-2">
+                                    <label for="tomanAsistencia" class="block font-semibold text-dark">¿Toman asistencia?</label>
+                                    <select id="tomanAsistencia" class="w-full md:w-32 p-3 border border-gray-300 rounded-lg focus:border-primary outline-none bg-white" required>
+                                        <option value="">Selecciona una opción</option><option value="Si">Sí</option><option value="No">No</option>
+                                    </select>
+                                </div>
+                                
+                                <div class="space-y-2 border-t pt-6">
+                                    <label class="block font-semibold text-dark text-lg">Calificación General</label>
+                                    <div class="rating-input flex gap-2 text-3xl" id="generalRating"></div>
+                                </div>
+                                
+                                <div class="space-y-4 bg-gray-50 p-6 rounded-xl border border-gray-100">
+                                    <h3 class="font-bold text-dark text-center md:text-left">Calificación por Aspectos</h3>
+                                    <div class="grid grid-cols-1 md:grid-cols-4 gap-6 md:gap-4 text-center">
+                                        <div class="space-y-2"><label class="text-sm text-gray-600 block md:h-10 font-semibold">Pedagogía</label><div class="rating-input flex justify-center gap-2 md:gap-1 text-3xl md:text-2xl" id="claridadRating"></div></div>
+                                        <div class="space-y-2"><label class="text-sm text-gray-600 block md:h-10 font-semibold">Programa</label><div class="rating-input flex justify-center gap-2 md:gap-1 text-3xl md:text-2xl" id="programaRating"></div></div>
+                                        <div class="space-y-2"><label class="text-sm text-gray-600 block md:h-10 font-semibold">Dificultad <span id="dificultadLabel" class="text-primary font-bold block text-xs"></span></label><div class="rating-input flex justify-center gap-2 md:gap-1 text-3xl md:text-2xl" id="dificultadRating"></div></div>
+                                        <div class="space-y-2"><label class="text-sm text-gray-600 block md:h-10 font-semibold">Oferta horaria</label><div class="rating-input flex justify-center gap-2 md:gap-1 text-3xl md:text-2xl" id="ofertaRating"></div></div>
+                                    </div>
+                                </div>
+
+                                <div class="space-y-2">
+                                    <label for="reviewText" class="block font-semibold text-dark">Reseña</label>
+                                    <textarea id="reviewText" placeholder="Sé respetuoso... de lo que no se puede hablar es mejor callar." class="w-full p-4 border border-gray-300 rounded-lg focus:border-primary outline-none min-h-[120px] resize-y" required></textarea>
+                                </div>
+                                
+                                <div class="flex gap-4 pt-4">
+                                    <button type="button" class="flex-1 py-2 md:py-3 border border-gray-300 text-gray-600 font-bold rounded-xl hover:bg-gray-50 transition-colors" onclick="toggleReviewForm()">Cancelar</button>
+                                    <button type="submit" class="flex-1 py-2 md:py-3 bg-primary text-white font-bold rounded-xl shadow-md hover:bg-primaryDark transition-colors">Enviar Reseña</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+
+                    <!-- Formulario de Resúmenes (Conectado a Firebase) -->
+                    <div id="summaryForm" class="hidden order-3 md:order-none w-full mb-4 md:mb-0">
+                        <div class="bg-white rounded-xl md:rounded-2xl shadow-lg border border-gray-100 p-4 md:p-8">
+                            
+                            <div id="authRequiredSummaryMessage" class="hidden text-center p-4 md:p-8 bg-blue-50 rounded-xl border-l-4 border-blue-500 mb-6">
+                                <h3 class="font-bold text-lg mb-2">Inicia sesión para compartir resúmenes</h3>
+                                <p class="text-gray-600 mb-4">Debes tener una cuenta para aportar material a la comunidad.</p>
+                                <div class="flex justify-center gap-3">
+                                    <button type="button" class="py-2 px-6 border border-gray-300 bg-white text-gray-600 font-bold rounded-full hover:bg-gray-50 transition-colors" onclick="toggleSummaryForm()">Cancelar</button>
+                                    <button id="loginFromSummaryBtn" class="bg-blue-600 text-white font-bold py-2 px-6 rounded-full hover:bg-blue-700 transition-colors" data-open="loginModal">Iniciar Sesión</button>
+                                </div>
+                            </div>
+                            
+                            <form id="resumenFormElement" class="hidden space-y-5" onsubmit="guardarResumen(event)">
+                                <h2 class="text-xl md:text-2xl font-black text-blue-600 text-center mb-6">Compartir Material de Estudio</h2>
+                                
+                                <div id="formSummarySuccessMsg" class="hidden bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-lg mb-4 text-center font-semibold">¡Aporte guardado correctamente en la biblioteca!</div>
+                                <div id="formSummaryErrorMsg" class="hidden bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg mb-4 text-center font-semibold">Error al guardar. Intenta de nuevo.</div>
+                                
+                                <div>
+                                    <label class="block font-semibold text-dark text-sm mb-1">Título del material (archivo o carpeta)</label>
+                                    <input type="text" id="resumenTitulo" placeholder="Ej. Resumen completo 1er Parcial..." class="w-full p-3 border border-gray-300 rounded-lg focus:border-blue-600 outline-none transition-colors" required>
+                                </div>
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                                    <div>
+                                        <label class="block font-semibold text-dark text-sm mb-1">Materia</label>
+                                        <input type="text" id="resumenMateria" class="w-full p-3 border border-gray-200 rounded-lg bg-gray-50 text-gray-500 font-semibold outline-none cursor-not-allowed" readonly>
+                                    </div>
+                                    <div>
+                                        <label class="block font-semibold text-dark text-sm mb-1">Cátedra asociada</label>
+                                        <select id="resumenCatedra" class="w-full p-3 border border-gray-300 rounded-lg focus:border-blue-600 outline-none transition-colors" required>
+                                            <option value="">Selecciona una cátedra</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div>
+                                    <label class="block font-semibold text-dark text-sm mb-2">Origen del material</label>
+                                    <div class="flex flex-col md:flex-row gap-3">
+                                        <label class="flex items-center gap-2 bg-gray-50 px-4 py-2.5 rounded-xl border border-gray-200 cursor-pointer hover:bg-gray-100 transition-colors">
+                                            <input type="radio" name="resumenOrigen" id="origenPropio" value="Propio" class="w-4 h-4 text-blue-600" checked onchange="document.getElementById('origenExternoInput').classList.add('hidden')"> 
+                                            <span class="text-sm font-semibold text-gray-700">Apunte propio</span>
+                                        </label>
+                                        <label class="flex items-center gap-2 bg-gray-50 px-4 py-2.5 rounded-xl border border-gray-200 cursor-pointer hover:bg-gray-100 transition-colors">
+                                            <input type="radio" name="resumenOrigen" id="origenExterno" value="Externo" class="w-4 h-4 text-blue-600" onchange="document.getElementById('origenExternoInput').classList.remove('hidden'); document.getElementById('origenExternoTexto').focus();"> 
+                                            <span class="text-sm font-semibold text-gray-700">Fuente externa</span>
+                                        </label>
+                                    </div>
+                                    <div id="origenExternoInput" class="hidden mt-3">
+                                        <input type="text" id="origenExternoTexto" placeholder="¿De dónde lo sacaste? Ej: Altillo, CECSO, etc." class="w-full p-3 border border-gray-300 rounded-lg focus:border-blue-600 outline-none transition-colors text-sm">
+                                    </div>
+                                </div>
+                                <div>
+                                    <label class="block font-semibold text-dark text-sm mb-1 flex flex-col md:flex-row md:items-center gap-2 flex-wrap">
+                                        Enlace público de Drive
+                                        <span class="text-xs font-normal text-amber-600 bg-amber-50 px-2 py-0.5 rounded-md border border-amber-100">Recuerda configurar la visibilidad para que cualquier usuario con el vínculo pueda verlo</span>
+                                    </label>
+                                    <div class="relative">
+                                        <input type="url" id="resumenLink" placeholder="Pegá el link de Drive o OneDrive..." class="w-full p-3 border border-gray-300 rounded-lg focus:border-blue-600 outline-none transition-colors pr-32" required>
+                                        <span id="plataformaBadge" class="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-bold px-2 py-1 rounded-full hidden"></span>
+                                    </div>
+                                    <p id="linkWarning" class="hidden text-amber-600 text-xs mt-1">⚠️ No reconocemos este link. Asegurate de que sea público.</p>
+                                </div>
+                                <div class="flex gap-4 pt-4 border-t border-gray-100">
+                                    <button type="button" onclick="toggleSummaryForm()" class="flex-1 py-2 md:py-3 border border-gray-300 text-gray-600 font-bold rounded-xl hover:bg-gray-50 transition-colors">Cancelar</button>
+                                    <button type="submit" id="submitResumenBtn" class="flex-1 py-2 md:py-3 bg-blue-600 text-white font-bold rounded-xl shadow-md hover:bg-blue-700 transition-colors flex items-center justify-center gap-2">
+                                        <span class="material-symbols-outlined text-sm md:text-base">cloud_upload</span> Subir aporte
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+
+                    <!-- Sistema de Pestañas -->
+                    <div class="order-4 md:order-none w-full flex gap-2 border-b border-gray-200 mt-2 md:mt-0 mb-4 md:mb-0">
+                        <button id="tabResenas" onclick="switchTab('resenas')" class="py-3 px-4 border-b-2 border-primary text-primary font-bold text-sm md:text-base transition-colors flex items-center gap-2">
+                            <span class="material-symbols-outlined text-[18px]">forum</span> Reseñas
+                        </button>
+                        <button id="tabResumenes" onclick="switchTab('resumenes')" class="py-3 px-4 border-b-2 border-transparent text-gray-500 font-semibold hover:text-gray-700 text-sm md:text-base transition-colors flex items-center gap-2">
+                            <span class="material-symbols-outlined text-[18px]">folder_shared</span> Biblioteca Drive
+                        </button>
+                    </div>
+                    
+                    <!-- Contenedor de Reseñas -->
+                    <div id="resenasContainer" class="order-5 md:order-none w-full space-y-4 md:space-y-6 block">
+                        <div id="resenasList" class="space-y-4 md:space-y-6"></div>
+                    </div>
+
+                    <!-- Contenedor de Resúmenes (Integración Drive) -->
+                    <div id="resumenesContainer" class="order-5 md:order-none w-full space-y-4 hidden">
+                        <div id="loaderResumenes" class="flex justify-center py-10 hidden">
+                            <div class="w-8 h-8 border-4 border-gray-200 border-t-blue-600 rounded-full animate-spin"></div>
+                        </div>
+                        <div id="resumenesList" class="space-y-4">
+                            <!-- Los resúmenes se inyectan acá -->
+                        </div>
+                    </div>
+
+                </div>
+
+                <!-- Sidebar de Información -->
+                <aside class="contents md:flex md:flex-col md:col-span-1 md:sticky md:top-20 md:max-h-[calc(100vh-6rem)] md:overflow-y-auto md:pr-1 lg:pr-2 md:pb-4 gap-0 md:gap-4">
+                    <div class="order-1 md:order-none w-full bg-white rounded-xl md:rounded-2xl p-2 md:p-2 shadow-sm border border-gray-100 shrink-0">
+                        <h3 class="flex items-center gap-1 md:gap-2 text-base md:text-lg font-bold text-dark border-b pb-2 mb-2 md:mb-3"><span class="material-symbols-outlined text-gray-400 text-lg md:text-xl">info</span> Info</h3>
+                        <div class="flex items-center gap-2 md:gap-3 text-gray-600 mb-2 text-sm">
+                            <span class="material-symbols-outlined text-gray-400 text-base">comment</span>
+                            <span class="truncate"><strong>Reseñas:</strong> <span id="materiaResenasCount">0</span></span>
+                        </div>
+                        <div class="flex items-center gap-2 md:gap-3 text-gray-600 mb-2 text-sm">
+                            <span class="material-symbols-outlined text-gray-400 text-base">folder</span>
+                            <span class="truncate"><strong>Resúmenes:</strong> <span id="materiaResumenesCount">0</span></span>
+                        </div>
+                        <div class="flex flex-row md:flex-col lg:flex-row items-center md:items-start lg:items-center gap-2 md:gap-1 lg:gap-3 text-gray-600 text-sm">
+                            <div class="flex items-center gap-1"><span class="material-symbols-outlined text-gray-400 text-base">category</span> <strong>Tipo:</strong></div>
+                            <span class="truncate" id="materiaCategoriaDisplay">Categoría</span>
+                        </div>
+                    </div>
+                    
+                    <div class="order-4 md:order-none w-full bg-white rounded-xl md:rounded-2xl p-2 md:p-2 shadow-sm border border-gray-100 shrink-0" id="filtrosSidebar">
+                        <h3 class="flex items-center gap-1 md:gap-2 text-base md:text-lg font-bold text-dark border-b pb-2 mb-2 md:mb-3"><span class="material-symbols-outlined text-gray-400 text-lg md:text-xl">filter_list</span> Filtros</h3>
+                        <div class="space-y-3">
+                            <div class="space-y-1">
+                                <label for="filterCatedra" class="text-[10px] md:text-xs font-semibold text-gray-500 uppercase tracking-wider">Cátedra</label>
+                                <select id="filterCatedra" class="w-full p-2 text-xs md:text-sm border border-gray-200 rounded-lg bg-gray-50 outline-none focus:border-primary transition-colors"></select>
+                            </div>
+                            <div class="space-y-1" id="practico-filter-group">
+                                <label for="filterPractico" class="text-[10px] md:text-xs font-semibold text-gray-500 uppercase tracking-wider">Práctico</label>
+                                <select id="filterPractico" class="w-full p-2 text-xs md:text-sm border border-gray-200 rounded-lg bg-gray-50 outline-none focus:border-primary transition-colors"></select>
+                            </div>
+                            <div class="space-y-1">
+                                <label for="filterRating" class="text-[10px] md:text-xs font-semibold text-gray-500 uppercase tracking-wider">Máxima</label>
+                                <select id="filterRating" class="w-full p-2 text-xs md:text-sm border border-gray-200 rounded-lg bg-gray-50 outline-none focus:border-primary transition-colors">
+                                    <option value="">Todas</option><option value="5">5 est o menos</option><option value="4">4 est o menos</option><option value="3">3 est o menos</option><option value="2">2 est o menos</option><option value="1">1 est o menos</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </aside>
+            </div>
+        </div>
+    </main>
+
+    <button id="scrollToTopBtn" title="Ir arriba" class="fixed bottom-8 right-8 w-12 h-12 bg-primary text-white rounded-full shadow-lg hover:bg-primaryDark hover:-translate-y-1 transition-all flex items-center justify-center text-xl z-50 hidden">▲</button>
+    
+    <!-- Modales -->
+    
+    <!-- Modal Explorador Drive -->
+    <div class="modal fixed inset-0 bg-black/70 z-[3000] hidden items-center justify-center p-4 backdrop-blur-sm" id="explorerModal">
+        <div class="bg-white p-4 md:p-8 rounded-3xl w-full max-w-5xl h-[85vh] shadow-2xl modal-content-animated flex flex-col">
+            <div class="flex justify-between items-center mb-4 shrink-0 border-b pb-4">
+                <h2 class="text-xl md:text-2xl font-black text-blue-600 flex items-center gap-2"><span class="material-symbols-outlined">folder_open</span> Biblioteca Drive</h2>
+                <button class="text-gray-400 hover:text-gray-600 text-2xl font-bold" data-dismiss="modal">✕</button>
+            </div>
+            
+            <div id="explorerBreadcrumbs" class="flex items-center gap-2 mb-4 font-semibold text-gray-600 flex-wrap shrink-0"></div>
+            <div id="explorerErrorMsg" class="hidden bg-red-50 text-red-800 p-3 rounded-lg border border-red-200 mb-4 shrink-0 text-sm"></div>
+            
+            <div id="explorerLoader" class="hidden flex-col items-center justify-center flex-grow">
+                <div class="w-12 h-12 border-4 border-gray-200 border-t-blue-600 rounded-full animate-spin mb-4"></div>
+                <p class="text-gray-500 font-semibold">Consultando archivos de la comunidad...</p>
+            </div>
+
+            <div id="explorerFilesGrid" class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-3 md:gap-4 overflow-y-auto pr-2 pb-4 flex-grow min-h-0 content-start">
+                <!-- Archivos inyectados por JS -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Modales Existentes -->
+    <div class="modal fixed inset-0 bg-black/60 z-[2000] hidden items-center justify-center p-4 backdrop-blur-sm" id="loginModal">
+        <div class="bg-white p-8 rounded-3xl w-full max-w-sm shadow-2xl modal-content-animated relative">
+            <h2 class="text-2xl font-black text-primary text-center mb-6">Iniciar Sesión</h2>
+            <form id="loginForm" class="space-y-4">
+                <div class="space-y-1">
+                    <label for="loginEmail" class="font-semibold text-sm text-gray-600">Email</label>
+                    <input type="email" id="loginEmail" class="w-full p-3 border rounded-xl focus:border-primary outline-none" required>
+                </div>
+                <div class="space-y-1 relative">
+                    <label for="loginPassword" class="font-semibold text-sm text-gray-600">Contraseña</label>
+                    <input type="password" id="loginPassword" class="w-full p-3 border rounded-xl focus:border-primary outline-none pr-10" required>
+                    <button type="button" class="toggle-password-btn absolute right-3 top-9 text-gray-400 hover:text-primary" data-target="loginPassword"><span class="material-symbols-outlined">visibility</span></button>
+                </div>
+                <div class="text-right">
+                    <button type="button" id="forgotPasswordBtn" class="text-sm font-semibold text-primary hover:underline">Olvide mi contraseña</button>
+                </div>
+                <div id="loginError" class="text-red-500 text-sm text-center bg-red-50 p-2 rounded hidden"></div>
+                <div class="flex gap-3 pt-4">
+                    <button type="button" id="cancelLogin" class="flex-1 py-3 border text-gray-500 font-bold rounded-xl hover:bg-gray-50" data-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="flex-1 py-3 bg-primary text-white font-bold rounded-xl shadow-md hover:bg-primaryDark">Iniciar sesión</button>
+                </div>
+                <div class="pt-6 mt-2 border-t text-center text-sm">
+                    <p class="text-gray-500 mb-1">¿No tienes cuenta?</p>
+                    <a href="#" id="switchToRegister" class="text-primary font-bold hover:underline">Regístrate aquí</a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="modal fixed inset-0 bg-black/60 z-[2000] hidden items-center justify-center p-4 backdrop-blur-sm" id="registerModal">
+        <div class="bg-white p-6 md:p-8 rounded-3xl w-full max-w-4xl shadow-2xl modal-content-animated max-h-[90vh] overflow-y-auto">
+            <div class="flex flex-col md:flex-row gap-8">
+                <div class="flex-1 space-y-6">
+                    <h2 class="text-2xl font-black text-primary mb-2">Registrarse</h2>
+                    <form id="registerForm" class="space-y-4">
+                        <div class="flex gap-4">
+                            <div class="flex-1 space-y-1"><label class="text-sm font-semibold text-gray-600">Nombre</label><input type="text" id="registerFirstName" class="w-full p-3 border rounded-xl" required></div>
+                            <div class="flex-1 space-y-1"><label class="text-sm font-semibold text-gray-600">Apellido</label><input type="text" id="registerLastName" class="w-full p-3 border rounded-xl" required></div>
+                        </div>
+                        <div class="space-y-1">
+                            <label class="text-sm font-semibold text-gray-600">Email</label>
+                            <input type="email" id="registerEmail" class="w-full p-3 border rounded-xl" required>
+                            <p class="text-xs text-amber-600 mt-1">Revisa tu casilla de spam para confirmar tu cuenta.</p>
+                        </div>
+                        <div class="space-y-1 relative">
+                            <label class="text-sm font-semibold text-gray-600">Contraseña</label>
+                            <input type="password" id="registerPassword" class="w-full p-3 border rounded-xl pr-10" required minlength="6">
+                            <button type="button" class="toggle-password-btn absolute right-3 top-9 text-gray-400 hover:text-primary" data-target="registerPassword"><span class="material-symbols-outlined">visibility</span></button>
+                        </div>
+                        <div id="registerError" class="text-red-500 text-sm hidden bg-red-50 p-2 rounded"></div>
+                        <div class="flex gap-3 pt-4">
+                            <button type="button" id="cancelRegister" class="flex-1 py-3 border text-gray-500 font-bold rounded-xl hover:bg-gray-50" data-dismiss="modal">Cancelar</button>
+                            <button type="submit" class="flex-1 py-3 bg-primary text-white font-bold rounded-xl shadow-md hover:bg-primaryDark">Siguiente</button>
+                        </div>
+                    </form>
+                </div>
+                <div class="flex-1 bg-amber-50 p-6 rounded-2xl border-l-4 border-primary flex flex-col justify-center text-sm text-gray-700 space-y-4">
+                    <h3 class="text-primary text-lg font-bold flex items-center gap-2">⚠️ Importante</h3>
+                    <p>Es importante cuidar a la comunidad académica. A la hora de hacer reseñas se opina sobre el trabajo de personas reales.</p>
+                    <p>Contamos con tu buena fe para que Gino Social sea un herramienta útil y constructiva.</p>
+                    <p>Por esta razón <strong class="text-red-500">pedimos que tus reseñas sean con nombre y apellidos reales</strong>.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fixed inset-0 bg-black/60 z-[2000] hidden items-center justify-center p-4" id="tycModal">
+        <div class="bg-white p-8 rounded-3xl w-full max-w-xl shadow-2xl modal-content-animated">
+            <h2 class="text-2xl font-black text-primary text-center mb-4">📜 Términos y Condiciones</h2>
+            <p class="text-center text-gray-600 mb-4">Para finalizar, acepta nuestras normas de convivencia.</p>
+            <div class="bg-gray-50 border border-gray-200 rounded-xl overflow-hidden h-64 mb-6 relative" id="tycContainer">
+                <iframe src="terminos.html" class="w-full h-full border-0" title="Términos y Condiciones"></iframe>
+            </div>
+            <div class="flex gap-3">
+                <button type="button" id="cancelTyC" class="flex-1 py-3 border border-red-200 text-red-500 font-bold rounded-xl hover:bg-red-50" data-dismiss="modal">Cancelar</button>
+                <button type="button" id="acceptTyC" class="flex-1 py-3 bg-gradient-to-r from-primary to-primaryDark text-white font-bold rounded-xl shadow-md hover:shadow-lg">Aceptar y Registrarse</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fixed inset-0 bg-black/60 z-[2000] hidden items-center justify-center p-4" id="collaborateModal">
+        <div class="bg-white p-8 rounded-3xl w-full max-w-lg shadow-2xl modal-content-animated max-h-[90vh] overflow-y-auto">
+            <h2 class="text-2xl font-black text-primary mb-4 flex items-center gap-2"><span class="material-symbols-outlined">handshake</span> Colaborar</h2>
+            <div class="text-gray-700 space-y-4 text-sm leading-relaxed mb-6">
+                <p> Este proyecto está llevado a cabo por <strong>Helecho Social</strong> y <strong>CrisisPuntoCom</strong>, 
+                    dos revistas partes de un colectivo conformado por estudiantes de la carrera de Sociología de la UBA. 
+                <br>
+                 Porque alguien tiene que hacerle la vida más fácil al pueblo. Para hacerlo no tuvimos que pedirle permiso a nadie, 
+                    pero por la misma razón necesitamos tu colaboración.
+                </p>
+                <p class="bg-gray-50 p-4 rounded-xl border-l-4 border-primary">
+                   ¿Faltan materias o prácticos? ¿Hay materias que ya no existen? Podés contactarnos a <a href="mailto:ginosocial.contacto@gmail.com" class="text-primary font-bold">ginosocial.contacto@gmail.com</a> <br>
+                    (Comentanos errores, sugerencias, críticas o reseñas)
+                </p>
+                
+                <p>También aceptamos donaciones, porque lamentablemente alojar todo esto no es gratis y nos vendría muy bien una ayuda.</p>
+            </div>
+            <a href="https://link.mercadopago.com.ar/ginosocio" target="_blank" class="block w-full text-center py-3 bg-gradient-to-r from-pink-500 to-red-500 text-white font-bold rounded-full shadow-lg hover:scale-105 transition-transform mb-4">
+               <span class="material-symbols-outlined align-middle mr-1">send_money</span> Donar una ayuda
+            </a>
+            <button type="button" class="w-full py-3 border text-gray-500 font-bold rounded-xl hover:bg-gray-50" data-dismiss="modal">Cerrar</button>
+        </div>
+    </div>
+
+    <div class="modal fixed inset-0 bg-black/60 z-[2000] hidden items-center justify-center p-4" id="deleteConfirmModal">
+        <div class="bg-white p-8 rounded-3xl w-full max-w-sm shadow-2xl modal-content-animated text-center">
+            <h2 class="text-2xl font-black text-red-500 mb-2">⚠️ Borrar Reseña</h2>
+            <p class="text-gray-600 mb-6">¿Seguro? Esta acción no se puede deshacer.</p>
+            <div class="flex gap-3">
+                <button type="button" id="cancelDelete" class="flex-1 py-3 border text-gray-500 font-bold rounded-xl" data-dismiss="modal">Cancelar</button>
+                <button type="button" id="confirmDeleteBtn" class="flex-1 py-3 bg-red-500 text-white font-bold rounded-xl">Borrar</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fixed inset-0 bg-black/60 z-[2000] hidden items-center justify-center p-4" id="deleteReplyModal">
+        <div class="bg-white p-8 rounded-3xl w-full max-w-sm shadow-2xl modal-content-animated text-center">
+            <h2 class="text-2xl font-black text-red-500 mb-2">⚠️ Borrar Respuesta</h2>
+            <p class="text-gray-600 mb-6">¿Seguro? Esta acción no se puede deshacer.</p>
+            <div class="flex gap-3">
+                <button type="button" id="cancelDeleteReply" class="flex-1 py-3 border text-gray-500 font-bold rounded-xl" data-dismiss="modal">Cancelar</button>
+                <button type="button" id="confirmDeleteReplyBtn" class="flex-1 py-3 bg-red-500 text-white font-bold rounded-xl">Borrar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal para borrar Resumen -->
+    <div class="modal fixed inset-0 bg-black/60 z-[2000] hidden items-center justify-center p-4" id="deleteResumenModal">
+        <div class="bg-white p-8 rounded-3xl w-full max-w-sm shadow-2xl modal-content-animated text-center">
+            <h2 class="text-2xl font-black text-red-500 mb-2">⚠️ Borrar Aporte</h2>
+            <p class="text-gray-600 mb-6">¿Seguro? Esta acción eliminará tu resumen de la biblioteca.</p>
+            <div class="flex gap-3">
+                <button type="button" class="flex-1 py-3 border text-gray-500 font-bold rounded-xl" data-dismiss="modal">Cancelar</button>
+                <button type="button" id="confirmDeleteResumenBtn" class="flex-1 py-3 bg-red-500 text-white font-bold rounded-xl">Borrar</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fixed inset-0 bg-black/60 z-[2000] hidden items-center justify-center p-4" id="myReviewsModal">
+        <div class="bg-white p-6 md:p-8 rounded-3xl w-full max-w-4xl shadow-2xl modal-content-animated flex flex-col h-[80vh]">
+            <h2 class="text-2xl font-black text-primary mb-4 shrink-0">Mis Reseñas</h2>
+            <div id="myReviewsList" class="overflow-y-auto pr-2 flex-grow space-y-4"></div>
+            <div class="pt-4 shrink-0 border-t mt-4 text-center">
+                <button type="button" id="closeMyReviews" class="px-8 py-3 border text-gray-500 font-bold rounded-xl hover:bg-gray-50" data-dismiss="modal">Cerrar</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="ginoEasterEgg" class="gino-overlay fixed inset-0 bg-black/95 z-[10001] hidden flex-col items-center justify-center text-white">
+        <img src="168358-gino.jpeg" alt="Gino Germani" onerror="this.style.display='none';" class="max-w-[90%] max-h-[80%] rounded-xl shadow-[0_0_30px_rgba(255,125,41,0.6)] border-4 border-primary object-contain">
+        <p class="text-4xl font-bold mt-6 text-shadow">¡Gino vive!</p>
+    </div>
+
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyBnpshX3I7ZY3EUoraDZPdb2W6B6HZOYR0",
+            authDomain: "social-sociales.firebaseapp.com",
+            projectId: "social-sociales",
+            storageBucket: "social-sociales.firebasestorage.app",
+            messagingSenderId: "18764420760",
+            appId: "1:18764420760:web:92e33662d4e0b050cfa2ed",
+            measurementId: "G-8BZFCJBMY6"
+        };
+
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        const db = firebase.firestore();
+        const functions = firebase.functions();
+        
+        let appState = { materias: [], resenas: [], resumenes: [], materiaSeleccionada: null, user: null, currentCategory: 'materias', resumenesCargados: false };
+        let pendingRegistrationData = null;
+        let respuestasListeners = {}; 
+        let yaCargadas = { materias: false, especiales: false, teorias: false, horasdeinv: false, idiomas: false };
+        let pendingDelete = null;
+        let pendingReplyDelete = null;
+        let pendingResumenDelete = null;
+        let currentSort = 'carrera';
+        let currentSearch = '';
+        let rutaActual = '#/'; // Variable para manejar el ruteo manual internamente
+
+        const materiasData = ["Sociología General", "Filosofía", "Economía 2", "Epistemología de las Ciencias Sociales", "Historia Social Moderna y Contemporánea", "Historia Social Latinoamericana", "Historia Social Argentina", "Análisis de la sociedad Argentina", "Historia del Conocimiento Sociológico 1", "Historia del Conocimiento Sociológico 2", "Sociología Sistemática", "Metodología 1", "Metodología 2", "Metodología 3", "Sociología política", "Psicología Social"];
+
+        const mod = (id) => document.getElementById(id);
+
+        function abrirModal(id) {
+            const el = mod(id);
+            if (el) el.classList.add('active');
+        }
+
+        function cerrarModal(id) {
+            const el = mod(id);
+            if (!el) return;
+            el.classList.remove('active');
+            if (id === 'tycModal') pendingRegistrationData = null;
+            if (id === 'deleteConfirmModal') pendingDelete = null;
+            if (id === 'deleteReplyModal') pendingReplyDelete = null;
+            if (id === 'deleteResumenModal') pendingResumenDelete = null;
+        }
+
+        function init() {
+            configurarFirebaseAuth();
+            configurarFiltrosCategoria();
+            configurarSistemaEstrellas();
+            configurarFormulario();
+            configurarFiltros();
+            configurarModales();
+            configurarBuscador(); 
+            configurarSort(); 
+            configurarTogglePasswords();
+            configurarScrollToTop(); 
+            configurarNavScroll();
+            configurarEasterEgg(); 
+            configurarOjosGino(); 
+            configurarMisResenas(); 
+            configurarSidebar(); 
+            configurarIntegracionDrive();
+            
+            // Reemplazo del listener de hashchange para evitar fallos de seguridad en sandboxes
+            window.addEventListener('hashchange', () => {
+                try {
+                    if(window.location.hash === rutaActual) return;
+                } catch(e) {}
+                handleRoute();
+            });
+            handleRoute();
+            
+            document.addEventListener('click', (e) => {
+                if (!e.target.closest('.review-menu-container') && !e.target.closest('.reply-menu-container')) {
+                    document.querySelectorAll('.dropdown-menu.active').forEach(m => m.classList.remove('active'));
+                }
+            });
+        }
+
+        // Nueva función global para navegar protegiendo de errores de "Location.hash setter"
+        function cambiarRuta(nuevaRuta) {
+            rutaActual = nuevaRuta;
+            try {
+                window.location.hash = nuevaRuta;
+            } catch (e) {
+                console.warn("Navegación manual activada debido a restricciones del entorno virtual.", e);
+            }
+            handleRoute(nuevaRuta);
+        }
+
+        function configurarIntegracionDrive() {
+            const inputLink = mod('resumenLink');
+            if(inputLink) {
+                inputLink.addEventListener('input', function() {
+                    const url = this.value.trim();
+                    const plataforma = detectarPlataforma(url);
+                    const badge = mod('plataformaBadge');
+                    const warning = mod('linkWarning');
+                    
+                    if (!url) {
+                        badge.classList.add('hidden');
+                        warning.classList.add('hidden');
+                        return;
+                    }
+                    
+                    if (plataforma === 'drive') {
+                        badge.textContent = '📁 Google Drive';
+                        badge.className = 'absolute right-3 top-1/2 -translate-y-1/2 text-xs font-bold px-2 py-1 rounded-full bg-green-100 text-green-700';
+                        badge.classList.remove('hidden');
+                        warning.classList.add('hidden');
+                    } else if (plataforma === 'onedrive') {
+                        badge.textContent = '☁️ OneDrive';
+                        badge.className = 'absolute right-3 top-1/2 -translate-y-1/2 text-xs font-bold px-2 py-1 rounded-full bg-blue-100 text-blue-700';
+                        badge.classList.remove('hidden');
+                        warning.classList.add('hidden');
+                    } else {
+                        badge.classList.add('hidden');
+                        warning.classList.remove('hidden');
+                    }
+                });
+            }
+        }
+
+        async function handleRoute(rutaManual) {
+            let hashStr = typeof rutaManual === 'string' ? rutaManual : null;
+            if (hashStr === null) {
+                try {
+                    hashStr = window.location.hash || rutaActual;
+                } catch(e) {
+                    hashStr = rutaActual; // Fallback al estado virtual si el navegador lo bloquea
+                }
+            }
+            
+            const hash = hashStr.replace(/^#\/?/, '');
+            const parts = hash.split('/');
+            
+            if (parts[0] === 'materia' && parts[1] && parts[2]) {
+                const tipo = parts[1];
+                const materiaId = decodeURIComponent(parts[2].split('?')[0]);
+                let catedraParam = null;
+                if (hashStr.includes('?')) {
+                    const paramsString = hashStr.split('?')[1];
+                    catedraParam = new URLSearchParams(paramsString).get('cat');
+                }
+                await cargarMateriaEspecifica(materiaId, tipo, catedraParam);
+            } else {
+                mostrarVistaHome();
+            }
+        }
+
+        function mostrarVistaHome() {
+            mod('home-view').classList.add('active');
+            mod('materia-view').classList.remove('active');
+            mod('mainNav').classList.remove('solid-bg');
+            document.querySelectorAll('.sidebar-item').forEach(i => i.classList.remove('active'));
+            mod('menu-home-link').classList.add('active');
+            
+            if (!yaCargadas[appState.currentCategory]) {
+                cargarMaterias(appState.currentCategory);
+            } else {
+                actualizarVistaMaterias();
+            }
+        }
+
+        function mostrarVistaMateria(materia) {
+            mod('home-view').classList.remove('active');
+            mod('materia-view').classList.add('active');
+            mod('mainNav').classList.add('solid-bg');
+            document.querySelectorAll('.sidebar-item').forEach(i => i.classList.remove('active'));
+            
+            mod('materiaPageTitle').textContent = materia.nombre;
+            const categoryNames = { materias: "Materia Obligatoria", especiales: "Sociología Especial", teorias: "Teoría Sociológica", horasdeinv: "Taller / Seminario", idiomas: "Idioma" };
+            mod('materiaCategoriaDisplay').textContent = categoryNames[materia.tipo] || "Materia";
+            mod('materiaResenasCount').textContent = materia.numresenas || 0;
+            mod('materiaResumenesCount').textContent = materia.numresumenes || 0;
+
+            const catedrasList = mod('materiaCatedrasList');
+            if (materia.catedras && materia.catedras.length > 0) {
+                const catedrasHTML = materia.catedras.map(c => `<span class="catedra-link bg-white/20 px-3 py-1 rounded-full text-sm font-semibold cursor-pointer hover:bg-white hover:text-primary transition-colors border border-white/30" data-name="${c.nombre}">${c.nombre}</span>`).join('');
+                catedrasList.innerHTML = `<div class="flex flex-wrap items-center gap-2"><strong>Cátedras:</strong> ${catedrasHTML}</div>`;
+                
+                catedrasList.querySelectorAll('.catedra-link').forEach(link => {
+                    link.onclick = (e) => {
+                        e.stopPropagation();
+                        const catName = e.target.dataset.name;
+                        const fCatSel = mod('filterCatedra');
+                        if (fCatSel) {
+                            fCatSel.value = catName;
+                            fCatSel.dispatchEvent(new Event('change'));
+                            
+                            const nuevaRuta = `#/materia/${materia.tipo}/${encodeURIComponent(materia.id)}?cat=${encodeURIComponent(catName)}`;
+                            rutaActual = nuevaRuta;
+                            try {
+                                const url = new URL(window.location);
+                                url.hash = nuevaRuta;
+                                window.history.replaceState(null, '', url);
+                            } catch(err) {
+                                console.warn("Sandbox blocked history rewrite", err);
+                            }
+                            
+                            switchTab('resenas');
                             const resenasContainer = document.querySelector('.resenas-container');
                             if (resenasContainer) {
                                 const y = resenasContainer.getBoundingClientRect().top + window.pageYOffset - 100;
