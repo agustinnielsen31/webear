@@ -373,7 +373,14 @@
                                         Enlace público de Drive
                                         <span class="text-xs font-normal text-amber-600 bg-amber-50 px-2 py-0.5 rounded-md border border-amber-100">Recuerda configurar la visibilidad para que cualquier usuario con el vínculo pueda verlo</span>
                                     </label>
-                                    <input type="url" id="resumenLink" placeholder="https://drive.google.com/..." class="w-full p-3 border border-gray-300 rounded-lg focus:border-blue-600 outline-none transition-colors" required>
+                                    div class="relative">
+                                  <input type="url" id="resumenLink"
+                                    placeholder="Pegá el link de Drive o OneDrive..."
+                                    class="w-full p-3 border border-gray-300 rounded-lg focus:border-blue-600 outline-none transition-colors pr-32"
+                                    required>
+                                  <span id="plataformaBadge" class="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-bold px-2 py-1 rounded-full hidden"></span>
+                                </div>
+                                <p id="linkWarning" class="hidden text-amber-600 text-xs mt-1">⚠️ No reconocemos este link. Asegurate de que sea público.</p>
                                 </div>
                                 <div class="flex gap-4 pt-4 border-t border-gray-100">
                                     <button type="button" onclick="toggleSummaryForm()" class="flex-1 py-2 md:py-3 border border-gray-300 text-gray-600 font-bold rounded-xl hover:bg-gray-50 transition-colors">Cancelar</button>
@@ -705,7 +712,33 @@
                 }
             });
         }
+        mod('resumenLink').addEventListener('input', function() {
+          const url = this.value.trim();
+          const plataforma = detectarPlataforma(url);
+          const badge = mod('plataformaBadge');
+          const warning = mod('linkWarning');
         
+          if (!url) {
+            badge.classList.add('hidden');
+            warning.classList.add('hidden');
+            return;
+          }
+        
+          if (plataforma === 'drive') {
+            badge.textContent = '📁 Google Drive';
+            badge.className = 'absolute right-3 top-1/2 -translate-y-1/2 text-xs font-bold px-2 py-1 rounded-full bg-green-100 text-green-700';
+            badge.classList.remove('hidden');
+            warning.classList.add('hidden');
+          } else if (plataforma === 'onedrive') {
+            badge.textContent = '☁️ OneDrive';
+            badge.className = 'absolute right-3 top-1/2 -translate-y-1/2 text-xs font-bold px-2 py-1 rounded-full bg-blue-100 text-blue-700';
+            badge.classList.remove('hidden');
+            warning.classList.add('hidden');
+          } else {
+            badge.classList.add('hidden');
+            warning.classList.remove('hidden');
+          }
+        });
         async function handleRoute() {
             const hash = window.location.hash.replace(/^#\/?/, '');
             const parts = hash.split('/');
@@ -779,7 +812,12 @@
             switchTab('resenas');
             window.scrollTo(0, 0);
         }
-
+        function detectarPlataforma(url) {
+          if (!url) return null;
+          if (url.includes('drive.google.com')) return 'drive';
+          if (url.includes('1drv.ms') || url.includes('onedrive.live.com') || url.includes('sharepoint.com')) return 'onedrive';
+          return 'otro';
+        }
         function toggleReviewForm() {
             const revForm = mod('reviewForm');
             const sumForm = mod('summaryForm');
@@ -878,7 +916,11 @@
                 mod('summaryForm').classList.add('hidden');
             }
         }
-
+        function iconoPlataforma(plataforma) {
+          if (plataforma === 'drive') return '<span title="Google Drive" class="text-green-600 font-bold text-xs bg-green-50 px-2 py-0.5 rounded-full border border-green-200">📁 Drive</span>';
+          if (plataforma === 'onedrive') return '<span title="OneDrive" class="text-blue-600 font-bold text-xs bg-blue-50 px-2 py-0.5 rounded-full border border-blue-200">☁️ OneDrive</span>';
+          return '<span class="text-gray-500 font-bold text-xs bg-gray-50 px-2 py-0.5 rounded-full border border-gray-200">🔗 Link</span>';
+        }
         function prepararFormularioMateria(m, catName) {
             mod('reviewFormElement').reset();
             mod('resumenFormElement').reset();
@@ -971,6 +1013,7 @@
                     link: link,
                     usuarioId: user ? user.uid : null,
                     usuarioNombre: user ? (user.displayName || user.email.split('@')[0]) : 'Anónimo',
+                    plataforma: detectarPlataforma(mod('resumenLink').value.trim()) || 'otro',
                     fecha: firebase.firestore.FieldValue.serverTimestamp()
                 });
                 
